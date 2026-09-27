@@ -863,6 +863,9 @@ function getRomarDiscoveries(){
   if(!ids.includes(state.pending)) state.pending=null;
   if(state.pending && !state.seen.includes(state.pending)) state.seen.push(state.pending);
   if(!Number.isInteger(state.cooldown) || state.cooldown<0) state.cooldown=0;
+  for(const key of ['clueAttempts','encounterAttempts']){
+    if(!Number.isInteger(state[key]) || state[key]<0) state[key]=0;
+  }
   return state;
 }
 function hasPendingRomarDiscovery(){
@@ -881,18 +884,38 @@ function discoverRomarClue(){
   if(!pool.length) return false;
   const scene=pick(pool);
   state.seen.push(scene.id); state.pending=scene.id; state.cooldown=2;
+  state.clueAttempts=0;
   forestEventCooldown=2; ui.mapIndex=0; ui.tab='mapa';
   render(); return true;
 }
 // Ferramenta temporária: não toca nos recursos, recompensas ou progressão territorial.
 function resetRomarPlaytest(){
   if(!player || ui.inBattle || pendingForestEvent) return false;
-  player.romarDiscoveries={seen:[],pending:null,cooldown:0};
+  player.romarDiscoveries={seen:[],pending:null,cooldown:0,clueAttempts:0,encounterAttempts:0};
   delete player.romar_first_choice;
   ui.romarResult=null;
   if(ui.monster && ui.monster.id==='romar') ui.monster=null;
   render();
   popNotif({eyebrow:'PLAYTEST',title:'CADEIA DE ROMAR RESETADA',sub:'As descobertas e o primeiro encontro de Romar foram reiniciados. O restante do personagem foi preservado.',persist:true});
+  return true;
+}
+function romarAttemptChance(attempt,encounter){
+  const chances=encounter ? [0.06,0.10,0.18,0.30,1] : [0.12,0.18,0.25,0.35,1];
+  return chances[Math.min(4,Math.floor((attempt-1)/2))];
+}
+// Um único sorteio orgânico por exploração: encontro elegível tem prioridade.
+function tryRomarExploration(){
+  if(!player || ui.inBattle || player.hp<=0 || !player.defeatedBosses.includes(0) || player.romar_first_choice || ui.romarResult || (ui.monster && ui.monster.romarChoice)) return false;
+  const state=getRomarDiscoveries();
+  if(state.pending || state.cooldown>0 || forestEventCooldown>0 || pendingForestEvent || document.querySelectorAll('.interactive-card').length) return false;
+  const encounter=canEncounterRomar();
+  if(!encounter && !ROMAR_DISCOVERIES.some(scene=>!state.seen.includes(scene.id))) return false;
+  const key=encounter ? 'encounterAttempts' : 'clueAttempts';
+  state[key]++;
+  if(Math.random()>=romarAttemptChance(state[key],encounter)) return false;
+  if(!encounter) return discoverRomarClue();
+  if(!startRomarEncounter()) return false;
+  state.encounterAttempts=0;
   return true;
 }
 function finishRomarDiscovery(){
@@ -1009,13 +1032,8 @@ function explorarMapa(mapIndex){
     if(forestEventCooldown > 0) forestEventCooldown--;
     else if(Math.random() < FOREST_EVENT_CHANCE){ showForestEvent(); return; }
     // Descobertas são marcos únicos; se a do estágio já apareceu, seguimos para combate.
-    if(Math.random() < 0.12){
-      if(forestDiscovery()) return;
-      if(!romarPaused && discoverRomarClue()) return;
-    }
-    if(!romarPaused && canEncounterRomar() && Math.random()<MINI_BOSS_CHANCE){
-      if(startRomarEncounter()) return;
-    }
+    if(Math.random() < 0.12 && forestDiscovery()) return;
+    if(!romarPaused && tryRomarExploration()) return;
     startBattle(mapIndex, pickForestMonster(map), false);
     return;
   }

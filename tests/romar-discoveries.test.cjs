@@ -17,7 +17,7 @@ test('pre-Alfa blocked; post-Alfa exploration can discover without changing prog
   assert.equal(run('discoverRomarClue()'),false);
   run('player.defeatedBosses=[0];getForestProgress().discoveries=3');
   const before=run('JSON.stringify([player.forestProgress,player.swampProgress,player.defeatedBosses,player.coins,player.totalXp])');
-  sequence(run,[0.99,0.99,0.01,0]);
+  sequence(run,[0.99,0.99,0.01,0,0]);
   run('explorarMapa(0)');
   assert.equal(run('getRomarDiscoveries().pending'),'massacre');
   assert.equal(run('JSON.stringify([player.forestProgress,player.swampProgress,player.defeatedBosses,player.coins,player.totalXp])'),before);
@@ -139,7 +139,7 @@ test('playtest reset clears only Romar state and preserves all other player fiel
   const before=run(snapshot);
   assert.equal(run('resetRomarPlaytest()'),true);
   assert.equal(run(snapshot),before);
-  assert.equal(run('JSON.stringify(player.romarDiscoveries)'),'{"seen":[],"pending":null,"cooldown":0}');
+  assert.equal(run('JSON.stringify(player.romarDiscoveries)'),'{"seen":[],"pending":null,"cooldown":0,"clueAttempts":0,"encounterAttempts":0}');
   assert.equal(run('player.romar_first_choice'),undefined);
   assert.equal(run('ui.romarResult'),null);
   assert.equal(run('ui.monster'),null);
@@ -163,6 +163,89 @@ test('reset remains available after choice, supports old characters and refuses 
   const before=run('JSON.stringify([player,ui])');
   assert.equal(run('resetRomarPlaytest()'),false);
   assert.equal(run('JSON.stringify([player,ui])'),before);
+});
+for(const encounter of [false,true]){
+  test('pity probability boundaries: '+(encounter?'encounter':'clues'),()=>{
+    const chances=encounter?[.06,.06,.10,.10,.18,.18,.30,.30,1]:[.12,.12,.18,.18,.25,.25,.35,.35,1];
+    chances.forEach((chance,index)=>{
+      for(const success of [false,true]){
+        if(chance===1&&!success)continue;
+        const run=game();
+        run('player.defeatedBosses=[0];getForestProgress().discoveries=3;');
+        if(encounter)run('getRomarDiscoveries().seen=["massacre","marcas","runa"]');
+        const key=encounter?'encounterAttempts':'clueAttempts';
+        run('getRomarDiscoveries().'+key+'='+index);
+        sequence(run,[.99,.99,.99,success?chance-.00001:chance,0]);
+        run('explorarMapa(0)');
+        assert.equal(run(encounter?'ui.monster.id==="romar"':'!!getRomarDiscoveries().pending'),success);
+        assert.equal(run('getRomarDiscoveries().'+key),success?0:index+1);
+      }
+    });
+  });
+}
+test('ninth valid clue attempt guaranteed, next clue starts fresh, independent counters',()=>{
+  const run=game();
+  run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().encounterAttempts=4');
+  for(let cycle=0;cycle<2;cycle++){
+    for(let n=1;n<=9;n++){
+      sequence(run,[.99,.99,.99,.999999,0]);
+      run('explorarMapa(0)');
+      assert.equal(run('getRomarDiscoveries().clueAttempts'),n===9?0:n);
+      assert.equal(run('getRomarDiscoveries().encounterAttempts'),4);
+      if(n<9)run('fleeBattle()');
+    }
+    assert.equal(run('getRomarDiscoveries().seen.length'),cycle+1);
+    run('finishRomarDiscovery();getRomarDiscoveries().cooldown=0;forestEventCooldown=0');
+  }
+});
+test('ninth encounter guaranteed; no clue roll on same click',()=>{
+  const run=game();
+  run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().seen=["massacre","marcas","runa"];getRomarDiscoveries().clueAttempts=7');
+  assert.equal(run('ui.inBattle'),false);
+  for(let n=1;n<=9;n++){
+    sequence(run,[.99,.99,.99,.999999,0]);
+    run('explorarMapa(0)');
+    assert.equal(run('getRomarDiscoveries().encounterAttempts'),n===9?0:n);
+    assert.equal(run('getRomarDiscoveries().clueAttempts'),7);
+    assert.equal(run('getRomarDiscoveries().seen.length'),3);
+    assert.equal(run('ui.monster.id==="romar"'),n===9);
+    if(n<9)run('fleeBattle()');
+  }
+});
+test('invalid explorations do not increment either counter',()=>{
+  const scenarios=[
+    ['trap',[0,0],''],
+    ['normal event',[.99,0],'showForestEvent=()=>{}'],
+    ['territorial discovery',[.99,.99,0],'getForestProgress().discoveries=0'],
+    ['shared cooldown',[.99,.99],'forestEventCooldown=1'],
+    ['clue cooldown',[.99,.99,.99],'getRomarDiscoveries().cooldown=1'],
+    ['interactive card',[],'document.querySelectorAll=()=>[{}]'],
+    ['before Alfa',[.99,.99,.99],'player.defeatedBosses=[]'],
+    ['completed',[.99,.99,.99],'player.romar_first_choice="spared"'],
+    ['pending scene',[],'getRomarDiscoveries().pending="massacre"'],
+    ['other territory',[.99,.99,.99],''],
+  ];
+  for(const [name,rolls,setup] of scenarios){
+    const run=game();
+    run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().clueAttempts=2;getRomarDiscoveries().encounterAttempts=3;'+setup);
+    sequence(run,rolls);run('explorarMapa('+(name==='other territory'?1:0)+')');
+    assert.equal(run('getRomarDiscoveries().clueAttempts'),2,name);
+    assert.equal(run('getRomarDiscoveries().encounterAttempts'),3,name);
+  }
+});
+test('counter migration, serialization, reset and playtest isolation',()=>{
+  const run=game();
+  run('player.romarDiscoveries={seen:["runa"],pending:null,cooldown:0}');
+  assert.equal(run('getRomarDiscoveries().clueAttempts'),0);
+  assert.equal(run('getRomarDiscoveries().encounterAttempts'),0);
+  run('getRomarDiscoveries().clueAttempts=5;getRomarDiscoveries().encounterAttempts=7;player=JSON.parse(JSON.stringify(player))');
+  assert.equal(run('getRomarDiscoveries().clueAttempts'),5);
+  assert.equal(run('getRomarDiscoveries().encounterAttempts'),7);
+  run('startRomarEncounter()');
+  assert.equal(run('getRomarDiscoveries().encounterAttempts'),7);
+  run('fleeBattle();resetRomarPlaytest()');
+  assert.equal(run('getRomarDiscoveries().clueAttempts'),0);
+  assert.equal(run('getRomarDiscoveries().encounterAttempts'),0);
 });
 test('art paths exist and PNG signatures match',()=>{
   const run=game();
