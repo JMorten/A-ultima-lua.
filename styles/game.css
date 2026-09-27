@@ -645,4 +645,13 @@
 .arena-enemy-chip.warning{border-color:#c9a24e;color:#e1c475;background:#211b12;animation:enemyWarn 1.1s ease-in-out infinite alternate;}
 .arena-enemy-chip.danger{border-color:#a92842;color:#e56b7e;background:#211017;}
 @keyframes enemyWarn{from{box-shadow:0 0 0 rgba(201,162,78,0)}to{box-shadow:0 0 12px rgba(201,162,78,.28)}}
-
+/* Romar: fallback permanece visível caso uma das artes ainda não exista. */
+.romar-avatar { position:relative; display:grid; place-items:center; width:100%; height:100%; }
+.romar-avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.romar-transform { animation:romar-rune-pulse .65s ease-out; }
+@keyframes romar-rune-pulse {
+  25% { transform:translateX(-2px); filter:brightness(1.5); }
+  55% { transform:translateX(2px); filter:brightness(1.2); }
+  100% { transform:translateX(0); filter:brightness(1); }
+}
+@media (prefers-reduced-motion:reduce) { .romar-transform { animation:none; } }

@@ -446,6 +446,7 @@ function classAvatarHtml(classKey, cssClass){
 }
 /* Mesma ideia, mas pra monstros (que não vêm de CLASSES) */
 function monsterAvatarHtml(monster, cssClass){
+  if(monster.id==='romar') return `<span class="romar-avatar ${monster.romarTransform?'romar-transform':''}"><span aria-label="Romar">⚔️</span><img src="${monster.portrait}" class="${cssClass}" alt="Romar" onerror="this.style.display='none'"></span>`;
   if(monster.portrait) return `<img src="${monster.portrait}" class="${cssClass}" alt="${monster.name}">`;
   return monster.emoji;
 }
@@ -896,6 +897,7 @@ function explorarMapa(mapIndex){
 }
 
 function startBattle(mapIndex, monsterTemplate, isBoss){
+  if(ui.romarResult || (ui.monster && ui.monster.romarChoice)) return;
   ui.mapIndex = mapIndex;
   const map = MAPS[mapIndex];
   const eventOn = isMonsterEventActive();
@@ -945,6 +947,125 @@ function startBattle(mapIndex, monsterTemplate, isBoss){
   }
   ui.tab = 'batalha';
   render();
+}
+
+/* Romar: encontro opcional de teste, sem entrada no sorteio ou na progressão.
+   Estado e pista seguem a duração da sessão do player, como o restante do jogo. */
+function startRomarEncounter(){
+  if(!player || player.hp<=0 || ui.inBattle || ui.romarResult || (ui.monster && ui.monster.romarChoice) || player.romar_first_choice) return false;
+  ui.mapIndex=0;
+  ui.monster={id:'romar',name:'Romar',emoji:'⚔️',hp:300,hpMax:300,atk:24,def:12,
+    battleBaseDef:12,portrait:'assets/images/enemies/forest/romar_15.jpg',
+    romarStage:1,romarHistory:[],romarPrepared:null,romarSurgePending:false,
+    romarChoice:false,romarTransform:false,romarLastMove:null};
+  ui.inBattle=true; ui.locked=false; ui.skillCooldowns={}; ui.buffs={}; ui.tab='batalha';
+  battleLog=['<b>Romar</b> segura a arma de duas mãos. Sob a armadura, marcas rúnicas avançam.'];
+  render(); return true;
+}
+function romarBehaviorChip(m){
+  const state=m.romarPrepared==='rupture' ? 'RUPTURA DA MARCA · interrompa com 36 de dano nesta ação'
+    : m.romarPrepared==='heavy' ? 'GOLPE PESADO PREPARADO'
+    : m.romarSurgePending ? 'SURTO AGRESSIVO IMINENTE'
+    : m.def>12 ? 'GUARDA DE FERRO'
+    : m.def<12 ? 'ROMAR VULNERÁVEL' : 'ROMAR · ESTÁGIO '+m.romarStage;
+  return '<span class="arena-enemy-chip">'+state+'</span>';
+}
+function romarMoveFromHistory(m){
+  // A ação que está sendo resolvida ainda NÃO foi inserida no histórico.
+  const history=m.romarHistory.slice(-3);
+  const bonus=type=>history.filter(a=>a===type).length>=2 ? 0.15 : 0;
+  const guard=0.20+bonus('attack'), breaker=0.15+bonus('defense'), pressure=0.15+bonus('support');
+  const r=Math.random();
+  let move=r<guard ? 'guard' : r<guard+breaker ? 'breaker' : r<guard+breaker+pressure ? 'pressure' : r<guard+breaker+pressure+0.20 ? 'heavy' : 'normal';
+  // Não encadear posturas defensivas; os bônus são absolutos e limitados a 15 p.p.
+  if(move==='guard' && m.romarLastMove==='guard') move='normal';
+  return move;
+}
+function romarFinalChoice(m){
+  if(ui.monster!==m) return;
+  m.hp=Math.max(60,m.hp); m.romarPrepared=null; m.romarSurgePending=false;
+  m.romarChoice=true; ui.inBattle=false; ui.locked=false; ui.tab='batalha';
+  logPush('<b>CHEGA!</b><br>“Enquanto ainda sou eu...”<br>“Vá.”');
+}
+function finishRomarEncounter(message){
+  ui.inBattle=false; ui.locked=false; ui.monster=null; ui.buffs={}; ui.skillCooldowns={};
+  ui.romarResult=message; ui.tab='batalha'; render();
+}
+function chooseRomarFirst(choice){
+  const m=ui.monster;
+  if(!m || m.id!=='romar' || !m.romarChoice || !['spared','attacked'].includes(choice)) return;
+  player.romar_first_choice=choice;
+  if(choice==='attacked'){
+    player.questItems=player.questItems||{};
+    player.questItems.fragmento_ferro_runico={name:'Fragmento de Ferro Rúnico',questClue:true};
+    finishRomarEncounter('Romar repele seu ataque e foge. Ele permanece vivo.<br>Você recolhe o <b>Fragmento de Ferro Rúnico</b>, uma pista de missão.');
+  } else finishRomarEncounter('Você recua. Romar permanece vivo.<br>Nenhuma recompensa material foi recebida.');
+}
+function continueRomarResult(){
+  if(!ui.romarResult) return;
+  ui.romarResult=null; ui.tab='mapa'; render();
+}
+function romarNonlethalDefeat(){
+  player.hp=Math.max(1,Math.round(player.hpMax*0.20));
+  finishRomarEncounter('Romar ergue a arma... e para.<br>“Eu mandei você ir embora.”<br>Você sobrevive ferido. O encontro continua disponível.');
+}
+function resolveRomarAction(kind,damage=0){
+  const m=ui.monster;
+  if(!ui.inBattle || !m || m.id!=='romar' || m.romarChoice) return;
+  const move=romarMoveFromHistory(m);
+  m.romarHistory.push(kind); m.romarHistory=m.romarHistory.slice(-3);
+  m.romarTransform=false;
+  m.def=m.battleBaseDef; // Guarda/vulnerabilidade duram exatamente uma ação do jogador.
+  if(m.hp<=m.hpMax*0.20){
+    romarFinalChoice(m); render(); return;
+  }
+  let transitioned=false;
+  if(m.romarStage<2 && m.hp<=m.hpMax*0.65){
+    m.romarStage=2; m.portrait='assets/images/enemies/forest/romar_30.jpg';
+    m.romarPrepared=null; m.romarTransform=true; transitioned=true;
+    logPush('<b>“Não... agora não.”</b> As runas pulsam. Romar perde a ação enquanto luta pelo controle.');
+  }
+  if(m.romarStage<3 && m.hp<=m.hpMax*0.35){
+    m.romarStage=3; m.portrait='assets/images/enemies/forest/romar_45.jpg';
+    m.romarTransform=true; transitioned=true; m.romarPrepared='rupture';
+    logPush('Romar cai sobre um joelho; as marcas avançam. <b>“Fique... longe de mim.”</b>');
+    logPush('<b>Ruptura da Marca preparada!</b> As runas concentram poder na arma. Uma ação de 36 de dano pode interromper o golpe.');
+  }
+  if(!transitioned){
+    if(m.romarPrepared==='rupture' && damage>=m.hpMax*0.12){
+      m.romarPrepared=null; m.romarSurgePending=true;
+      logPush('<b>Ruptura da Marca interrompida!</b> Romar sofre; as runas anunciam um Surto mais agressivo na próxima resposta.');
+    } else if(m.romarSurgePending){
+      m.romarSurgePending=false; romarStrike(m,'Surto Rúnico agressivo',1.75,0.25,false);
+    } else if(m.romarPrepared){
+      const rupture=m.romarPrepared==='rupture'; m.romarPrepared=null;
+      romarStrike(m,rupture?'Ruptura da Marca':'Golpe Pesado',rupture?2:1.5,0,rupture);
+    } else if(move==='guard'){
+      m.def=m.battleBaseDef*1.5; logPush('<b>Guarda de Ferro!</b> Romar firma a arma e protege o corpo durante sua próxima ação.');
+    } else if(move==='heavy'){
+      m.romarPrepared=m.romarStage===3?'rupture':'heavy';
+      logPush(m.romarStage===3 ? '<b>Ruptura da Marca preparada!</b> Reaja: 36 de dano nesta ação interrompem o golpe, mas provocam um Surto agressivo.' : '<b>Golpe Pesado preparado!</b> Romar ergue a arma de duas mãos.');
+    } else if(move==='breaker'){
+      romarStrike(m,'Quebra-Guarda',1,0.40,false);
+    } else if(move==='pressure' && m.romarStage>=2){
+      romarStrike(m,'Surto Rúnico',1.5,0.25,true);
+    } else romarStrike(m,move==='pressure'?'Pressão ofensiva':'Ataque',1,0,false);
+    m.romarLastMove=move;
+  }
+  if(!ui.inBattle || ui.monster!==m) return;
+  tickCooldowns(); ui.locked=false; render();
+}
+function romarStrike(m,name,mult,pierce,vulnerable){
+  if(!ui.inBattle || ui.monster!==m || m.romarChoice || player.hp<=0) return;
+  const dodged=Math.random()<getDodgeChance();
+  const damage=dodged ? 0 : Math.max(1,Math.round(calcDamage(m.atk,getEffectiveDef()*(1-pierce))*mult*(1-Math.min(.35,equippedAffixTotal('damageReduction')))));
+  player.hp=Math.max(0,player.hp-damage);
+  logPush(dodged ? '<span class="log-good">Você esquiva de '+name+'!</span>' : '<span class="log-bad"><b>'+name+'!</b> Romar causa '+damage+' de dano.</span>');
+  if(player.hp<=0){ romarNonlethalDefeat(); return; }
+  if(vulnerable){
+    m.def=m.battleBaseDef*0.70;
+    logPush('Romar recupera parte do controle e fica <b>vulnerável durante sua próxima ação</b>.');
+  }
 }
 
 function tickCooldowns(){
@@ -1069,6 +1190,7 @@ function tryInterruptPreparedAttack(damage){
 /* Comportamentos e avisos da Floresta Uivante. */
 function enemyBehaviorChip(m){
   if(!m) return '';
+  if(m.id==='romar') return romarBehaviorChip(m);
   if(m.id==='lobo_selvagem' && m.frenzyTriggered)
     return `<span class="arena-enemy-chip danger">🐺 FRENESI · mais forte e vulnerável</span>`;
   if(m.id==='lobo_cinzento' && m.grayPouncePrepared)
@@ -1217,7 +1339,7 @@ function resolvePlayerHit(dmg, isCrit, impacts=[dmg]){
   setActionsLocked(true);
   const executeBonus = (m.hp/m.hpMax)<=0.35 ? equippedAffixTotal('execute') : 0;
   if(executeBonus>0) dmg = Math.round(dmg*(1+executeBonus));
-  m.hp = Math.max(0, m.hp - dmg);
+  m.hp = Math.max(m.id==='romar' ? m.hpMax*0.20 : 0, m.hp - dmg);
   tryInterruptPreparedAttack(Math.max(...impacts.map(hit=>executeBonus>0 ? Math.round(hit*(1+executeBonus)) : hit)));
   const steal = equippedAffixTotal('lifesteal');
   if(steal>0 && dmg>0){
@@ -1230,6 +1352,7 @@ function resolvePlayerHit(dmg, isCrit, impacts=[dmg]){
   updateArenaBarsOnly();
 
   // A retaliação substitui o contra-ataque desta rodada; golpe letal não a dispara.
+  if(m.id==='romar'){ resolveRomarAction('attack',dmg); return; }
   const retaliated=ui.mapIndex===0 && m.id==='alfa_matilha' && m.hp>0 && m.alphaCounterStance;
   if(retaliated){
     m.alphaCounterStance=false; m.aiTurns++;
@@ -1355,7 +1478,7 @@ function usarSkill(skillId){
       ui.buffs.defBoost = { turnsLeft: skill.buffTurns + 1, mult: skill.buffMult };
       logPush(`<span class="log-good">Você usa ${skill.icon} ${skill.name}! Defesa +${Math.round((skill.buffMult-1)*100)}% por ${skill.buffTurns} turnos.</span>`);
     }
-    monsterCounterTurn();
+    monsterCounterTurn(true,skill.id==='postura_defensiva' ? 'defense' : 'support');
     return;
   }
 
@@ -1393,8 +1516,9 @@ function usarSkill(skillId){
 }
 
 /* Contra-ataque do monstro para ações que não atingem o inimigo diretamente (cura, poções) */
-function monsterCounterTurn(nonOffensive=true){
+function monsterCounterTurn(nonOffensive=true,romarAction='support'){
   if(!ui.inBattle || ui.locked || !ui.monster || ui.monster.hp<=0 || player.hp<=0) return;
+  if(ui.monster.id==='romar'){ resolveRomarAction(romarAction); return; }
   updateArenaBarsOnly();
   setActionsLocked(true);
   const m = ui.monster;
@@ -1452,11 +1576,13 @@ function usarConsumivelBatalha(type){
 }
 
 function fleeBattle(){
+  if(ui.romarResult || (ui.monster && ui.monster.romarChoice)) return;
   ui.inBattle = false; ui.monster = null; ui.tab = 'mapa'; ui.locked = false;
   render();
 }
 
 function handleDefeat(){
+  if(ui.monster && ui.monster.id==='romar'){ romarNonlethalDefeat(); return; }
   ui.inBattle = false;
   const oldLevel = player.level;
   const lost = Math.round(player.totalXp * DEATH_XP_PENALTY);
@@ -1472,6 +1598,7 @@ function handleDefeat(){
 }
 
 function handleVictory(m){
+  if(m.id==='romar'){ romarFinalChoice(m); return; }
   ui.inBattle = false;
   ui.locked = false;
   player.coins += randInt(m.coinMin, m.coinMax);
@@ -1769,6 +1896,7 @@ function chooseClass(key){
 }
 
 function switchTab(tab){
+  if(ui.romarResult || (ui.monster && ui.monster.romarChoice)) return;
   ui.tab = tab;
   if(tab==='inventario') player.newItemCount = 0;
   render();
@@ -1946,6 +2074,8 @@ function renderMapaTab(){
 }
 
 function renderBatalhaTab(){
+  if(ui.romarResult) return `<div class="status-card">${ui.romarResult}</div><button class="action-btn" onclick="continueRomarResult()">CONTINUAR</button>`;
+  if(ui.monster && ui.monster.romarChoice) return `<div class="status-card"><h3>CHEGA!</h3><p>“Enquanto ainda sou eu...”</p><p>“Vá.”</p></div><div class="battle-actions"><button class="action-btn" onclick="chooseRomarFirst('spared')">RECUAR</button><button class="action-btn secondary" onclick="chooseRomarFirst('attacked')">CONTINUAR LUTANDO</button></div>`;
   if(!ui.inBattle || !ui.monster){
     return `<div class="empty-battle">Nenhuma batalha em andamento.<br>Vá até o <b>Mapa</b> e escolha um inimigo para enfrentar.</div>`;
   }
