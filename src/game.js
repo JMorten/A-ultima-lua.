@@ -2065,6 +2065,14 @@ function renderMapaTab(){
     ${potionRow}
     ${forestProgressBox}
     ${swampProgressBox}
+    ${ui.mapIndex===0 && !player.romar_first_choice && !ui.romarResult ? `
+      <div class="status-card">
+        <p>ACESSO TEMPORÁRIO DE PLAYTEST</p>
+        <h3>⚔️ TESTE — ENCONTRO COM ROMAR</h3>
+        <p>Atalho de desenvolvimento. Não faz parte da descoberta narrativa da Floresta Uivante.</p>
+        <button class="enter-map-btn" onclick="startRomarEncounter()">Iniciar encontro</button>
+      </div>
+    ` : ''}
     <div class="explore-box">
       <p style="color:var(--bone-dim);font-size:13.5px;margin:0 0 14px;">Os monstros da região aparecem aleatoriamente ao explorar — e nem tudo que se encontra na escuridão é uma criatura viva.</p>
       <button class="enter-map-btn" style="width:100%;" onclick="explorarMapa(${ui.mapIndex})">🌑 Explorar Território</button>
