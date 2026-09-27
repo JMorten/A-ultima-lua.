@@ -655,3 +655,10 @@
   100% { transform:translateX(0); filter:brightness(1); }
 }
 @media (prefers-reduced-motion:reduce) { .romar-transform { animation:none; } }
+/* Cenas de descoberta: arte inteira, leitura e botão sem temporizador. */
+.romar-discovery { width:100%; max-width:680px; margin:0 auto; overflow:hidden; }
+.romar-discovery-art { display:block; width:100%; height:auto; }
+.romar-discovery-text { padding:16px; padding-bottom:max(16px,env(safe-area-inset-bottom)); }
+.romar-discovery-text h2 { font-size:1.1rem; line-height:1.5; overflow-wrap:break-word; }
+.romar-discovery-text p { line-height:1.65; margin:18px 0; }
+.romar-discovery-text button { width:100%; white-space:normal; min-height:44px; }

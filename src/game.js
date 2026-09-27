@@ -799,6 +799,107 @@ let pendingForestEvent = null;
 let forestEventCooldown = 0;
 let lastForestEventId = null;
 
+// Descobertas únicas por personagem; estado serializável junto com player.
+const ROMAR_DISCOVERIES = [
+  {
+    "id": "massacre",
+    "title": "O MASSACRE",
+    "image": "assets/images/events/forest/romar/romar_massacre.png",
+    "button": "CONTINUAR",
+    "paragraphs": [
+      "O cheiro chega antes da clareira.",
+      "Um grande lobo jaz entre folhas e raízes. O solo ao redor foi revolvido, galhos estão partidos e um golpe profundo rasgou o tronco de uma árvore próxima.",
+      "Não há sinais de outra fera.",
+      "Entre a lama, você encontra um pequeno fragmento de metal escuro. Parte de uma armadura, talvez.",
+      "Quem fez isso não estava caçando. Estava abrindo caminho."
+    ]
+  },
+  {
+    "id": "marcas",
+    "title": "MARCAS ENTRE AS ÁRVORES",
+    "image": "assets/images/events/forest/romar/romar_marcas_arvores.png",
+    "button": "SEGUIR EXPLORANDO",
+    "paragraphs": [
+      "Mais adiante, outro tronco carrega a marca de uma lâmina pesada. O corte atravessou madeira que um homem dificilmente conseguiria romper.",
+      "Há sangue no caminho. Desta vez, não pertence a um animal.",
+      "Pegadas humanas seguem floresta adentro. Irregulares. Cada vez mais espaçadas.",
+      "Seja quem for… está ferido. E ainda está se movendo."
+    ]
+  },
+  {
+    "id": "runa",
+    "title": "A RUNA VIOLADA",
+    "image": "assets/images/events/forest/romar/romar_runa_violada.png",
+    "button": "AFASTAR-SE",
+    "paragraphs": [
+      "Sob raízes antigas, uma pedra que deveria permanecer enterrada foi exposta.",
+      "Símbolos desconhecidos cobrem sua superfície. Parte deles foi destruída recentemente — não pelo tempo, mas por golpes deliberados.",
+      "Das rachaduras ainda escapa um brilho vermelho fraco. A vegetação ao redor parece morta.",
+      "As mesmas pegadas terminam diante da pedra.",
+      "Depois… continuam.",
+      "Mas alguma coisa nelas mudou."
+    ]
+  },
+  {
+    "id": "acampamento",
+    "title": "ACAMPAMENTO ABANDONADO",
+    "image": "assets/images/events/forest/romar/romar_acampamento_abandonado.png",
+    "button": "CONTINUAR",
+    "paragraphs": [
+      "Alguém tentou sobreviver aqui.",
+      "Uma fogueira apagada. Comida quase intocada. Partes de uma armadura pesada foram abandonadas ao lado de um abrigo improvisado.",
+      "Entre os pertences há anotações incompletas. A maioria está ilegível.",
+      "Uma frase ainda pode ser lida:",
+      "“Enquanto eu ainda conseguir lembrar quem sou…”",
+      "O restante da página foi destruído."
+    ]
+  }
+];
+function getRomarDiscoveries(){
+  if(!player.romarDiscoveries || typeof player.romarDiscoveries!=='object') player.romarDiscoveries={};
+  const state=player.romarDiscoveries;
+  const ids=ROMAR_DISCOVERIES.map(scene=>scene.id);
+  state.seen=Array.isArray(state.seen) ? [...new Set(state.seen.filter(id=>ids.includes(id)))] : [];
+  if(!ids.includes(state.pending)) state.pending=null;
+  if(state.pending && !state.seen.includes(state.pending)) state.seen.push(state.pending);
+  if(!Number.isInteger(state.cooldown) || state.cooldown<0) state.cooldown=0;
+  return state;
+}
+function hasPendingRomarDiscovery(){
+  return !!(player && player.romarDiscoveries && player.romarDiscoveries.pending);
+}
+function canEncounterRomar(){
+  const state=getRomarDiscoveries();
+  return player.defeatedBosses.includes(0) && !player.romar_first_choice && !ui.romarResult &&
+    !state.pending && state.seen.length>=3 && state.seen.includes('runa');
+}
+function discoverRomarClue(){
+  if(!player.defeatedBosses.includes(0) || player.romar_first_choice || ui.romarResult || ui.inBattle) return false;
+  const state=getRomarDiscoveries();
+  if(state.pending || state.cooldown>0 || pendingForestEvent || document.querySelectorAll('.interactive-card').length) return false;
+  const pool=ROMAR_DISCOVERIES.filter(scene=>!state.seen.includes(scene.id));
+  if(!pool.length) return false;
+  const scene=pick(pool);
+  state.seen.push(scene.id); state.pending=scene.id; state.cooldown=2;
+  forestEventCooldown=2; ui.mapIndex=0; ui.tab='mapa';
+  render(); return true;
+}
+function finishRomarDiscovery(){
+  const state=getRomarDiscoveries();
+  if(!state.pending) return;
+  state.pending=null; ui.mapIndex=0; ui.tab='mapa'; render();
+}
+function renderRomarDiscovery(){
+  const scene=ROMAR_DISCOVERIES.find(scene=>scene.id===getRomarDiscoveries().pending);
+  if(!scene) return '';
+  return `<article class="romar-discovery interactive-card">
+    <img class="romar-discovery-art" src="${scene.image}" alt="${scene.title}">
+    <div class="romar-discovery-text"><h2>DESCOBERTA — ${scene.title}</h2>
+    ${scene.paragraphs.map(text=>`<p>${text}</p>`).join('')}
+    <button type="button" class="enter-map-btn" onclick="finishRomarDiscovery()">${scene.button}</button></div>
+  </article>`;
+}
+
 const FOREST_EVENTS = [
   { id:'chest', eyebrow:'ENCONTRO', title:'Baú Abandonado',
     sub:'Entre raízes retorcidas, um velho baú permanece fechado. Há marcas recentes no barro ao redor.',
@@ -879,6 +980,7 @@ function resolveForestEvent(accept){
 }
 function explorarMapa(mapIndex){
   if(ui.inBattle) return;
+  if(hasPendingRomarDiscovery() || ui.romarResult || (ui.monster && ui.monster.romarChoice) || pendingForestEvent || document.querySelectorAll('.interactive-card').length) return;
   const map = MAPS[mapIndex];
   if(Math.random() < TRAP_CHANCE){
     const trap = pick(FOREST_TRAPS);
@@ -889,11 +991,20 @@ function explorarMapa(mapIndex){
   }
   // Vertical Slice da Floresta: exploração em profundidade, eventos e mini-chefe como marco de progressão.
   if(mapIndex===0){
+    const romarState=getRomarDiscoveries();
+    const romarPaused=romarState.cooldown>0 || forestEventCooldown>0;
+    if(romarState.cooldown>0) romarState.cooldown--;
     // Após um evento, as próximas 2 explorações não podem gerar outro evento.
     if(forestEventCooldown > 0) forestEventCooldown--;
     else if(Math.random() < FOREST_EVENT_CHANCE){ showForestEvent(); return; }
     // Descobertas são marcos únicos; se a do estágio já apareceu, seguimos para combate.
-    if(Math.random() < 0.12 && forestDiscovery()) return;
+    if(Math.random() < 0.12){
+      if(forestDiscovery()) return;
+      if(!romarPaused && discoverRomarClue()) return;
+    }
+    if(!romarPaused && canEncounterRomar() && Math.random()<MINI_BOSS_CHANCE){
+      if(startRomarEncounter()) return;
+    }
     startBattle(mapIndex, pickForestMonster(map), false);
     return;
   }
@@ -906,6 +1017,7 @@ function explorarMapa(mapIndex){
 }
 
 function startBattle(mapIndex, monsterTemplate, isBoss){
+  if(hasPendingRomarDiscovery()) return;
   if(ui.romarResult || (ui.monster && ui.monster.romarChoice)) return;
   ui.mapIndex = mapIndex;
   const map = MAPS[mapIndex];
@@ -961,6 +1073,7 @@ function startBattle(mapIndex, monsterTemplate, isBoss){
 /* Romar: encontro opcional de teste, sem entrada no sorteio ou na progressão.
    Estado e pista seguem a duração da sessão do player, como o restante do jogo. */
 function startRomarEncounter(){
+  if(hasPendingRomarDiscovery()) return false;
   if(!player || player.hp<=0 || ui.inBattle || ui.romarResult || (ui.monster && ui.monster.romarChoice) || player.romar_first_choice) return false;
   ui.mapIndex=0;
   ui.monster={id:'romar',name:'Romar',emoji:'⚔️',hp:300,hpMax:300,atk:24,def:12,
@@ -1907,6 +2020,7 @@ function chooseClass(key){
 }
 
 function switchTab(tab){
+  if(hasPendingRomarDiscovery()) return;
   if(ui.romarResult || (ui.monster && ui.monster.romarChoice)) return;
   ui.tab = tab;
   if(tab==='inventario') player.newItemCount = 0;
@@ -1971,6 +2085,7 @@ function renderHUD(){
 }
 
 function renderMapaTab(){
+  if(hasPendingRomarDiscovery()) return renderRomarDiscovery();
   if(ui.mapIndex===null){
     return `
       <h2 style="margin-bottom:6px;">Território</h2>
