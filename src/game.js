@@ -920,6 +920,16 @@ function startBattle(mapIndex, monsterTemplate, isBoss){
     hp = Math.round(hp*1.3); atk = Math.round(atk*1.3); def = Math.round(def*1.3);
   }
   ui.monster = Object.assign({}, monsterTemplate, { hp, atk, def, hpMax: hp, isBoss: !!isBoss, eventBuffed: eventOn, battleBaseAtk: atk, battleBaseDef: def, bossPhase: 0, desperationTriggered:false, aiTurns:0, frenzyTriggered:false, heavyPrepared:false });
+  if(mapIndex===0){
+    Object.assign(ui.monster, {
+      grayPouncePrepared:false, youngHuntPrepared:false,
+      heavyPrepareTurn:monsterTemplate.id==='uivante_sombras' ? randInt(2,4) : 0,
+      packWolfActive:false, packWolfHp:0, packWolfHpMax:Math.max(8,Math.round(hp*0.12)),
+      alphaChargePrepared:false, alphaChargeTurn:0,
+      alphaMoonPrepared:false, alphaMoonUsed:false, alphaCounterStance:false,
+      alphaNextActionTurn:1,
+    });
+  }
   ui.inBattle = true;
   ui.locked = false;
   ui.skillCooldowns = {};
@@ -1012,96 +1022,151 @@ function setActionsLocked(locked){
   });
 }
 
-/* Mecânica exclusiva do Alfa da Matilha: duas mudanças de fase durante a luta. */
+/* Fases do Alfa: comando, investida e leitura das ações do jogador.
+   true reserva a resposta desta rodada para anunciar a Lua, sem executá-la. */
 function updateAlfaBossPhase(){
   const m = ui.monster;
-  if(!m || !m.isBoss || ui.mapIndex!==0 || m.id!=='alfa_matilha') return;
+  if(!ui.inBattle || !m || m.hp<=0 || !m.isBoss || ui.mapIndex!==0 || m.id!=='alfa_matilha') return false;
   const ratio = m.hp / m.hpMax;
-  if(m.bossPhase < 1 && ratio <= 0.65){
+  if(m.bossPhase < 1 && ratio <= 0.60){
     m.bossPhase = 1;
-    const heal = Math.round(m.hpMax * 0.08);
-    m.hp = Math.min(m.hpMax, m.hp + heal);
-    m.atk = Math.round(m.battleBaseAtk * 1.15);
-    logPush(`<span class="log-bad"><b>🌕 Uivo da Matilha!</b> O Alfa recupera ${heal} HP e seus ataques ficam mais ferozes.</span>`);
-    popNotif({ eyebrow:'FASE DO CHEFE', title:'Uivo da Matilha', sub:'O Alfa recuperou parte da vida e ficou mais agressivo.' });
-    updateArenaBarsOnly();
+    m.packWolfActive = false; m.packWolfHp = 0;
+    m.alphaChargeTurn = m.aiTurns + 2;
+    logPush('<span class="log-bad"><b>Fúria da Matilha!</b> Ao ver a matilha cair, o Alfa abandona o comando e passa a caçar você pessoalmente.</span>');
   }
   if(m.bossPhase < 2 && ratio <= 0.30){
     m.bossPhase = 2;
-    m.atk = Math.round(m.battleBaseAtk * 1.35);
-    m.def = Math.max(1, Math.round(m.battleBaseDef * 0.80));
-    logPush(`<span class="log-drop"><b>🩸 Fúria do Alfa!</b> Ferido, ele abandona a defesa: causa mais dano, mas fica vulnerável.</span>`);
-    popNotif({ eyebrow:'FASE FINAL', title:'Fúria do Alfa', sub:'Ataques muito mais fortes — mas a defesa do Alfa caiu.' });
+    m.def = Math.max(1, Math.round(m.battleBaseDef * 0.82));
+    m.alphaChargePrepared = false; m.alphaCounterStance = false;
+    m.alphaNextActionTurn = m.aiTurns + 3;
+    logPush('<span class="log-bad"><b>Instinto do Alfa!</b> Gravemente ferido, ele abandona parte da defesa e passa a estudar cada movimento seu.</span>');
+    if(!m.alphaMoonUsed){
+      m.alphaMoonUsed = true; m.alphaMoonPrepared = true;
+      logPush('<span class="log-bad"><b>Lua da Caçada!</b> O Alfa escolheu sua presa. Seu próximo ataque será brutal se você não reagir.</span>');
+      return true;
+    }
   }
+  return false;
 }
 
+/* Um impacto, e não a soma de ataques extras, quebra a preparação. */
+function tryInterruptPreparedAttack(damage){
+  const m = ui.monster;
+  if(!ui.inBattle || ui.mapIndex!==0 || !m || m.hp<=0 || damage<Math.max(8,m.hpMax*0.12)) return false;
+  const attacks = [
+    ['grayPouncePrepared','Bote interrompido! Seu impacto quebra a postura do Lobo Cinzento.'],
+    ['heavyPrepared','Golpe Brutal interrompido! O Uivante perde a abertura que preparava.'],
+    ['alphaChargePrepared','Investida interrompida! O Alfa perde o equilíbrio antes de avançar.'],
+    ['alphaMoonPrepared','Lua da Caçada quebrada! Você força o Alfa a abandonar seu golpe decisivo.'],
+  ];
+  let interrupted = false;
+  attacks.forEach(([key,message])=>{
+    if(m[key]){ m[key]=false; interrupted=true; logPush(`<span class="log-good"><b>${message}</b></span>`); }
+  });
+  return interrupted;
+}
 
-/* =========================================================
-   VS 1.12 — COMPORTAMENTO DOS INIMIGOS
-   Três comportamentos legíveis na Floresta Uivante:
-   1) Lobo Selvagem: Frenesi abaixo de 35% HP.
-   2) Lobisomem Feroz: Mordida Profunda periódica.
-   3) Uivante das Sombras: telegráfa um Golpe Brutal antes de executá-lo.
-   ========================================================= */
+/* Comportamentos e avisos da Floresta Uivante. */
 function enemyBehaviorChip(m){
   if(!m) return '';
   if(m.id==='lobo_selvagem' && m.frenzyTriggered)
-    return `<span class="arena-enemy-chip danger">🐺 FRENESI · ATQ +25%</span>`;
+    return `<span class="arena-enemy-chip danger">🐺 FRENESI · mais forte e vulnerável</span>`;
+  if(m.id==='lobo_cinzento' && m.grayPouncePrepared)
+    return `<span class="arena-enemy-chip warning">BOTE PREPARADO · pode ser interrompido</span>`;
+  if(m.id==='lobisomem_jovem' && m.youngHuntPrepared)
+    return `<span class="arena-enemy-chip warning">INSTINTO DE CAÇA · pressionando sua brecha</span>`;
   if(m.id==='lobisomem_feroz')
-    return `<span class="arena-enemy-chip">🩸 MORDIDA PROFUNDA</span>`;
+    return `<span class="arena-enemy-chip${m.aiTurns%3===2?' warning':''}">🩸 MORDIDA PROFUNDA · ${m.aiTurns%3===2?'próximo ataque':m.aiTurns%3===1?'se aproxima':'à espreita'}</span>`;
   if(m.id==='uivante_sombras' && m.heavyPrepared)
     return `<span class="arena-enemy-chip warning">⚠️ GOLPE BRUTAL PREPARADO</span>`;
   if(m.id==='uivante_sombras')
     return `<span class="arena-enemy-chip">🌑 PREDADOR SOMBRIO</span>`;
+  if(m.id==='alfa_matilha' && ui.mapIndex===0){
+    if(m.alphaMoonPrepared) return '<span class="arena-enemy-chip warning">LUA DA CAÇADA PREPARADA</span>';
+    if(m.alphaCounterStance) return '<span class="arena-enemy-chip warning">O ALFA OBSERVA SEU ATAQUE</span>';
+    if(m.alphaChargePrepared) return '<span class="arena-enemy-chip warning">INVESTIDA DO ALFA PREPARADA</span>';
+    if(m.packWolfActive) return `<span class="arena-enemy-chip danger">MATILHA ATIVA · Lobo ${m.packWolfHp}/${m.packWolfHpMax} HP</span>`;
+    return `<span class="arena-enemy-chip">${['COMANDANTE DA MATILHA','O PREDADOR','INSTINTO DO ALFA'][m.bossPhase]}</span>`;
+  }
   return '';
 }
 
 function updateEnemyBehaviorBeforeCounter(){
   const m=ui.monster;
-  if(!m) return;
+  if(!ui.inBattle || ui.mapIndex!==0 || !m || m.hp<=0) return;
 
   // Frenesi: dispara uma única vez ao chegar a 35% de vida.
   if(m.id==='lobo_selvagem' && !m.frenzyTriggered && m.hp/m.hpMax<=0.35){
     m.frenzyTriggered=true;
     m.atk=Math.round(m.atk*1.25);
-    logPush(`<span class="log-bad"><b>🐺 Frenesi!</b> Ferido, ${m.name} fica acuado e passa a atacar com +25% de força.</span>`);
+    m.def=Math.max(0,Math.round(m.def*0.70));
+    logPush('<span class="log-bad"><b>Frenesi!</b> Ferido, o Lobo Selvagem ataca com mais força, mas abandona a cautela e fica mais vulnerável.</span>');
   }
 }
 
-function resolveEnemyAttack(contextText='revida'){
+function resolveEnemyAttack(contextText='revida', retaliation=false){
   const m=ui.monster;
-  if(!m) return;
+  if(!ui.inBattle || !m || m.hp<=0 || player.hp<=0) return;
   updateEnemyBehaviorBeforeCounter();
-  m.aiTurns=(m.aiTurns||0)+1;
+  if(!retaliation) m.aiTurns=(m.aiTurns||0)+1;
 
-  // Uivante: em vez de atacar no 3º turno, avisa claramente que o próximo golpe será pesado.
-  if(m.id==='uivante_sombras' && !m.heavyPrepared && m.aiTurns%3===0){
-    m.heavyPrepared=true;
-    logPush(`<span class="log-bad"><b>⚠️ Presságio Sombrio!</b> ${m.name} recua, ergue as garras e prepara um Golpe Brutal para o próximo turno. Defender, curar ou tentar finalizá-lo agora pode mudar a luta.</span>`);
+  if(!retaliation && ui.mapIndex===0 && m.id==='lobo_cinzento' && !m.grayPouncePrepared && m.aiTurns%3===2){
+    m.grayPouncePrepared=true;
+    logPush('<span class="log-bad"><b>Preparando o Bote!</b> O Lobo Cinzento abaixa o corpo e fixa os olhos em você.</span>');
     return {dodged:false, damage:0, prepared:true};
   }
-
-  const dodged=Math.random()<getDodgeChance();
-  if(dodged){
-    floatNumber('player','ESQUIVA!','dodge');
-    logPush(`<span class="log-good">Você esquiva do ataque de ${m.name}!</span>`);
-    return {dodged:true, damage:0};
+  if(!retaliation && ui.mapIndex===0 && m.id==='uivante_sombras' && !m.heavyPrepared && m.aiTurns>=m.heavyPrepareTurn){
+    m.heavyPrepared=true;
+    m.heavyPrepareTurn=m.aiTurns+randInt(2,4)+1;
+    logPush('<span class="log-bad"><b>Presságio Sombrio!</b> O Uivante recua e prepara um Golpe Brutal.</span>');
+    return {dodged:false, damage:0, prepared:true};
+  }
+  if(!retaliation && ui.mapIndex===0 && m.id==='alfa_matilha' && m.isBoss){
+    if(m.bossPhase===0 && !m.packWolfActive && m.aiTurns>=m.alphaNextActionTurn){
+      m.packWolfActive=true; m.packWolfHp=m.packWolfHpMax;
+      m.alphaNextActionTurn=m.aiTurns+4;
+      logPush('<span class="log-bad"><b>O Alfa convoca um Lobo da Matilha!</b> Elimine o lobo para quebrar a Caçada Coordenada.</span>');
+      return {dodged:false, damage:0, prepared:true};
+    }
+    if(m.bossPhase===1 && !m.alphaChargePrepared && m.aiTurns>=m.alphaChargeTurn){
+      m.alphaChargePrepared=true; m.alphaChargeTurn=m.aiTurns+3;
+      logPush('<span class="log-bad"><b>Investida Preparada!</b> O Alfa recua e cava a terra com as patas.</span>');
+      return {dodged:false, damage:0, prepared:true};
+    }
+    if(m.bossPhase===2 && !m.alphaMoonPrepared && !m.alphaCounterStance && m.aiTurns>=m.alphaNextActionTurn){
+      m.alphaCounterStance=true; m.alphaNextActionTurn=m.aiTurns+3;
+      logPush('<span class="log-bad"><b>O Alfa observa.</b> Ele espera um ataque precipitado para retaliar.</span>');
+      return {dodged:false, damage:0, prepared:true};
+    }
   }
 
-  let mult=1;
-  let attackName='';
+  let mult=retaliation ? 1.25 : 1;
+  let attackName=retaliation ? 'Retaliação do Alfa' : '';
 
   // Lobisomem: a cada 3º ataque efetivo, uma mordida mais perigosa.
-  if(m.id==='lobisomem_feroz' && m.aiTurns%3===0){
+  if(!retaliation && m.id==='lobisomem_feroz' && m.aiTurns%3===0){
     mult=1.35;
     attackName='🩸 Mordida Profunda';
   }
 
   // Uivante: golpe previamente anunciado.
-  if(m.id==='uivante_sombras' && m.heavyPrepared){
+  if(!retaliation && m.id==='uivante_sombras' && m.heavyPrepared){
     mult=1.75;
     attackName='🌑 Golpe Brutal';
     m.heavyPrepared=false;
+  }
+  if(!retaliation && m.grayPouncePrepared){ mult=1.55; attackName='Bote'; m.grayPouncePrepared=false; }
+  if(!retaliation && m.youngHuntPrepared){ mult=1.40; attackName='Instinto de Caça'; m.youngHuntPrepared=false; }
+  if(!retaliation && m.alphaChargePrepared){ mult=1.65; attackName='Investida do Alfa'; m.alphaChargePrepared=false; }
+  if(!retaliation && m.alphaMoonPrepared){ mult=2.0; attackName='Lua da Caçada'; m.alphaMoonPrepared=false; }
+
+  // Uma tentativa de golpe consome a preparação mesmo quando o jogador esquiva.
+  const dodged=Math.random()<getDodgeChance();
+  if(dodged){
+    floatNumber('player','ESQUIVA!','dodge');
+    logPush(`<span class="log-good">Você esquiva do ataque de ${m.name}!</span>`);
+    if(!retaliation) resolvePackWolfAttack(m);
+    return {dodged:true, damage:0};
   }
 
   let dmg2=calcDamage(m.atk,getEffectiveDef());
@@ -1115,17 +1180,45 @@ function resolveEnemyAttack(contextText='revida'){
   }else{
     logPush(`<span class="log-bad">${m.name} ${contextText} e causa ${dmg2} de dano em você.</span>`);
   }
+  if(!retaliation) resolvePackWolfAttack(m);
   return {dodged:false, damage:dmg2};
 }
 
+function resolvePackWolfAttack(m){
+  if(!ui.inBattle || ui.monster!==m || ui.mapIndex!==0 || m.id!=='alfa_matilha' || m.bossPhase!==0 || !m.packWolfActive || m.hp<=0 || player.hp<=0) return;
+  if(Math.random()<getDodgeChance()){
+    logPush('<span class="log-good">Caçada Coordenada! Você esquiva do Lobo da Matilha.</span>'); return;
+  }
+  let damage=calcDamage(Math.max(1,Math.round(m.battleBaseAtk*0.35)),getEffectiveDef());
+  damage=Math.max(1,Math.round(damage*(1-Math.min(.35,equippedAffixTotal('damageReduction')))));
+  player.hp=Math.max(0,player.hp-damage);
+  floatNumber('player','-'+damage,'dmg');
+  logPush(`<span class="log-bad"><b>Caçada Coordenada!</b> O Lobo da Matilha causa ${damage} de dano adicional.</span>`);
+}
+
+function attackPackWolf(){
+  const m=ui.monster;
+  if(!ui.inBattle || ui.locked || !m || ui.mapIndex!==0 || m.id!=='alfa_matilha' || m.bossPhase!==0 || !m.packWolfActive) return;
+  const hit=rollDamage(getEffectiveAtk(),m.battleBaseDef);
+  m.packWolfHp=Math.max(0,m.packWolfHp-hit.dmg);
+  logPush(`<span class="log-good">Você ataca o Lobo da Matilha e causa ${hit.dmg} de dano${hit.isCrit?' crítico':''}.</span>`);
+  if(m.packWolfHp<=0){
+    m.packWolfActive=false; m.alphaNextActionTurn=Math.max(m.alphaNextActionTurn,m.aiTurns+3);
+    logPush('<span class="log-good"><b>Lobo da Matilha abatido.</b> A Caçada Coordenada foi quebrada.</span>');
+  }
+  monsterCounterTurn(false);
+  render();
+}
 
 /* Executa uma rodada: dano do jogador no monstro, depois (se vivo) contra-ataque do monstro */
-function resolvePlayerHit(dmg, isCrit){
+function resolvePlayerHit(dmg, isCrit, impacts=[dmg]){
   const m = ui.monster;
+  if(!ui.inBattle || ui.locked || !m || m.hp<=0 || player.hp<=0) return;
   setActionsLocked(true);
   const executeBonus = (m.hp/m.hpMax)<=0.35 ? equippedAffixTotal('execute') : 0;
   if(executeBonus>0) dmg = Math.round(dmg*(1+executeBonus));
   m.hp = Math.max(0, m.hp - dmg);
+  tryInterruptPreparedAttack(Math.max(...impacts.map(hit=>executeBonus>0 ? Math.round(hit*(1+executeBonus)) : hit)));
   const steal = equippedAffixTotal('lifesteal');
   if(steal>0 && dmg>0){
     const heal=Math.max(1,Math.round(dmg*steal));
@@ -1136,14 +1229,25 @@ function resolvePlayerHit(dmg, isCrit){
   shakeSide('enemy');
   updateArenaBarsOnly();
 
+  // A retaliação substitui o contra-ataque desta rodada; golpe letal não a dispara.
+  const retaliated=ui.mapIndex===0 && m.id==='alfa_matilha' && m.hp>0 && m.alphaCounterStance;
+  if(retaliated){
+    m.alphaCounterStance=false; m.aiTurns++;
+    logPush('<span class="log-bad"><b>Retaliação do Alfa!</b> Ele esperava seu ataque e responde imediatamente.</span>');
+    resolveEnemyAttack('retalia',true);
+    updateArenaBarsOnly();
+  }
+
   setTimeout(()=>{
+    if(!ui.inBattle || ui.monster!==m) return;
+    if(player.hp<=0){ handleDefeat(); render(); return; }
     if(m.hp<=0){
       logPush(`<b>${m.name} foi derrotado!</b>`);
       handleVictory(m);
       render();
       return;
     }
-    updateAlfaBossPhase();
+    const moonAnnounced=updateAlfaBossPhase();
     // Mini-chefes entram em desespero quando muito feridos: um pico curto de perigo que
     // recompensa guardar cura/defesa para o fim, sem simplesmente multiplicar o HP.
     if(m.isMiniBoss && !m.desperationTriggered && m.hp/m.hpMax <= 0.40){
@@ -1152,11 +1256,12 @@ function resolvePlayerHit(dmg, isCrit){
       logPush(`<span class="log-bad"><b>⚠️ Fúria Desesperada!</b> ${m.name} fica mais agressivo ao sentir a morte próxima.</span>`);
       popNotif({ eyebrow:'PERIGO', title:'Fúria Desesperada', sub:'O mini-chefe causa mais dano abaixo de 40% de HP.' });
     }
-    resolveEnemyAttack('revida');
+    if(!retaliated && !moonAnnounced) resolveEnemyAttack('revida');
     updateArenaBarsOnly();
     tickCooldowns();
 
     setTimeout(()=>{
+      if(!ui.inBattle || ui.monster!==m) return;
       if(player.hp<=0){
         logPush(`<b>Você caiu em combate...</b> Você desperta enfraquecido, mas vivo.`);
         handleDefeat();
@@ -1176,12 +1281,14 @@ function playerAttack(){
     ? `<span class="log-drop"><b>CRÍTICO!</b> Você ataca ${m.name} e causa ${dmg} de dano.</span>`
     : `<span class="log-good">Você ataca ${m.name} e causa ${dmg} de dano.</span>`);
   let totalDmg = dmg;
+  const impacts = [dmg];
   if(m.hp - totalDmg > 0 && Math.random() < getExtraAttackChance()){
     const extra = rollDamage(getEffectiveAtk(), m.def);
     totalDmg += extra.dmg;
+    impacts.push(extra.dmg);
     logPush(`<span class="log-drop">⚡ Ataque extra! +${extra.dmg}${extra.isCrit?' (crítico!)':''} de dano adicional.</span>`);
   }
-  resolvePlayerHit(totalDmg, isCrit);
+  resolvePlayerHit(totalDmg, isCrit, impacts);
 }
 
 function getMagInvested(){ return (player.allocated && player.allocated.magia) || 0; }
@@ -1264,6 +1371,7 @@ function usarSkill(skillId){
     ? `<span class="log-drop"><b>CRÍTICO!</b> Você usa ${skill.icon} ${skill.name} e causa ${dmg} de dano.</span>`
     : `<span class="log-mp">Você usa ${skill.icon} ${skill.name} e causa ${dmg} de dano.</span>`);
   let totalDmg = dmg;
+  const impacts = [dmg];
   if(player.classKey==='mago' && hasMagMilestone(50) && isCrit){
     const refund=Math.max(1,Math.floor(getSkillMpCost(skill)*0.25));
     player.mp=Math.min(player.mpMax,player.mp+refund);
@@ -1272,6 +1380,7 @@ function usarSkill(skillId){
   if(m.hp - totalDmg > 0 && Math.random() < getExtraAttackChance()){
     const extra = rollDamage(Math.round(baseStat*skill.mult*buildMult), effDef);
     totalDmg += extra.dmg;
+    impacts.push(extra.dmg);
     logPush(`<span class="log-drop">⚡ Ataque extra! +${extra.dmg}${extra.isCrit?' (crítico!)':''} de dano adicional.</span>`);
   }
   if(skill.lifesteal){
@@ -1280,20 +1389,33 @@ function usarSkill(skillId){
     floatNumber('player', '+'+heal, 'heal');
     logPush(`<span class="log-good">Você absorve ${heal} de HP.</span>`);
   }
-  resolvePlayerHit(totalDmg, isCrit);
+  resolvePlayerHit(totalDmg, isCrit, impacts);
 }
 
 /* Contra-ataque do monstro para ações que não atingem o inimigo diretamente (cura, poções) */
-function monsterCounterTurn(){
-  if(!ui.inBattle) return;
+function monsterCounterTurn(nonOffensive=true){
+  if(!ui.inBattle || ui.locked || !ui.monster || ui.monster.hp<=0 || player.hp<=0) return;
   updateArenaBarsOnly();
   setActionsLocked(true);
   const m = ui.monster;
+  if(nonOffensive && ui.mapIndex===0){
+    if(m.id==='lobisomem_jovem'){
+      m.youngHuntPrepared=true;
+      logPush('<span class="log-bad">O Lobisomem Jovem percebe sua pausa e avança para pressionar a brecha.</span>');
+      render();
+    }
+    if(m.id==='alfa_matilha' && m.alphaCounterStance){
+      m.alphaCounterStance=false;
+      logPush('<span class="log-good">Você não cai na provocação. O Alfa abandona a postura de retaliação.</span>');
+    }
+  }
   setTimeout(()=>{
+    if(!ui.inBattle || ui.monster!==m || m.hp<=0) return;
     resolveEnemyAttack('aproveita a brecha');
     updateArenaBarsOnly();
     tickCooldowns();
     setTimeout(()=>{
+      if(!ui.inBattle || ui.monster!==m) return;
       if(player.hp<=0){
         logPush(`<b>Você caiu em combate...</b> Você desperta enfraquecido, mas vivo.`);
         handleDefeat();
@@ -1880,8 +2002,9 @@ function renderBatalhaTab(){
       </div>
     </div>
     <div class="battle-actions">
-      <button class="action-btn" onclick="playerAttack()">Atacar</button>
-      <button class="action-btn secondary" onclick="fleeBattle()">Fugir</button>
+      <button class="action-btn" ${ui.locked?'disabled':''} onclick="playerAttack()">Atacar</button>
+      <button class="action-btn secondary" ${ui.locked?'disabled':''} onclick="fleeBattle()">Fugir</button>
+      ${ui.mapIndex===0 && m.id==='alfa_matilha' && m.bossPhase===0 && m.packWolfActive ? `<button class="action-btn secondary" ${ui.locked?'disabled':''} onclick="attackPackWolf()">🐺 Atacar Lobo da Matilha · ${m.packWolfHp}/${m.packWolfHpMax} HP</button>` : ''}
     </div>
     ${player.classKey==='mago' && hasMagMilestone(100) && getMagDomain()==='destruidor' ? `<button class="action-btn secondary" style="width:100%;margin:0 0 8px;" onclick="player.overchargeNext=!player.overchargeNext;render()">🔥 Sobrecarga: ${player.overchargeNext?'ATIVA':'DESATIVADA'}</button>` : ''}
     <div class="skills-row">${skills}</div>
@@ -2176,6 +2299,7 @@ function render(){
   else if(ui.tab==='inventario') content.innerHTML = renderInventarioTab();
   else if(ui.tab==='loja') content.innerHTML = renderLojaTab();
   else if(ui.tab==='status') content.innerHTML = renderStatusTab();
+  if(ui.inBattle && ui.locked) setActionsLocked(true);
 }
 
 document.querySelectorAll('.tab-btn').forEach(b=>{
