@@ -696,14 +696,22 @@ function pickWeightedMonster(map){
   return map.monsters[map.monsters.length-1];
 }
 
+// Estados antigos não registravam quando ocorreu a última vitória. Não é possível
+// reconstruir esse marco por miniBossKills: abates anteriores não podem ser creditados.
+function ensureMiniBossKillCheckpoint(progress){
+  if(!Number.isFinite(progress.commonKillsAtLastMiniBossVictory) || progress.commonKillsAtLastMiniBossVictory<0 || progress.commonKillsAtLastMiniBossVictory>progress.commonKills){
+    progress.commonKillsAtLastMiniBossVictory = progress.miniBossKills>0 ? progress.commonKills : 0;
+  }
+}
 function getForestProgress(){
   if(!player.forestProgress) player.forestProgress = { commonKills:0, miniBossDefeated:false, miniBossKills:0, discoveries:0 };
   if(typeof player.forestProgress.miniBossKills !== 'number') player.forestProgress.miniBossKills = player.forestProgress.miniBossDefeated ? 1 : 0;
+  ensureMiniBossKillCheckpoint(player.forestProgress);
   return player.forestProgress;
 }
 function getForestMiniBossTarget(){
   const fp = getForestProgress();
-  return fp.miniBossKills > 0 ? 14 + (fp.miniBossKills * 7) : 14;
+  return fp.miniBossKills > 0 ? fp.commonKillsAtLastMiniBossVictory + 7 : 14;
 }
 function forestStage(){
   const k = getForestProgress().commonKills;
@@ -753,11 +761,12 @@ function desafiarMiniBossFloresta(){
 function getSwampProgress(){
   if(!player.swampProgress) player.swampProgress = { commonKills:0, miniBossDefeated:false, miniBossKills:0 };
   if(typeof player.swampProgress.miniBossKills !== 'number') player.swampProgress.miniBossKills = player.swampProgress.miniBossDefeated ? 1 : 0;
+  ensureMiniBossKillCheckpoint(player.swampProgress);
   return player.swampProgress;
 }
 function getSwampMiniBossTarget(){
   const sp = getSwampProgress();
-  return sp.miniBossKills > 0 ? 14 + (sp.miniBossKills * 7) : 14;
+  return sp.miniBossKills > 0 ? sp.commonKillsAtLastMiniBossVictory + 7 : 14;
 }
 function desafiarMiniBossPantano(){
   const sp = getSwampProgress();
@@ -1642,6 +1651,7 @@ function handleVictory(m){
     const fp = getForestProgress();
     if(m.isMiniBoss){
       fp.miniBossKills = (fp.miniBossKills||0) + 1;
+      fp.commonKillsAtLastMiniBossVictory = fp.commonKills;
       if(!fp.miniBossDefeated){
         fp.miniBossDefeated = true;
         popNotif({ eyebrow:'CAÇADA CONCLUÍDA', title:'Uivante das Sombras derrotado', sub:'O caminho para o Alfa da Matilha foi revelado. Você pode enfrentá-lo agora ou derrotar mais 7 criaturas para rastrear o Uivante novamente e buscar equipamentos.' });
@@ -1665,6 +1675,7 @@ function handleVictory(m){
     const sp = getSwampProgress();
     if(m.isMiniBoss){
       sp.miniBossKills = (sp.miniBossKills||0) + 1;
+      sp.commonKillsAtLastMiniBossVictory = sp.commonKills;
       if(!sp.miniBossDefeated){
         sp.miniBossDefeated = true;
         popNotif({ eyebrow:'CAÇADA CONCLUÍDA', title:'Devorador do Charco derrotado', sub:'O domínio do Senhor do Pântano foi revelado. Você pode enfrentá-lo agora ou caçar mais 7 criaturas para rastrear o Devorador novamente e buscar novos equipamentos.' });
