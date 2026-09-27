@@ -900,8 +900,17 @@ function resetRomarPlaytest(){
   return true;
 }
 function romarAttemptChance(attempt,encounter){
-  const chances=encounter ? [0.06,0.10,0.18,0.30,1] : [0.12,0.18,0.25,0.35,1];
-  return chances[Math.min(4,Math.floor((attempt-1)/2))];
+  const chances=encounter ? [0.06,0.06,0.12,0.12,0.25,0.25,0.50,1] : [0.12,0.15,0.20,0.30,0.50,1];
+  return chances[Math.min(chances.length-1,Math.max(0,attempt-1))];
+}
+// Conta o clique aceito antes dos eventos. O próprio contador guarda a garantia
+// pendente (>=6 pistas, >=8 encontro), inclusive após serializar o personagem.
+function advanceRomarExploration(){
+  if(!player || player.hp<=0 || !player.defeatedBosses.includes(0) || player.romar_first_choice) return;
+  const state=getRomarDiscoveries();
+  const encounter=canEncounterRomar();
+  if(!encounter && !ROMAR_DISCOVERIES.some(scene=>!state.seen.includes(scene.id))) return;
+  state[encounter ? 'encounterAttempts' : 'clueAttempts']++;
 }
 // Um único sorteio orgânico por exploração: encontro elegível tem prioridade.
 function tryRomarExploration(){
@@ -911,7 +920,7 @@ function tryRomarExploration(){
   const encounter=canEncounterRomar();
   if(!encounter && !ROMAR_DISCOVERIES.some(scene=>!state.seen.includes(scene.id))) return false;
   const key=encounter ? 'encounterAttempts' : 'clueAttempts';
-  state[key]++;
+  if(state[key]<=0) return false;
   if(Math.random()>=romarAttemptChance(state[key],encounter)) return false;
   if(!encounter) return discoverRomarClue();
   if(!startRomarEncounter()) return false;
@@ -1015,6 +1024,7 @@ function resolveForestEvent(accept){
 function explorarMapa(mapIndex){
   if(ui.inBattle) return;
   if(hasPendingRomarDiscovery() || ui.romarResult || (ui.monster && ui.monster.romarChoice) || pendingForestEvent || document.querySelectorAll('.interactive-card').length) return;
+  if(mapIndex===0) advanceRomarExploration();
   const map = MAPS[mapIndex];
   if(Math.random() < TRAP_CHANCE){
     const trap = pick(FOREST_TRAPS);

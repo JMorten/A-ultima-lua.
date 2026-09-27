@@ -166,7 +166,7 @@ test('reset remains available after choice, supports old characters and refuses 
 });
 for(const encounter of [false,true]){
   test('pity probability boundaries: '+(encounter?'encounter':'clues'),()=>{
-    const chances=encounter?[.06,.06,.10,.10,.18,.18,.30,.30,1]:[.12,.12,.18,.18,.25,.25,.35,.35,1];
+    const chances=encounter?[.06,.06,.12,.12,.25,.25,.50,1]:[.12,.15,.20,.30,.50,1];
     chances.forEach((chance,index)=>{
       for(const success of [false,true]){
         if(chance===1&&!success)continue;
@@ -183,36 +183,36 @@ for(const encounter of [false,true]){
     });
   });
 }
-test('ninth valid clue attempt guaranteed, next clue starts fresh, independent counters',()=>{
+test('sixth real clue attempt guaranteed, next clue starts fresh, independent counters',()=>{
   const run=game();
   run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().encounterAttempts=4');
   for(let cycle=0;cycle<2;cycle++){
-    for(let n=1;n<=9;n++){
+    for(let n=1;n<=6;n++){
       sequence(run,[.99,.99,.99,.999999,0]);
       run('explorarMapa(0)');
-      assert.equal(run('getRomarDiscoveries().clueAttempts'),n===9?0:n);
+      assert.equal(run('getRomarDiscoveries().clueAttempts'),n===6?0:n);
       assert.equal(run('getRomarDiscoveries().encounterAttempts'),4);
-      if(n<9)run('fleeBattle()');
+      if(n<6)run('fleeBattle()');
     }
     assert.equal(run('getRomarDiscoveries().seen.length'),cycle+1);
     run('finishRomarDiscovery();getRomarDiscoveries().cooldown=0;forestEventCooldown=0');
   }
 });
-test('ninth encounter guaranteed; no clue roll on same click',()=>{
+test('eighth encounter guaranteed; no clue roll on same click',()=>{
   const run=game();
   run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().seen=["massacre","marcas","runa"];getRomarDiscoveries().clueAttempts=7');
   assert.equal(run('ui.inBattle'),false);
-  for(let n=1;n<=9;n++){
+  for(let n=1;n<=8;n++){
     sequence(run,[.99,.99,.99,.999999,0]);
     run('explorarMapa(0)');
-    assert.equal(run('getRomarDiscoveries().encounterAttempts'),n===9?0:n);
+    assert.equal(run('getRomarDiscoveries().encounterAttempts'),n===8?0:n);
     assert.equal(run('getRomarDiscoveries().clueAttempts'),7);
     assert.equal(run('getRomarDiscoveries().seen.length'),3);
-    assert.equal(run('ui.monster.id==="romar"'),n===9);
-    if(n<9)run('fleeBattle()');
+    assert.equal(run('ui.monster.id==="romar"'),n===8);
+    if(n<8)run('fleeBattle()');
   }
 });
-test('invalid explorations do not increment either counter',()=>{
+test('accepted explorations count even when occupied; blocked clicks do not',()=>{
   const scenarios=[
     ['trap',[0,0],''],
     ['normal event',[.99,0],'showForestEvent=()=>{}'],
@@ -229,7 +229,7 @@ test('invalid explorations do not increment either counter',()=>{
     const run=game();
     run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().clueAttempts=2;getRomarDiscoveries().encounterAttempts=3;'+setup);
     sequence(run,rolls);run('explorarMapa('+(name==='other territory'?1:0)+')');
-    assert.equal(run('getRomarDiscoveries().clueAttempts'),2,name);
+    assert.equal(run('getRomarDiscoveries().clueAttempts'),['trap','normal event','territorial discovery','shared cooldown','clue cooldown'].includes(name)?3:2,name);
     assert.equal(run('getRomarDiscoveries().encounterAttempts'),3,name);
   }
 });
@@ -246,6 +246,45 @@ test('counter migration, serialization, reset and playtest isolation',()=>{
   run('fleeBattle();resetRomarPlaytest()');
   assert.equal(run('getRomarDiscoveries().clueAttempts'),0);
   assert.equal(run('getRomarDiscoveries().encounterAttempts'),0);
+});
+for(const encounter of [false,true]){
+  test('pending guarantee survives occupied clicks and serialization: '+(encounter?'encounter':'clue'),()=>{
+    const run=game();
+    run('player.defeatedBosses=[0];getForestProgress().discoveries=3;');
+    if(encounter)run('getRomarDiscoveries().seen=["massacre","marcas","runa"]');
+    const key=encounter?'encounterAttempts':'clueAttempts',limit=encounter?8:6;
+    run('getRomarDiscoveries().'+key+'='+(limit-1));
+    sequence(run,[0,0]);run('explorarMapa(0)'); // limite alcançado numa armadilha
+    assert.equal(run('getRomarDiscoveries().'+key),limit);
+    assert.equal(run('ui.inBattle'),false);
+    assert.equal(run('getRomarDiscoveries().pending'),null);
+    run('player=JSON.parse(JSON.stringify(player));showForestEvent=()=>{forestEventCooldown=2}');
+    sequence(run,[.99,0]);run('explorarMapa(0)'); // evento normal mantém prioridade
+    assert.equal(run('getRomarDiscoveries().'+key),limit+1);
+    for(let i=0;i<2;i++){
+      sequence(run,[.99,.99,.99]);run('explorarMapa(0)');
+      assert.notEqual(run('ui.monster.id'),'romar');
+      assert.equal(run('getRomarDiscoveries().'+key),limit+2+i);
+      run('fleeBattle()');
+    }
+    sequence(run,[.99,.99,.99,.999999,0]);run('explorarMapa(0)');
+    assert.equal(run('getRomarDiscoveries().'+key),0);
+    assert.equal(run(encounter?'ui.monster.id==="romar"':'!!getRomarDiscoveries().pending'),true);
+  });
+}
+test('eligibility switches counter only on next accepted exploration',()=>{
+  const run=game();
+  run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().seen=["massacre","marcas"];getRomarDiscoveries().clueAttempts=5;');
+  sequence(run,[.99,.99,.99,.999999,0]);run('explorarMapa(0)');
+  assert.equal(run('getRomarDiscoveries().pending'),'runa');
+  assert.equal(run('getRomarDiscoveries().clueAttempts'),0);
+  assert.equal(run('getRomarDiscoveries().encounterAttempts'),0);
+  assert.equal(run('ui.inBattle'),false);
+  run('finishRomarDiscovery()');
+  sequence(run,[.99,.99,.99]);run('explorarMapa(0)');
+  assert.equal(run('getRomarDiscoveries().encounterAttempts'),1);
+  assert.equal(run('getRomarDiscoveries().clueAttempts'),0);
+  assert.notEqual(run('ui.monster.id'),'romar');
 });
 test('art paths exist and PNG signatures match',()=>{
   const run=game();
