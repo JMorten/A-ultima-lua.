@@ -884,6 +884,17 @@ function discoverRomarClue(){
   forestEventCooldown=2; ui.mapIndex=0; ui.tab='mapa';
   render(); return true;
 }
+// Ferramenta temporária: não toca nos recursos, recompensas ou progressão territorial.
+function resetRomarPlaytest(){
+  if(!player || ui.inBattle || pendingForestEvent) return false;
+  player.romarDiscoveries={seen:[],pending:null,cooldown:0};
+  delete player.romar_first_choice;
+  ui.romarResult=null;
+  if(ui.monster && ui.monster.id==='romar') ui.monster=null;
+  render();
+  popNotif({eyebrow:'PLAYTEST',title:'CADEIA DE ROMAR RESETADA',sub:'As descobertas e o primeiro encontro de Romar foram reiniciados. O restante do personagem foi preservado.',persist:true});
+  return true;
+}
 function finishRomarDiscovery(){
   const state=getRomarDiscoveries();
   if(!state.pending) return;
@@ -2191,12 +2202,13 @@ function renderMapaTab(){
     ${potionRow}
     ${forestProgressBox}
     ${swampProgressBox}
-    ${ui.mapIndex===0 && !player.romar_first_choice && !ui.romarResult ? `
+    ${ui.mapIndex===0 && !ui.romarResult ? `
       <div class="status-card">
         <p>ACESSO TEMPORÁRIO DE PLAYTEST</p>
         <h3>⚔️ TESTE — ENCONTRO COM ROMAR</h3>
         <p>Atalho de desenvolvimento. Não faz parte da descoberta narrativa da Floresta Uivante.</p>
-        <button class="enter-map-btn" onclick="startRomarEncounter()">Iniciar encontro</button>
+        ${!player.romar_first_choice ? `<button class="enter-map-btn" onclick="startRomarEncounter()">Iniciar encontro</button>` : ''}
+        <button class="enter-map-btn" ${ui.inBattle?'disabled':''} onclick="resetRomarPlaytest()">RESETAR CADEIA DE ROMAR</button>
       </div>
     ` : ''}
     <div class="explore-box">

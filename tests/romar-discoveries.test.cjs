@@ -132,6 +132,38 @@ test('normal forest events, stage discoveries, traps and swamp remain accessible
   assert.equal(run('ui.mapIndex'),1);
   assert.notEqual(run('ui.monster.id'),'romar');
 });
+test('playtest reset clears only Romar state and preserves all other player fields',()=>{
+  const run=game();
+  run('player.defeatedBosses=[0,1];player.level=8;player.totalXp=1234;player.coins=456;player.hp=17;player.mp=9;getForestProgress().commonKills=80;getForestProgress().miniBossKills=4;getForestProgress().miniBossDefeated=true;getSwampProgress().commonKills=50;getSwampProgress().miniBossKills=2;player.questItems={fragmento_ferro_runico:{questClue:true}};player.romar_first_choice="attacked";player.romarDiscoveries={seen:["runa","massacre","marcas"],pending:"marcas",cooldown:2};ui.romarResult="resultado";ui.monster={id:"romar",romarChoice:true};forestEventCooldown=2;var notices=[];popNotif=notice=>notices.push(notice);');
+  const snapshot='JSON.stringify(Object.fromEntries(Object.entries(player).filter(([key])=>!["romarDiscoveries","romar_first_choice"].includes(key))))';
+  const before=run(snapshot);
+  assert.equal(run('resetRomarPlaytest()'),true);
+  assert.equal(run(snapshot),before);
+  assert.equal(run('JSON.stringify(player.romarDiscoveries)'),'{"seen":[],"pending":null,"cooldown":0}');
+  assert.equal(run('player.romar_first_choice'),undefined);
+  assert.equal(run('ui.romarResult'),null);
+  assert.equal(run('ui.monster'),null);
+  assert.equal(run('ui.inBattle'),false);
+  assert.equal(run('forestEventCooldown'),2); // compartilhado com eventos normais, não pertence só a Romar
+  assert.equal(run('notices[0].persist'),true);
+  assert.equal(run('notices[0].title'),'CADEIA DE ROMAR RESETADA');
+  assert.equal(run('canEncounterRomar()'),false);
+  run('forestEventCooldown=0;getForestProgress().discoveries=3');
+  sequence(run,[0.99,0.99,0.01,0]);run('explorarMapa(0)');
+  assert.equal(run('getRomarDiscoveries().seen.length'),1);
+});
+test('reset remains available after choice, supports old characters and refuses active battle',()=>{
+  const run=game();
+  run('player.romar_first_choice="spared"');
+  assert.ok(run('renderMapaTab()').includes('RESETAR CADEIA DE ROMAR'));
+  assert.ok(!run('renderMapaTab()').includes('onclick="startRomarEncounter()"'));
+  run('delete player.romarDiscoveries;resetRomarPlaytest()');
+  assert.ok(run('renderMapaTab()').includes('onclick="startRomarEncounter()"'));
+  run('startRomarEncounter()');
+  const before=run('JSON.stringify([player,ui])');
+  assert.equal(run('resetRomarPlaytest()'),false);
+  assert.equal(run('JSON.stringify([player,ui])'),before);
+});
 test('art paths exist and PNG signatures match',()=>{
   const run=game();
   const scenes=JSON.parse(run('JSON.stringify(ROMAR_DISCOVERIES)'));
