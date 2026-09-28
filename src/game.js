@@ -1143,6 +1143,7 @@ function romarMoveFromHistory(m){
 function romarFinalChoice(m){
   if(ui.monster!==m) return;
   m.hp=Math.max(m.hpMax*0.20,m.hp); m.romarPrepared=null; m.romarSurgePending=false;
+  delete ui.buffs.romarFracture;
   m.romarChoice=true; ui.inBattle=false; ui.locked=false; ui.tab='batalha';
   logPush('<b>CHEGA!</b><br>“Enquanto ainda sou eu...”<br>“Vá.”');
 }
@@ -1195,17 +1196,17 @@ function resolveRomarAction(kind,damage=0){
       m.romarPrepared=null; m.romarSurgePending=true;
       logPush('<b>Ruptura da Marca interrompida!</b> Romar sofre; as runas anunciam um Surto mais agressivo na próxima resposta.');
     } else if(m.romarSurgePending){
-      m.romarSurgePending=false; romarStrike(m,'Surto Rúnico agressivo',1.75,0.25,false);
+      m.romarSurgePending=false; romarStrike(m,'Surto Rúnico agressivo',1.75,0.85,false);
     } else if(m.romarPrepared){
       const rupture=m.romarPrepared==='rupture', surge=m.romarPrepared==='surge'; m.romarPrepared=null;
-      romarStrike(m,rupture?'Ruptura da Marca':surge?'Surto Rúnico':'Golpe Pesado',rupture?2:1.5,surge?0.25:0,rupture||surge);
+      romarStrike(m,rupture?'Ruptura da Marca':surge?'Surto Rúnico':'Golpe Pesado',rupture?4:1.5,(rupture||surge)?0.85:0,rupture||surge);
     } else if(move==='guard'){
       m.def=m.battleBaseDef*1.5; logPush('<b>Guarda de Ferro!</b> Romar firma a arma e protege o corpo durante sua próxima ação.');
     } else if(move==='heavy'){
       m.romarPrepared=m.romarStage===3?'rupture':'heavy';
       logPush(m.romarStage===3 ? '<b>Ruptura da Marca preparada!</b> Reaja: '+Math.ceil(m.hpMax*0.12)+' de dano nesta ação interrompem o golpe, mas provocam um Surto agressivo.' : '<b>Golpe Pesado preparado!</b> Romar ergue a arma de duas mãos.');
     } else if(move==='breaker'){
-      romarStrike(m,'Quebra-Guarda',1,0.40,false);
+      romarStrike(m,'Quebra-Guarda',1,0.80,false,true);
     } else if(move==='pressure' && m.romarStage>=2){
       m.romarPrepared='surge';
       logPush('<b>Surto Rúnico preparado!</b> As marcas pulsam antes do golpe. Romar ficará vulnerável depois de atacar.');
@@ -1215,13 +1216,18 @@ function resolveRomarAction(kind,damage=0){
   if(!ui.inBattle || ui.monster!==m) return;
   tickCooldowns(); ui.locked=false; render();
 }
-function romarStrike(m,name,mult,pierce,vulnerable){
+function romarStrike(m,name,mult,pierce,vulnerable,fracture=false){
   if(!ui.inBattle || ui.monster!==m || m.romarChoice || player.hp<=0) return;
   const dodged=Math.random()<getDodgeChance();
   const damage=dodged ? 0 : Math.max(1,Math.round(calcDamage(m.atk,getEffectiveDef()*(1-pierce))*mult*(1-Math.min(.35,equippedAffixTotal('damageReduction')))));
   player.hp=Math.max(0,player.hp-damage);
   logPush(dodged ? '<span class="log-good">Você esquiva de '+name+'!</span>' : '<span class="log-bad"><b>'+name+'!</b> Romar causa '+damage+' de dano.</span>');
   if(player.hp<=0){ romarNonlethalDefeat(); return; }
+  if(fracture && !dodged && ui.buffs.defBoost && ui.buffs.defBoost.turnsLeft>0){
+    // O tick desta resposta consome 1; o próximo encerra a única ação afetada.
+    ui.buffs.romarFracture={turnsLeft:2,mult:0.40};
+    logPush('<span class="log-bad"><b>FRATURA!</b> Eficiência da DEF reduzida em 60% durante sua próxima ação e a resposta de Romar. Postura Defensiva permanece ativa.</span>');
+  }
   if(vulnerable){
     m.def=m.battleBaseDef*0.70;
     logPush('Romar recupera parte do controle e fica <b>vulnerável durante sua próxima ação</b>.');
@@ -1248,6 +1254,7 @@ function getEffectiveAtk(){
 function getEffectiveDef(){
   let def = player.def;
   if(ui.buffs.defBoost && ui.buffs.defBoost.turnsLeft > 0) def = Math.round(def * ui.buffs.defBoost.mult);
+  if(ui.inBattle && ui.monster && ui.monster.id==='romar' && ui.buffs.romarFracture && ui.buffs.romarFracture.turnsLeft>0) def *= ui.buffs.romarFracture.mult;
   return def;
 }
 
@@ -1737,6 +1744,7 @@ function usarConsumivelBatalha(type){
 
 function fleeBattle(){
   if(ui.romarResult || (ui.monster && ui.monster.romarChoice)) return;
+  delete ui.buffs.romarFracture;
   ui.inBattle = false; ui.monster = null; ui.tab = 'mapa'; ui.locked = false;
   render();
 }
@@ -2271,6 +2279,7 @@ function renderBatalhaTab(){
     if(!b || b.turnsLeft<=0) return '';
     if(key==='atkBoost') return `<span class="arena-buff-chip">💪 Força +${Math.round((b.mult-1)*100)}% · ${b.turnsLeft}t</span>`;
     if(key==='critBoost') return `<span class="arena-buff-chip">🎯 Crítico +${Math.round(b.bonus*100)}% · ${b.turnsLeft}t</span>`;
+    if(key==='romarFracture') return `<span class="arena-buff-chip">💔 FRATURA · DEF −60% · 1 ação</span>`;
     if(key==='defBoost') return `<span class="arena-buff-chip">🛡️ Defesa +${Math.round((b.mult-1)*100)}% · ${b.turnsLeft}t</span>`;
     return '';
   }).join('');

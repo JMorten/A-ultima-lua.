@@ -47,7 +47,7 @@ test('Cavaleiro level 7 defense action is learned later and still reduces Guard 
   assert.ok(run('getEffectiveDef()')>run('player.def'));
   // Grid test above proves this history changes tendency, never forces Quebra-Guarda.
   const damage=defensive=>{
-    const r=game();r('startRomarEncounter();player.agilidade=0;player.hp=1000;Math.random=()=>0.5;'+(defensive?'ui.buffs.defBoost={turnsLeft:2,mult:1.25};':'')+'romarStrike(ui.monster,"Quebra-Guarda",1,0.4,false)');
+    const r=game();r('startRomarEncounter();player.agilidade=0;player.def=50;player.hp=1000;Math.random=()=>0.5;'+(defensive?'ui.buffs.defBoost={turnsLeft:2,mult:1.25};':'')+'romarStrike(ui.monster,"Quebra-Guarda",1,0.8,false,true)');
     return 1000-r('player.hp');
   };
   assert.ok(damage(true)<damage(false));
@@ -100,5 +100,68 @@ test('temporary tools removed; organic flow matches approved pacing over 300 exp
     }
     assert.equal(b('calls'),a('calls'));
     assert.equal(b('JSON.stringify([player,forestEventCooldown,pendingForestEvent])'),a('JSON.stringify([player,forestEventCooldown,pendingForestEvent])'));
+  }
+});
+
+function defensiveRomar(){
+  const run=game();
+  run('startRomarEncounter();player.def=50;player.hp=1000;player.agilidade=0;ui.buffs.defBoost={turnsLeft:3,mult:1.25};Math.random=()=>0.5;romarMoveFromHistory=()=>"breaker";resolveRomarAction("defense")');
+  return run;
+}
+test('Fracture applies after a landed breaker, preserves stance and expires after one action plus response',()=>{
+  for(const action of ['resolvePlayerHit(1,false)','usarSkill("postura_defensiva")','usarConsumivelBatalha("mp")']){
+    const r=defensiveRomar();
+    assert.equal(r('player.hp'),981); // Initial breaker does not benefit from its own fracture.
+    assert.equal(r('ui.buffs.romarFracture.turnsLeft'),1);
+    assert.equal(r('ui.buffs.defBoost.turnsLeft'),2);
+    assert.ok(Math.abs(r('getEffectiveDef()')-25.2)<1e-9);
+    r('player.mp=100;player.consumables.mp=1;romarMoveFromHistory=()=>"normal";'+action);
+    assert.equal(r('player.hp'),968); // Response uses fractured DEF: round(25.2 - 25.2/2).
+    assert.equal(r('ui.buffs.romarFracture'),undefined);
+    assert.equal(r('getEffectiveDef()'),63);
+    r('monsterCounterTurn()');assert.equal(r('player.hp'),967);
+  }
+});
+test('Fracture is not consumed by renders or rejected actions; refresh never stacks',()=>{
+  const r=defensiveRomar();
+  r('render();player.mp=0;usarSkill("postura_defensiva");usarSkill("invalid");player.consumables.mp=0;usarConsumivelBatalha("mp")');
+  assert.equal(r('ui.buffs.romarFracture.turnsLeft'),1);
+  r('resolveRomarAction("defense")');
+  assert.equal(r('ui.buffs.romarFracture.turnsLeft'),1);
+  assert.ok(Math.abs(r('getEffectiveDef()')-25.2)<1e-9);
+  r('romarMoveFromHistory=()=>"guard";resolveRomarAction("support")');
+  assert.equal(r('ui.buffs.romarFracture'),undefined);
+});
+test('breaker only fractures a landed hit against active stance',()=>{
+  for(const stance of [false,true])for(const dodge of [false,true]){
+    const r=game();r('startRomarEncounter();romarMoveFromHistory=()=>"breaker";player.agilidade=80;Math.random=()=>'+(dodge?'0':'0.99')+';'+(stance?'ui.buffs.defBoost={turnsLeft:2,mult:1.25};':'')+'resolveRomarAction("support")');
+    assert.equal(r('!!ui.buffs.romarFracture'),stance&&!dodge);
+  }
+});
+test('Fracture clears on transition, interruption, flee, final choice, defeat and encounter restart',()=>{
+  for(const end of ['ui.monster.hp=200;resolveRomarAction("attack")','ui.monster.romarStage=3;ui.monster.romarPrepared="rupture";resolveRomarAction("attack",39)','fleeBattle()','romarFinalChoice(ui.monster)','romarNonlethalDefeat()','finishRomarEncounter("test")']){
+    const r=defensiveRomar();r(end);assert.equal(r('ui.buffs.romarFracture'),undefined);
+  }
+  const r=defensiveRomar();r('fleeBattle();startRomarEncounter()');assert.equal(r('getEffectiveDef()'),50);
+});
+test('special damage matrix covers low/high rolls, stance, defensive builds and damage reduction',()=>{
+  const specs={normal:[1,0],breaker:[1,.8],surge:[1.5,.85],aggressive:[1.75,.85],rupture:[4,.85],heavy:[1.5,0]};
+  for(const def of [29,50,76])for(const stance of [false,true])for(const roll of [0,.5,.999999])for(const reduction of [0,.35])for(const [move,[mult,pierce]] of Object.entries(specs)){
+    const r=game();r('startRomarEncounter();player.def='+def+';player.agilidade=0;player.hp=1000;equippedAffixTotal=()=>'+reduction+';getDodgeChance=()=>0;Math.random=()=>'+roll+';romarMoveFromHistory=()=>'+JSON.stringify(move)+';'+(stance?'ui.buffs.defBoost={turnsLeft:2,mult:1.25};':'')+(move==='aggressive'?'ui.monster.romarSurgePending=true;':['surge','rupture','heavy'].includes(move)?'ui.monster.romarPrepared='+JSON.stringify(move)+';':'')+'resolveRomarAction("support")');
+    const D=stance?Math.round(def*1.25):def;
+    const expected=Math.max(1,Math.round(Math.max(1,Math.round(Math.max(1,25.2-D*(1-pierce)*.5)*(.85+roll*.3)))*mult*(1-reduction)));
+    assert.equal(1000-r('player.hp'),expected,JSON.stringify({def,stance,roll,reduction,move}));
+  }
+});
+test('Rupture boundary remains 39; aggressive consequence and dodge remain available',()=>{
+  for(const damage of [38,39]){
+    const r=game();r('startRomarEncounter();player.hp=195;player.agilidade=0;player.def=50;ui.buffs.defBoost={turnsLeft:3,mult:1.25};ui.monster.romarStage=3;ui.monster.romarPrepared="rupture";Math.random=()=>0.5;resolveRomarAction("attack",'+damage+')');
+    assert.equal(r('player.hp'),damage===38?115:195);
+    if(damage===39){assert.equal(r('ui.monster.romarSurgePending'),true);r('monsterCounterTurn()');assert.equal(r('player.hp'),160);}
+  }
+  for(const prepared of ['surge','rupture']){
+    const r=game();r('startRomarEncounter();ui.monster.romarPrepared="'+prepared+'";Math.random=()=>0;monsterCounterTurn()');
+    assert.equal(r('player.hp'),r('player.hpMax'));
+    assert.ok(r('ui.monster.def<ui.monster.battleBaseDef'));
   }
 });
