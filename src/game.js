@@ -888,58 +888,6 @@ function discoverRomarClue(){
   forestEventCooldown=2; ui.mapIndex=0; ui.tab='mapa';
   render(); return true;
 }
-// Ferramenta temporária: não toca nos recursos, recompensas ou progressão territorial.
-function resetRomarPlaytest(){
-  if(!player || ui.inBattle || pendingForestEvent) return false;
-  player.romarDiscoveries={seen:[],pending:null,cooldown:0,clueAttempts:0,encounterAttempts:0};
-  delete player.romar_first_choice;
-  ui.romarResult=null;
-  if(ui.monster && ui.monster.id==='romar') ui.monster=null;
-  render();
-  popNotif({eyebrow:'PLAYTEST',title:'CADEIA DE ROMAR RESETADA',sub:'As descobertas e o primeiro encontro de Romar foram reiniciados. O restante do personagem foi preservado.',persist:true});
-  return true;
-}
-// Diagnóstico temporário: separado de player/ui e sem normalizar o estado observado.
-let romarExplorationTrace=[];
-let romarBlockedClick='';
-function romarDiagnosticSnapshot(){
-  const p=player||{}, s=p.romarDiscoveries||{};
-  const seen=Array.isArray(s.seen)?s.seen:[];
-  const count=new Set(seen.filter(id=>ROMAR_DISCOVERIES.some(scene=>scene.id===id))).size;
-  const alfa=Array.isArray(p.defeatedBosses)&&p.defeatedBosses.includes(0);
-  const fp=p.forestProgress||{};
-  const stage=fp.commonKills>=10?2:fp.commonKills>=5?1:0;
-  const cards=Array.from(document.querySelectorAll('.interactive-card')).map(card=>({
-    id:card.id||'(sem id)',classe:card.className,
-    titulo:(typeof card.querySelector==='function' && card.querySelector('.n-title, h2, h3')||{}).textContent||'',
-    visivel:typeof card.getClientRects==='function'?card.getClientRects().length>0:'desconhecido'
-  }));
-  return {
-    'Alfa derrotado':alfa?'SIM':'NÃO',
-    romar_first_choice:p.romar_first_choice===undefined?'(ausente)':p.romar_first_choice,
-    'romarDiscoveries.seen':s.seen===undefined?'(ausente)':s.seen,
-    'romarDiscoveries.pending':s.pending===undefined?'(ausente)':s.pending,
-    'romarDiscoveries.cooldown':s.cooldown===undefined?'(ausente)':s.cooldown,
-    clueAttempts:s.clueAttempts===undefined?'(ausente)':s.clueAttempts,
-    encounterAttempts:s.encounterAttempts===undefined?'(ausente)':s.encounterAttempts,
-    'quantidade de pistas':count,'Runa encontrada':seen.includes('runa')?'SIM':'NÃO',
-    'Romar elegível':alfa&&!p.romar_first_choice&&!ui.romarResult&&!s.pending&&count>=3&&seen.includes('runa')?'SIM':'NÃO',
-    'evento normal pendente':pendingForestEvent,
-    'descoberta territorial pendente':(fp.discoveries||0)<stage+1?'SIM (marco ainda não visto)':'NÃO',
-    forestEventCooldown,'combate ativo':ui.inBattle,'resultado Romar':ui.romarResult||null,
-    'cards interativos bloqueadores':cards
-  };
-}
-function romarDiagnosticText(){
-  return 'DIAGNÓSTICO ROMAR\n'+JSON.stringify(romarDiagnosticSnapshot(),null,2)+
-    '\n\nÚLTIMA EXPLORAÇÃO — ROMAR\n'+(romarExplorationTrace.join('\n')||'Nenhuma exploração registrada.')+
-    (romarBlockedClick?'\n\nÚltimo clique bloqueado: '+romarBlockedClick:'');
-}
-function updateRomarDiagnostic(){
-  const panel=document.getElementById('romar-diagnostic');
-  if(panel && player) panel.textContent=romarDiagnosticText();
-}
-function traceRomar(message){ romarExplorationTrace.push(message); }
 function romarAttemptChance(attempt,encounter){
   const chances=encounter ? [0.06,0.06,0.12,0.12,0.25,0.25,0.50,1] : [0.12,0.15,0.20,0.30,0.50,1];
   return chances[Math.min(chances.length-1,Math.max(0,attempt-1))];
@@ -951,11 +899,7 @@ function advanceRomarExploration(){
   const state=getRomarDiscoveries();
   const encounter=canEncounterRomar();
   if(!encounter && !ROMAR_DISCOVERIES.some(scene=>!state.seen.includes(scene.id))) return;
-  const key=encounter ? 'encounterAttempts' : 'clueAttempts';
-  const before=state[key];
-  state[key]++;
-  traceRomar(key+': contador avançou '+before+' → '+state[key]);
-  traceRomar((encounter?'Encontro garantido: ':'Pista garantida: ')+(state[key]>=(encounter?8:6)?'SIM':'NÃO'));
+  state[encounter ? 'encounterAttempts' : 'clueAttempts']++;
 }
 // Um único sorteio orgânico por exploração: encontro elegível tem prioridade.
 function tryRomarExploration(){
@@ -966,17 +910,10 @@ function tryRomarExploration(){
   if(!encounter && !ROMAR_DISCOVERIES.some(scene=>!state.seen.includes(scene.id))) return false;
   const key=encounter ? 'encounterAttempts' : 'clueAttempts';
   if(state[key]<=0) return false;
-  const roll=Math.random(),chance=romarAttemptChance(state[key],encounter);
-  traceRomar('Roll '+(encounter?'do encontro':'da pista')+': '+roll+' / '+chance+' — '+(roll>=chance?'falhou':'passou'));
-  if(roll>=chance) return false;
-  if(!encounter){
-    const presented=discoverRomarClue();
-    traceRomar(presented?'Pista apresentada: '+ROMAR_DISCOVERIES.find(scene=>scene.id===state.pending).title:'Apresentação recusada por discoverRomarClue; veja estado atual.');
-    return presented;
-  }
+  if(Math.random()>=romarAttemptChance(state[key],encounter)) return false;
+  if(!encounter) return discoverRomarClue();
   if(!startRomarEncounter()) return false;
   state.encounterAttempts=0;
-  traceRomar('Encontro com Romar iniciado.');
   return true;
 }
 function finishRomarDiscovery(){
@@ -1074,19 +1011,11 @@ function resolveForestEvent(accept){
   showForestEventResult(eyebrow,title,sub);
 }
 function explorarMapa(mapIndex){
-  try { return explorarMapaWithDiagnostic(mapIndex); }
-  finally { updateRomarDiagnostic(); }
-}
-function explorarMapaWithDiagnostic(mapIndex){
-  if(ui.inBattle){ romarBlockedClick='combate ativo'; return; }
-  if(hasPendingRomarDiscovery() || ui.romarResult || (ui.monster && ui.monster.romarChoice) || pendingForestEvent || document.querySelectorAll('.interactive-card').length){ romarBlockedClick='interação pendente; veja os campos e cards acima'; return; }
-  romarBlockedClick='';romarExplorationTrace=['Clique aceito; território '+mapIndex];
-  const diagnosticBefore=JSON.stringify(player.romarDiscoveries||{});
+  if(ui.inBattle) return;
+  if(hasPendingRomarDiscovery() || ui.romarResult || (ui.monster && ui.monster.romarChoice) || pendingForestEvent || document.querySelectorAll('.interactive-card').length) return;
   if(mapIndex===0) advanceRomarExploration();
-  if(diagnosticBefore===JSON.stringify(player.romarDiscoveries||{})) traceRomar('Contador não avançou; confira Alfa, HP, escolha final e território.');
   const map = MAPS[mapIndex];
   if(Math.random() < TRAP_CHANCE){
-    traceRomar('Apresentação adiada por: armadilha');
     const trap = pick(FOREST_TRAPS);
     player.hp = Math.max(1, player.hp - trap.damage);
     popNotif({ eyebrow:'ARMADILHA!', title:`${trap.name} · -${trap.damage} HP`, sub:trap.sub, image:trap.image, trap:true });
@@ -1100,12 +1029,10 @@ function explorarMapaWithDiagnostic(mapIndex){
     if(romarState.cooldown>0) romarState.cooldown--;
     // Após um evento, as próximas 2 explorações não podem gerar outro evento.
     if(forestEventCooldown > 0) forestEventCooldown--;
-    else if(Math.random() < FOREST_EVENT_CHANCE){ traceRomar('Apresentação adiada por: evento normal'); showForestEvent(); return; }
+    else if(Math.random() < FOREST_EVENT_CHANCE){ showForestEvent(); return; }
     // Descobertas são marcos únicos; se a do estágio já apareceu, seguimos para combate.
-    if(Math.random() < 0.12 && forestDiscovery()){ traceRomar('Apresentação adiada por: descoberta territorial'); return; }
-    if(romarPaused) traceRomar('Apresentação adiada por: cooldown ativo no início do clique; Romar agora='+romarState.cooldown+', evento agora='+forestEventCooldown);
+    if(Math.random() < 0.12 && forestDiscovery()) return;
     if(!romarPaused && tryRomarExploration()) return;
-    traceRomar('Exploração terminou em combate comum.');
     startBattle(mapIndex, pickForestMonster(map), false);
     return;
   }
@@ -1171,14 +1098,16 @@ function startBattle(mapIndex, monsterTemplate, isBoss){
   render();
 }
 
-/* Romar: encontro opcional de teste, sem entrada no sorteio ou na progressão.
+/* Romar: encontro opcional liberado pela cadeia de descobertas.
    Estado e pista seguem a duração da sessão do player, como o restante do jogo. */
 function startRomarEncounter(){
   if(hasPendingRomarDiscovery()) return false;
   if(!player || player.hp<=0 || ui.inBattle || ui.romarResult || (ui.monster && ui.monster.romarChoice) || player.romar_first_choice) return false;
   ui.mapIndex=0;
-  ui.monster={id:'romar',name:'Romar',emoji:'⚔️',hp:300,hpMax:300,atk:24,def:12,
-    battleBaseDef:12,portrait:'assets/images/enemies/forest/romar_15.jpg',
+  const band=player.level>=8 ? [1.15,1.10,1.08] : player.level>=6 ? [1.08,1.05,1.05] : [1,1,1];
+  const hp=Math.round(300*band[0]), atk=24*band[1], def=12*band[2];
+  ui.monster={id:'romar',name:'Romar',emoji:'⚔️',hp,hpMax:hp,atk,def,
+    battleBaseDef:def,portrait:'assets/images/enemies/forest/romar_15.jpg',
     romarStage:1,romarHistory:[],romarPrepared:null,romarSurgePending:false,
     romarChoice:false,romarTransform:false,romarLastMove:null};
   ui.inBattle=true; ui.locked=false; ui.skillCooldowns={}; ui.buffs={}; ui.tab='batalha';
@@ -1186,27 +1115,34 @@ function startRomarEncounter(){
   render(); return true;
 }
 function romarBehaviorChip(m){
-  const state=m.romarPrepared==='rupture' ? 'RUPTURA DA MARCA · interrompa com 36 de dano nesta ação'
+  const state=m.romarPrepared==='rupture' ? 'RUPTURA DA MARCA · interrompa com '+Math.ceil(m.hpMax*0.12)+' de dano nesta ação'
     : m.romarPrepared==='heavy' ? 'GOLPE PESADO PREPARADO'
+    : m.romarPrepared==='surge' ? 'SURTO RÚNICO PREPARADO · vulnerável após o golpe'
     : m.romarSurgePending ? 'SURTO AGRESSIVO IMINENTE'
-    : m.def>12 ? 'GUARDA DE FERRO'
-    : m.def<12 ? 'ROMAR VULNERÁVEL' : 'ROMAR · ESTÁGIO '+m.romarStage;
+    : m.def>m.battleBaseDef ? 'GUARDA DE FERRO'
+    : m.def<m.battleBaseDef ? 'ROMAR VULNERÁVEL' : 'ROMAR · ESTÁGIO '+m.romarStage;
   return '<span class="arena-enemy-chip">'+state+'</span>';
 }
 function romarMoveFromHistory(m){
   // A ação que está sendo resolvida ainda NÃO foi inserida no histórico.
   const history=m.romarHistory.slice(-3);
-  const bonus=type=>history.filter(a=>a===type).length>=2 ? 0.15 : 0;
-  const guard=0.20+bonus('attack'), breaker=0.15+bonus('defense'), pressure=0.15+bonus('support');
+  const phase=m.romarStage-1;
+  const base=[[0.18,0.15,0.12,0.20],[0.22,0.18,0.15,0.15],[0.15,0.18,0.22,0.20]][phase];
+  const bonus=type=>{
+    const count=history.filter(a=>a===type).length;
+    return count===3 ? [0.24,0.28,0.25][phase] : count===2 ? [0.18,0.22,0.20][phase] : 0;
+  };
+  const guard=base[0]+bonus('attack'), breaker=base[1]+bonus('defense'), pressure=base[2]+bonus('support');
   const r=Math.random();
-  let move=r<guard ? 'guard' : r<guard+breaker ? 'breaker' : r<guard+breaker+pressure ? 'pressure' : r<guard+breaker+pressure+0.20 ? 'heavy' : 'normal';
-  // Não encadear posturas defensivas; os bônus são absolutos e limitados a 15 p.p.
+  let move=r<guard ? 'guard' : r<guard+breaker ? 'breaker' : r<guard+breaker+pressure ? 'pressure' : r<guard+breaker+pressure+base[3] ? 'heavy' : 'normal';
+  // Apenas um padrão pode predominar em três ações; o bônus retira peso do ataque normal.
+  // Não encadear Guarda: mudar o padrão permite explorar a janela seguinte.
   if(move==='guard' && m.romarLastMove==='guard') move='normal';
   return move;
 }
 function romarFinalChoice(m){
   if(ui.monster!==m) return;
-  m.hp=Math.max(60,m.hp); m.romarPrepared=null; m.romarSurgePending=false;
+  m.hp=Math.max(m.hpMax*0.20,m.hp); m.romarPrepared=null; m.romarSurgePending=false;
   m.romarChoice=true; ui.inBattle=false; ui.locked=false; ui.tab='batalha';
   logPush('<b>CHEGA!</b><br>“Enquanto ainda sou eu...”<br>“Vá.”');
 }
@@ -1252,7 +1188,7 @@ function resolveRomarAction(kind,damage=0){
     m.romarStage=3; m.portrait='assets/images/enemies/forest/romar_45.jpg';
     m.romarTransform=true; transitioned=true; m.romarPrepared='rupture';
     logPush('Romar cai sobre um joelho; as marcas avançam. <b>“Fique... longe de mim.”</b>');
-    logPush('<b>Ruptura da Marca preparada!</b> As runas concentram poder na arma. Uma ação de 36 de dano pode interromper o golpe.');
+    logPush('<b>Ruptura da Marca preparada!</b> As runas concentram poder na arma. Uma ação de '+Math.ceil(m.hpMax*0.12)+' de dano pode interromper o golpe.');
   }
   if(!transitioned){
     if(m.romarPrepared==='rupture' && damage>=m.hpMax*0.12){
@@ -1261,17 +1197,18 @@ function resolveRomarAction(kind,damage=0){
     } else if(m.romarSurgePending){
       m.romarSurgePending=false; romarStrike(m,'Surto Rúnico agressivo',1.75,0.25,false);
     } else if(m.romarPrepared){
-      const rupture=m.romarPrepared==='rupture'; m.romarPrepared=null;
-      romarStrike(m,rupture?'Ruptura da Marca':'Golpe Pesado',rupture?2:1.5,0,rupture);
+      const rupture=m.romarPrepared==='rupture', surge=m.romarPrepared==='surge'; m.romarPrepared=null;
+      romarStrike(m,rupture?'Ruptura da Marca':surge?'Surto Rúnico':'Golpe Pesado',rupture?2:1.5,surge?0.25:0,rupture||surge);
     } else if(move==='guard'){
       m.def=m.battleBaseDef*1.5; logPush('<b>Guarda de Ferro!</b> Romar firma a arma e protege o corpo durante sua próxima ação.');
     } else if(move==='heavy'){
       m.romarPrepared=m.romarStage===3?'rupture':'heavy';
-      logPush(m.romarStage===3 ? '<b>Ruptura da Marca preparada!</b> Reaja: 36 de dano nesta ação interrompem o golpe, mas provocam um Surto agressivo.' : '<b>Golpe Pesado preparado!</b> Romar ergue a arma de duas mãos.');
+      logPush(m.romarStage===3 ? '<b>Ruptura da Marca preparada!</b> Reaja: '+Math.ceil(m.hpMax*0.12)+' de dano nesta ação interrompem o golpe, mas provocam um Surto agressivo.' : '<b>Golpe Pesado preparado!</b> Romar ergue a arma de duas mãos.');
     } else if(move==='breaker'){
       romarStrike(m,'Quebra-Guarda',1,0.40,false);
     } else if(move==='pressure' && m.romarStage>=2){
-      romarStrike(m,'Surto Rúnico',1.5,0.25,true);
+      m.romarPrepared='surge';
+      logPush('<b>Surto Rúnico preparado!</b> As marcas pulsam antes do golpe. Romar ficará vulnerável depois de atacar.');
     } else romarStrike(m,move==='pressure'?'Pressão ofensiva':'Ataque',1,0,false);
     m.romarLastMove=move;
   }
@@ -2292,16 +2229,6 @@ function renderMapaTab(){
     ${potionRow}
     ${forestProgressBox}
     ${swampProgressBox}
-    ${ui.mapIndex===0 && !ui.romarResult ? `
-      <div class="status-card">
-        <p>ACESSO TEMPORÁRIO DE PLAYTEST</p>
-        <h3>⚔️ TESTE — ENCONTRO COM ROMAR</h3>
-        <p>Atalho de desenvolvimento. Não faz parte da descoberta narrativa da Floresta Uivante.</p>
-        ${!player.romar_first_choice ? `<button class="enter-map-btn" onclick="startRomarEncounter()">Iniciar encontro</button>` : ''}
-        <button class="enter-map-btn" ${ui.inBattle?'disabled':''} onclick="resetRomarPlaytest()">RESETAR CADEIA DE ROMAR</button>
-        <pre id="romar-diagnostic" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.5;max-width:100%;text-align:left;"></pre>
-      </div>
-    ` : ''}
     <div class="explore-box">
       <p style="color:var(--bone-dim);font-size:13.5px;margin:0 0 14px;">Os monstros da região aparecem aleatoriamente ao explorar — e nem tudo que se encontra na escuridão é uma criatura viva.</p>
       <button class="enter-map-btn" style="width:100%;" onclick="explorarMapa(${ui.mapIndex})">🌑 Explorar Território</button>
@@ -2667,13 +2594,12 @@ function render(){
   else if(ui.tab==='loja') content.innerHTML = renderLojaTab();
   else if(ui.tab==='status') content.innerHTML = renderStatusTab();
   if(ui.inBattle && ui.locked) setActionsLocked(true);
-  updateRomarDiagnostic();
 }
 
 document.querySelectorAll('.tab-btn').forEach(b=>{
   b.addEventListener('click', ()=>switchTab(b.dataset.tab));
 });
 
-setInterval(()=>{ if(player && ui.tab!=='batalha') renderHUD(); else if(player) renderHUD(); if(player) updateRomarDiagnostic(); }, 1000);
+setInterval(()=>{ if(player && ui.tab!=='batalha') renderHUD(); else if(player) renderHUD(); }, 1000);
 
 renderClassSelect();

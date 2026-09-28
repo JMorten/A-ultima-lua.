@@ -69,12 +69,6 @@ test('completed first encounters never repeat, both choices',()=>{
     assert.equal(run('startRomarEncounter()'),false);
   }
 });
-test('temporary access bypasses clues without granting clues',()=>{
-  const run=game();
-  assert.ok(run('renderMapaTab()').includes('TESTE — ENCONTRO COM ROMAR'));
-  assert.equal(run('startRomarEncounter()'),true);
-  assert.equal(run('getRomarDiscoveries().seen.length'),0);
-});
 test('scene persists, blocks stacking and closes only by button action',()=>{
   const run=game();run('player.defeatedBosses=[0];discoverRomarClue()');
   const html=run('renderMapaTab()');
@@ -131,38 +125,6 @@ test('normal forest events, stage discoveries, traps and swamp remain accessible
   sequence(run,[0.99,0.99,0.99]);run('explorarMapa(1)');
   assert.equal(run('ui.mapIndex'),1);
   assert.notEqual(run('ui.monster.id'),'romar');
-});
-test('playtest reset clears only Romar state and preserves all other player fields',()=>{
-  const run=game();
-  run('player.defeatedBosses=[0,1];player.level=8;player.totalXp=1234;player.coins=456;player.hp=17;player.mp=9;getForestProgress().commonKills=80;getForestProgress().miniBossKills=4;getForestProgress().miniBossDefeated=true;getSwampProgress().commonKills=50;getSwampProgress().miniBossKills=2;player.questItems={fragmento_ferro_runico:{questClue:true}};player.romar_first_choice="attacked";player.romarDiscoveries={seen:["runa","massacre","marcas"],pending:"marcas",cooldown:2};ui.romarResult="resultado";ui.monster={id:"romar",romarChoice:true};forestEventCooldown=2;var notices=[];popNotif=notice=>notices.push(notice);');
-  const snapshot='JSON.stringify(Object.fromEntries(Object.entries(player).filter(([key])=>!["romarDiscoveries","romar_first_choice"].includes(key))))';
-  const before=run(snapshot);
-  assert.equal(run('resetRomarPlaytest()'),true);
-  assert.equal(run(snapshot),before);
-  assert.equal(run('JSON.stringify(player.romarDiscoveries)'),'{"seen":[],"pending":null,"cooldown":0,"clueAttempts":0,"encounterAttempts":0}');
-  assert.equal(run('player.romar_first_choice'),undefined);
-  assert.equal(run('ui.romarResult'),null);
-  assert.equal(run('ui.monster'),null);
-  assert.equal(run('ui.inBattle'),false);
-  assert.equal(run('forestEventCooldown'),2); // compartilhado com eventos normais, não pertence só a Romar
-  assert.equal(run('notices[0].persist'),true);
-  assert.equal(run('notices[0].title'),'CADEIA DE ROMAR RESETADA');
-  assert.equal(run('canEncounterRomar()'),false);
-  run('forestEventCooldown=0;getForestProgress().discoveries=3');
-  sequence(run,[0.99,0.99,0.01,0]);run('explorarMapa(0)');
-  assert.equal(run('getRomarDiscoveries().seen.length'),1);
-});
-test('reset remains available after choice, supports old characters and refuses active battle',()=>{
-  const run=game();
-  run('player.romar_first_choice="spared"');
-  assert.ok(run('renderMapaTab()').includes('RESETAR CADEIA DE ROMAR'));
-  assert.ok(!run('renderMapaTab()').includes('onclick="startRomarEncounter()"'));
-  run('delete player.romarDiscoveries;resetRomarPlaytest()');
-  assert.ok(run('renderMapaTab()').includes('onclick="startRomarEncounter()"'));
-  run('startRomarEncounter()');
-  const before=run('JSON.stringify([player,ui])');
-  assert.equal(run('resetRomarPlaytest()'),false);
-  assert.equal(run('JSON.stringify([player,ui])'),before);
 });
 for(const encounter of [false,true]){
   test('pity probability boundaries: '+(encounter?'encounter':'clues'),()=>{
@@ -233,7 +195,7 @@ test('accepted explorations count even when occupied; blocked clicks do not',()=
     assert.equal(run('getRomarDiscoveries().encounterAttempts'),3,name);
   }
 });
-test('counter migration, serialization, reset and playtest isolation',()=>{
+test('counter migration and serialization survive combat entry',()=>{
   const run=game();
   run('player.romarDiscoveries={seen:["runa"],pending:null,cooldown:0}');
   assert.equal(run('getRomarDiscoveries().clueAttempts'),0);
@@ -243,9 +205,6 @@ test('counter migration, serialization, reset and playtest isolation',()=>{
   assert.equal(run('getRomarDiscoveries().encounterAttempts'),7);
   run('startRomarEncounter()');
   assert.equal(run('getRomarDiscoveries().encounterAttempts'),7);
-  run('fleeBattle();resetRomarPlaytest()');
-  assert.equal(run('getRomarDiscoveries().clueAttempts'),0);
-  assert.equal(run('getRomarDiscoveries().encounterAttempts'),0);
 });
 for(const encounter of [false,true]){
   test('pending guarantee survives occupied clicks and serialization: '+(encounter?'encounter':'clue'),()=>{
