@@ -2034,18 +2034,6 @@ function buyShopItem(id){
 /* =========================================================
    RENDER
    ========================================================= */
-// Ferramenta temporária, disponível apenas antes de criar um personagem.
-let romarPlaytestPlayer=null;
-function prepareRomarKnightPlaytest(){
-  if(player) return false;
-  chooseClass('cavaleiro');
-  player.totalXp=totalXpForLevel(7);
-  recomputeLevelFromXp();
-  player.statPoints=(player.level-1)*5;
-  recomputeStats();player.hp=player.hpMax;player.mp=player.mpMax;
-  romarPlaytestPlayer=player;ui.tab='status';render();
-  return true;
-}
 function renderClassSelect(){
   const wrap = document.getElementById('class-select');
   wrap.innerHTML = Object.entries(CLASSES).map(([key,c])=>{
@@ -2066,7 +2054,7 @@ function renderClassSelect(){
       <div class="class-skills-preview">Skills: ${skillNames}</div>
       <button class="pick-btn" onclick="chooseClass('${key}')">Escolher ${c.name}</button>
     </div>
-  `;}).join('')+`<div class="class-card"><h3>TESTE ROMAR — CAVALEIRO NV. 7</h3><p>Personagem temporário com 30 pontos livres. Distribua e confirme os atributos antes do duelo.</p><button class="pick-btn" onclick="prepareRomarKnightPlaytest()">Preparar Cavaleiro nível 7</button></div>`;
+  `;}).join('');
 }
 
 function chooseClass(key){
@@ -2619,10 +2607,6 @@ function render(){
   else if(ui.tab==='inventario') content.innerHTML = renderInventarioTab();
   else if(ui.tab==='loja') content.innerHTML = renderLojaTab();
   else if(ui.tab==='status') content.innerHTML = renderStatusTab();
-  if(player===romarPlaytestPlayer && !ui.inBattle && !ui.romarResult && !player.romar_first_choice && !(ui.monster && ui.monster.romarChoice)){
-    const staged=Object.values(ui.pendingAlloc).some(value=>value>0);
-    content.innerHTML+=`<div class="status-card"><h3>TESTE ROMAR — CAVALEIRO NV. 7</h3><p>Distribua os pontos na aba Status e confirme a distribuição. O duelo usa o combate atual.</p><button class="action-btn" ${staged?'disabled':''} onclick="startRomarEncounter()">INICIAR DUELO COM ROMAR</button>${staged?'<p>Confirme os pontos pendentes antes de iniciar.</p>':''}</div>`;
-  }
   if(ui.inBattle && ui.locked) setActionsLocked(true);
 }
 

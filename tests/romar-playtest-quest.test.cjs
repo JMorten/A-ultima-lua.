@@ -8,28 +8,9 @@ function game(){
  vm.runInContext(source,c);vm.runInContext('render=()=>{};popNotif=()=>{};Math.random=()=>0.99;',c);
  return s=>vm.runInContext(s,c);
 }
-test('playtest prepares level 7 with 30 unallocated points and no territory unlocks',()=>{
- const r=game();assert.equal(r('prepareRomarKnightPlaytest()'),true);
- assert.equal(r('player.classKey'),'cavaleiro');assert.equal(r('player.level'),7);
- assert.equal(r('player.statPoints'),30);assert.equal(r('player.xp'),0);
- assert.equal(r('player.totalXp'),r('totalXpForLevel(7)'));
- assert.equal(r('Object.values(player.allocated).reduce((a,b)=>a+b,0)'),0);
- assert.equal(r('player.defeatedBosses.length'),0);assert.equal(r('ui.inBattle'),false);
- assert.equal(r('ui.tab'),'status');assert.equal(r('player.hp'),r('player.hpMax'));
- r('ui.pendingAlloc.defesa=10;confirmAlloc()');
- assert.equal(r('player.allocated.defesa'),10);assert.equal(r('player.statPoints'),20);
- const before=r('JSON.stringify(player)');assert.equal(r('prepareRomarKnightPlaytest()'),false);
- assert.equal(r('JSON.stringify(player)'),before);
- r('startRomarEncounter()');assert.equal(r('ui.monster.hpMax'),324);
-});
-test('normal character is not replaced by temporary tool',()=>{
- const r=game();r('newPlayer("mago")');const before=r('JSON.stringify(player)');
- assert.equal(r('prepareRomarKnightPlaytest()'),false);assert.equal(r('JSON.stringify(player)'),before);
- assert.equal(r('romarPlaytestPlayer'),null);
-});
 test('quest fragment is displayed only after attacked route, unique and actionless',()=>{
  for(const choice of ['spared','attacked']){
- const r=game();r('prepareRomarKnightPlaytest();startRomarEncounter();resolvePlayerHit(99999,false);chooseRomarFirst("'+choice+'")');
+ const r=game();r('newPlayer("cavaleiro");player.level=7;recomputeStats();startRomarEncounter();resolvePlayerHit(99999,false);chooseRomarFirst("'+choice+'")');
  const html=r('renderQuestItems()');
  assert.ok(html.includes('ITENS DE MISSÃO'));assert.equal(html.includes('Fragmento de Ferro Rúnico'),choice==='attacked');
  assert.ok(!html.includes('onclick'));assert.ok(!html.includes('<button'));
