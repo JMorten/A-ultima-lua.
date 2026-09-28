@@ -2336,7 +2336,7 @@ function renderBatalhaTab(){
 
 function renderQuestItems(){
   const fragment=player.questItems && player.questItems.fragmento_ferro_runico;
-  return `<section class="status-card"><h3>ITENS DE MISSÃO</h3>${fragment ? `<h4>Fragmento de Ferro Rúnico</h4><p>Categoria: Item de Missão</p><p>Um fragmento pesado de metal escurecido, arrancado da armadura de Romar.</p><p>Marcas avermelhadas percorrem sua superfície como veias sob o ferro. Mesmo separado da armadura, o metal permanece estranhamente morno.</p><p>Você não sabe quem poderia trabalhar algo assim.</p>` : '<p>Nenhum item de missão.</p>'}</section>`;
+  return `<section class="status-card"><h3>ITENS DE MISSÃO</h3>${fragment ? `<img src="assets/images/quest-items/fragmento_ferro_runico.jpg" class="equip-art-large" style="float:none;display:block;width:100%;max-width:280px;height:auto;box-sizing:border-box;margin:12px auto;" alt="Fragmento de placa de armadura negra com rebites e fissuras rúnicas vermelhas"><h4>Fragmento de Ferro Rúnico</h4><p>Categoria: Item de Missão</p><p>Um fragmento pesado de metal escurecido, arrancado da armadura de Romar.</p><p>Marcas avermelhadas percorrem sua superfície como veias sob o ferro. Mesmo separado da armadura, o metal permanece estranhamente morno.</p><p>Você não sabe quem poderia trabalhar algo assim.</p>` : '<p>Nenhum item de missão.</p>'}</section>`;
 }
 function renderInventarioTab(){
   const LEFT_COL = ['helmet','necklace','earring','armor','boots'];
