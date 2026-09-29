@@ -3,7 +3,7 @@
 ## Schema e armazenamento
 
 - Chave localStorage: a-ultima-lua.checkpoint.
-- Schema explícito: 4.
+- Schema explícito: 5.
 - Envelope: { schemaVersion, player, itemSeq, world }.
 - player conserva os dados permanentes completos e os valores exatos de cada item,
   incluindo uid, requisitos e afixos. Não recalcula equipamento ao carregar.
@@ -31,10 +31,11 @@ eventos, descobertas e escolhas de Romar são consolidados após sua interação
 Equipar/desequipar, vender/comprar, consumir fora de combate, descansar, confirmar
 atributos e escolher domínio solicitam checkpoint ao concluir, se o estado for seguro.
 
-Recarregar antes da confirmação retorna à progressão do checkpoint anterior.
+Recarregar antes da confirmação de eventos/derrotas retorna à progressão do checkpoint anterior.
+Vitórias concluídas usam o resultado pendente descrito abaixo.
 Durante combate, HP/MP e consumo de poções são persistidos após cada ação;
 dano, cura e gastos não são desfeitos. XP, ouro, drops, chefes e demais resultados
-aguardam CONTINUAR. Cura por level-up também aguarda a confirmação da vitória.
+ficam no resultado pendente até CONTINUAR. A cura por level-up fica nesse mesmo resultado.
 A exploração pode ser refeita; não há tentativa de retomar animações ou callbacks.
 Fugir conclui a batalha e pode consolidar os recursos gastos até a fuga.
 
@@ -131,3 +132,32 @@ moedas. Materiais não são vendáveis e não há fabricação/conversão para f
 um ciclo de lucro. Não há rota comercial para Essência ou Refinado nesta etapa.
 Preços e desbloqueio comercial permanecem inalterados; reauditar ao adicionar
 receitas ou venda de materiais.
+
+## Materiais do Pântano e vitória pendente (schema 5)
+
+Após os drops anteriores, criaturas comuns do Pântano sorteiam 1 lodo_viscoso
+com chance efetiva de 35%. Devorador concede exatamente 1 escamas_grande_mae
+(ID preservado, rótulo singular Escama da Grande Mãe). Lua Cheia não multiplica
+nenhuma dessas recompensas. A receita anel_grande_mae_lua é conhecimento permanente,
+com chance por vitória elegível de 20/30/45/65/100%; ao descobrir, remove seu pity.
+Nenhuma compensação por abates anteriores. RECIPE_DEFS tem craftable:false.
+
+Uma vitória concluída grava atomicamente o personagem completo resultante e
+pendingVictory.notices no mesmo envelope. O card único reúne todas as recompensas
+e exige CONTINUAR. A carga reapresenta exatamente esse resultado, sem monstro,
+callbacks nem RNG. Enquanto pendente, operações com checkpoint e navegação ficam
+bloqueadas. Confirmar escreve o mesmo snapshot sem pendingVictory: não soma nada
+e não chama handleVictory. Cliques repetidos não reaplicam resultado. Em erro de
+escrita, mantém o resultado em memória e a confirmação disponível para tentar
+novamente. Como qualquer save local, fechamento após falha de armazenamento pode
+perder dados não gravados; o aviso pede repetir CONTINUAR antes de fechar.
+Romar não entra nesse fluxo de vitória convencional. Recarga durante combate
+continua preservando somente recursos sobre o checkpoint anterior.
+
+### Referência futura aprovada (não implementada)
+
+Anel da Grande Mãe Lua, slot accessory: custo-base planejado 6 Lodos Viscosos,
+2 Escamas da Grande Mãe, 3 Sucatas de Ferro e 2 Essências Arcanas. Fragmento Refinado
+não é obrigatório; futuramente poderá melhorar chances de raridade. Nenhuma
+fabricação, distribuição de raridade, propriedade, afixo, Veneno, Paralisia ou
+Bênção da Grande Mãe é implementada nesta etapa.

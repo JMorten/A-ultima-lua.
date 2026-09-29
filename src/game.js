@@ -942,8 +942,8 @@ const MATERIAL_DEFS={
   sucata_ferro:{name:'Sucata de Ferro'},
   essencia_arcana:{name:'Essência Arcana'},
   fragmento_refinado:{name:'Fragmento Refinado'},
-  lodo_viscoso:{name:'Lodo Viscoso',territorial:true},
-  escamas_grande_mae:{name:'Escamas da Grande Mãe',territorial:true}
+  lodo_viscoso:{name:'Lodo Viscoso',territorial:true,description:'Uma substância espessa retirada das criaturas do Pântano. Mesmo longe da água, continua úmida e estranhamente morna.'},
+  escamas_grande_mae:{name:'Escama da Grande Mãe',territorial:true,description:'Uma escama rígida arrancada do Devorador do Charco. Sua superfície parece coberta por uma película que nunca seca completamente.'}
 };
 // profile: {version, yieldsByRarity:{raridade:{materialId:quantidade}}}
 // item.salvageProfile: {id,version}. Instâncias ambíguas continuam bloqueadas.
@@ -966,7 +966,31 @@ function assignSalvageProfile(item){
 // recipe: {version, ingredients:[{materialId,quantity}], resultSlot, requirements,
 // fixedPropertiesByRarity, affixRules}. Conhecimento é uma lista de IDs no save.
 // Instâncias futuras: {origin:'craft',recipeId,recipeVersion,fixedProperties}.
-const RECIPE_DEFS={};
+const RECIPE_DEFS={
+  anel_grande_mae_lua:{name:'Anel da Grande Mãe Lua',version:1,resultSlot:'accessory',craftable:false}
+};
+const SWAMP_SLUDGE_CHANCE=0.35;
+const GREAT_MOTHER_RECIPE_CHANCES=[0.20,0.30,0.45,0.65,1];
+function grantSwampForgeRewards(m){
+  if(ui.mapIndex!==1)return;
+  normalizeForgeEconomy(player);
+  if(m.id==='devorador_charco'){
+    player.materials.escamas_grande_mae=(player.materials.escamas_grande_mae||0)+1;
+    popNotif({eyebrow:'MATERIAL',title:'Escama da Grande Mãe',sub:'+1 material recebido.'});
+    const id='anel_grande_mae_lua';
+    if(!player.knownRecipes.includes(id)){
+      const attempt=Math.min(5,(player.recipePity[id]||0)+1);
+      player.recipePity[id]=attempt;
+      if(Math.random()<GREAT_MOTHER_RECIPE_CHANCES[attempt-1]){
+        player.knownRecipes.push(id);delete player.recipePity[id];
+        popNotif({eyebrow:'RECEITA DESCOBERTA',title:'ANEL DA GRANDE MÃE LUA',sub:'Lucas poderá utilizar esse conhecimento na Forja. Fabricação ainda indisponível.',persist:true});
+      }
+    }
+  }else if(!m.isBoss && !m.isMiniBoss && MAPS[1].monsters.some(monster=>monster.id===m.id) && Math.random()<SWAMP_SLUDGE_CHANCE){
+    player.materials.lodo_viscoso=(player.materials.lodo_viscoso||0)+1;
+    popNotif({eyebrow:'MATERIAL',title:'Lodo Viscoso',sub:'+1 material recebido.'});
+  }
+}
 function normalizeForgeEconomy(p){
   for(const key of ['materials','recipePity']){
     if(!p[key] || typeof p[key]!=='object' || Array.isArray(p[key]))p[key]={};
@@ -1025,7 +1049,7 @@ function renderForgeWorkshop(){
   }
   const eligible=player.inventory.filter(it=>salvageQuote(it.uid));
   const recipes=(player.knownRecipes||[]).filter(id=>Object.prototype.hasOwnProperty.call(RECIPE_DEFS,id));
-  return '<h3>FABRICAR</h3><p>'+(recipes.length?'Receitas conhecidas. Fabricação ainda indisponível.':'Nenhuma receita conhecida.')+'</p><h3>DESMONTAR</h3>'+ (eligible.length?eligible.map(it=>'<button class="enter-map-btn" onclick="previewSalvage('+forgeText(JSON.stringify(it.uid))+')">'+forgeText(it.name)+' · '+forgeText(it.rarity)+'</button>').join(''):'<p>Nenhum equipamento elegível para desmontagem.</p>')+renderForgeMaterials();
+  return '<h3>FABRICAR</h3><p>'+(recipes.length?recipes.map(id=>forgeText(RECIPE_DEFS[id].name)+' — Receita descoberta. Fabricação ainda indisponível.').join('<br>'):'Nenhuma receita conhecida.')+'</p><h3>DESMONTAR</h3>'+ (eligible.length?eligible.map(it=>'<button class="enter-map-btn" onclick="previewSalvage('+forgeText(JSON.stringify(it.uid))+')">'+forgeText(it.name)+' · '+forgeText(it.rarity)+'</button>').join(''):'<p>Nenhum equipamento elegível para desmontagem.</p>')+renderForgeMaterials();
 }
 
 // Lucas: cena transitória separada da progressão permanente.
@@ -2058,6 +2082,7 @@ function handleVictory(m){
     popNotif({ eyebrow:'ITEM RARO CONQUISTADO', title:'Tônico da Fúria da Caçada', sub:'+30% de XP por abate ao usar' });
   }
 
+  grantSwampForgeRewards(m);
   popNotif({
     eyebrow:'VITÓRIA',
     title:`${m.name} derrotado`,
@@ -2226,6 +2251,7 @@ function chooseClass(key){
 }
 
 function switchTab(tab){
+  if(ui.pendingVictory)return;
   if(ui.lucasScene)return;
   if(hasPendingRomarDiscovery()) return;
   if(ui.romarResult || (ui.monster && ui.monster.romarChoice)) return;

@@ -1,13 +1,13 @@
 /* Persistência local de checkpoints. Script clássico, carregado após game.js. */
 const SAVE_KEY='a-ultima-lua.checkpoint';
-const SAVE_SCHEMA_VERSION=4;
+const SAVE_SCHEMA_VERSION=5;
 let saveNotice='';
 let saveActionDepth=0;
 let saveReplacementApproved=false;
 let lastSavedPayload=null;
 
 function normalizeCheckpoint(input){
-  if(!input || typeof input!=='object' || ![0,1,2,3,SAVE_SCHEMA_VERSION].includes(input.schemaVersion)) throw new Error('Schema incompatível');
+  if(!input || typeof input!=='object' || ![0,1,2,3,4,SAVE_SCHEMA_VERSION].includes(input.schemaVersion)) throw new Error('Schema incompatível');
   const data=JSON.parse(JSON.stringify(input));
   const p=data.player;
   const object=value=>value && typeof value==='object' && !Array.isArray(value);
@@ -61,9 +61,14 @@ function normalizeCheckpoint(input){
   if(p.romarDiscoveries && p.romarDiscoveries.pending)throw new Error('Cena pendente');
   const state=object(data.world)?data.world:{};
   const safeSeq=Number.isSafeInteger(data.itemSeq)&&data.itemSeq>0?data.itemSeq:1;
-  return {schemaVersion:SAVE_SCHEMA_VERSION,player:p,itemSeq:Math.max(next,safeSeq),
+  const result={schemaVersion:SAVE_SCHEMA_VERSION,player:p,itemSeq:Math.max(next,safeSeq),
     world:{forestEventCooldown:Number.isInteger(state.forestEventCooldown)&&state.forestEventCooldown>=0?state.forestEventCooldown:0,
       lastForestEventId:FOREST_EVENTS.some(e=>e.id===state.lastForestEventId)?state.lastForestEventId:null}};
+  if(data.pendingVictory){
+    if(!Array.isArray(data.pendingVictory.notices) || data.pendingVictory.notices.some(n=>!n || typeof n.title!=='string' || typeof n.eyebrow!=='string' || (n.sub!==undefined && typeof n.sub!=='string')))throw new Error('Vitória inválida');
+    result.pendingVictory={notices:data.pendingVictory.notices};
+  }
+  return result;
 }
 function readCheckpoint(){
   try{
@@ -73,7 +78,7 @@ function readCheckpoint(){
   }catch(error){saveNotice='Não foi possível carregar o save local. O arquivo armazenado foi preservado.';return null;}
 }
 function isSafeCheckpoint(){
-  return !ui.lucasScene && !!player && player.hp>0 && !ui.inBattle && !ui.locked && !ui.monster &&
+  return !ui.pendingVictory && !ui.lucasScene && !!player && player.hp>0 && !ui.inBattle && !ui.locked && !ui.monster &&
     !ui.romarResult && !hasPendingRomarDiscovery() && !pendingForestEvent &&
     document.querySelectorAll('.interactive-card').length===0;
 }
@@ -141,6 +146,49 @@ function combatResultAction(action){
     return action.apply(this,args);
   };
 }
+let pendingVictoryCard=null;
+function writeVictoryCheckpoint(checkpoint){
+  try{
+    const payload=JSON.stringify(checkpoint);
+    localStorage.setItem(SAVE_KEY,payload);lastSavedPayload=payload;return true;
+  }catch(error){showToast('Não foi possível salvar a vitória. Tente CONTINUAR novamente antes de fechar.');return false;}
+}
+function showPendingVictory(){
+  if(!ui.pendingVictory)return;
+  if(pendingVictoryCard)pendingVictoryCard.remove();
+  const card=document.createElement('div');pendingVictoryCard=card;
+  card.className='notif-card interactive-card';
+  card.innerHTML=ui.pendingVictory.pendingVictory.notices.map(n=>'<div class="n-eyebrow">'+forgeText(n.eyebrow)+'</div><div class="n-title">'+forgeText(n.title)+'</div><div class="n-sub">'+forgeText(n.sub||'')+'</div>').join('')+'<button type="button" class="event-choice-btn primary notif-continue">CONTINUAR</button>';
+  card.style.maxHeight='80vh';card.style.overflowY='auto';
+  card.querySelector('.notif-continue').addEventListener('click',confirmPendingVictory);
+  document.getElementById('notif-layer').appendChild(card);
+}
+function confirmPendingVictory(){
+  if(!ui.pendingVictory)return false;
+  const settled=normalizeCheckpoint(ui.pendingVictory);
+  delete settled.pendingVictory;
+  if(!writeVictoryCheckpoint(settled))return false;
+  player=settled.player;ui.itemSeq=settled.itemSeq;
+  ui.pendingVictory=null;
+  if(pendingVictoryCard){pendingVictoryCard.remove();pendingVictoryCard=null;}
+  render();return true;
+}
+function pendingVictoryAction(action){
+  return function(m){
+    if(ui.pendingVictory || !ui.inBattle || ui.monster!==m || m.victoryResolved)return;
+    if(m.id==='romar')return action(m);
+    persistCombatResources();
+    m.victoryResolved=true;
+    const notices=[],originalNotif=popNotif;
+    popNotif=notice=>notices.push(notice);
+    try{action(m);}finally{popNotif=originalNotif;}
+    const checkpoint=normalizeCheckpoint({schemaVersion:SAVE_SCHEMA_VERSION,player,itemSeq:ui.itemSeq,
+      world:{forestEventCooldown,lastForestEventId},pendingVictory:{notices}});
+    ui.pendingVictory=checkpoint;
+    writeVictoryCheckpoint(checkpoint);
+    showPendingVictory();
+  };
+}
 function continueSavedGame(){
   if(player)return false;
   const checkpoint=readCheckpoint();
@@ -155,7 +203,9 @@ function continueSavedGame(){
   document.getElementById('title-screen').classList.add('hidden');
   document.getElementById('game-screen').classList.remove('hidden');
   lastSavedPayload=null;
-  render();requestCheckpoint();return true;
+  render();
+  if(checkpoint.pendingVictory){ui.pendingVictory=checkpoint;showPendingVictory();}
+  else requestCheckpoint();return true;
 }
 function renderSaveEntry(){
   const saved=readCheckpoint();
@@ -177,6 +227,7 @@ function cancelNewGame(){saveReplacementApproved=false;renderSaveEntry();}
    O depth impede que uma rotina interna confirme metade de uma operação externa. */
 function checkpointAction(action,before=false){
   return function(...args){
+    if(ui.pendingVictory)return false;
     if(before && !saveActionDepth)requestCheckpoint();
     saveActionDepth++;
     let completed=false;
@@ -195,7 +246,7 @@ visitForge=checkpointAction(visitForge,true);
 explorarMapa=checkpointAction(explorarMapa,true);
 startBattle=checkpointAction(startBattle,true);
 startRomarEncounter=checkpointAction(startRomarEncounter,true);
-handleVictory=checkpointAction(combatResultAction(handleVictory));
+handleVictory=pendingVictoryAction(handleVictory);
 handleDefeat=checkpointAction(combatResultAction(handleDefeat));
 fleeBattle=checkpointAction(fleeBattle);
 finishRomarDiscovery=checkpointAction(finishRomarDiscovery);

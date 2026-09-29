@@ -64,7 +64,8 @@ test('full checkpoint refuses unsafe arbitrary mutations; only explicit resource
 });
 test('victory persists exactly once after CONTINUAR, never rewards twice on reload',()=>{
  const e=fresh();e.run('startBattle(0,MAPS[0].monsters[0],false);handleVictory(ui.monster)');
- assert.equal(e.run('readCheckpoint().player.forestProgress.commonKills'),0);
+ assert.equal(e.run('readCheckpoint().player.forestProgress.commonKills'),1);
+ assert.ok(e.run('readCheckpoint().pendingVictory'));
  const earned=e.run('player.coins');e.close();
  assert.equal(e.run('readCheckpoint().player.forestProgress.commonKills'),1);
  const loaded=boot(e.storage);loaded.run('continueSavedGame()');assert.equal(loaded.run('player.coins'),earned);
@@ -120,7 +121,7 @@ test('schema 1 bracelet migration preserves exact instance and ring across repea
  e.run('var old=readCheckpoint();old.schemaVersion=1;old.player.equipment.bracelet={uid:"it90",slot:"bracelet",name:"Bracelete legado",rarity:"raro",atk:3,agi:2,hp:10,mp:4,value:37,statReq:{defesa:2},affixes:[{key:"crit",value:.057321}],extra:{origin:"legacy"}};old.player.equipment.accessory={uid:"it91",slot:"accessory",name:"Anel legado",rarity:"raro",def:2,value:50};old.player.atk+=3;old.player.agilidade+=2;old.player.hpMax+=10;old.player.hp+=10;old.player.mpMax+=4;old.player.mp+=4;delete old.player.equipment.legs;localStorage.setItem(SAVE_KEY,JSON.stringify(old))');
  const bracelet=JSON.stringify({...JSON.parse(e.run('JSON.stringify(old.player.equipment.bracelet)')),salvageProfile:{id:'hybrid',version:1}}),ring=JSON.stringify({...JSON.parse(e.run('JSON.stringify(old.player.equipment.accessory)')),salvageProfile:{id:'hybrid',version:1}});
  let loaded=boot(e.storage);loaded.run('continueSavedGame()');
- assert.equal(loaded.run('SAVE_SCHEMA_VERSION'),4);
+ assert.equal(loaded.run('SAVE_SCHEMA_VERSION'),5);
  assert.equal(loaded.run('JSON.stringify(player.inventory[0])'),bracelet);
  assert.equal(loaded.run('JSON.stringify(player.equipment.accessory)'),ring);
  assert.equal(loaded.run('player.equipment.bracelet'),undefined);
@@ -182,8 +183,10 @@ test('common/miniboss/boss interrupted resources do not consolidate rewards, lev
   e.run('startBattle('+ (template.includes('[1]')?1:0) +','+template+',false);calcDamage=()=>7;resolveEnemyAttack()');
   const hp=e.run('player.hp');assert.equal(resumed(e).run('player.hp'),hp);
   e.run('ui.monster.xp=10000;handleVictory(ui.monster)');
-  const r=resumed(e),expected=JSON.parse(baseline);expected.hp=hp;
-  assert.deepEqual(JSON.parse(r.run('JSON.stringify(player)')),expected);
+  const r=resumed(e);
+  assert.ok(r.run('ui.pendingVictory'));
+  assert.equal(r.run('player.totalXp'),e.run('player.totalXp'));
+  assert.equal(r.run('player.hp'),e.run('player.hp'));
   e.close();assert.ok(resumed(e).run('player.totalXp')>0);
  }
 });
@@ -284,7 +287,7 @@ test('Lucas scene blocks exploration/navigation, has persistent handlers and saf
  assert.ok(html.includes("lucasSceneAction('reply')"));
  const r=resumed(e);assert.equal(r.run('getLucasProgress().discovered'),false);
  r.run('var old=readCheckpoint();old.schemaVersion=2;delete old.player.forgeProgress.lucas');
- assert.equal(r.run('normalizeCheckpoint(old).schemaVersion'),4);
+ assert.equal(r.run('normalizeCheckpoint(old).schemaVersion'),5);
  assert.equal(r.run('JSON.stringify(normalizeCheckpoint(old))'),r.run('JSON.stringify(normalizeCheckpoint(normalizeCheckpoint(old)))'));
 });
 
@@ -295,9 +298,9 @@ function salvageFixture(){
  return e;
 }
 test('forge catalogs contain approved profiles and no craft recipes; materials and knowledge migrate idempotently',()=>{
- const e=fresh();assert.equal(e.run('Object.keys(SALVAGE_PROFILES).length'),3);assert.equal(e.run('Object.keys(RECIPE_DEFS).length'),0);
+ const e=fresh();assert.equal(e.run('Object.keys(SALVAGE_PROFILES).length'),3);assert.equal(e.run('Object.keys(RECIPE_DEFS).length'),1);
  e.run('var old=readCheckpoint();old.schemaVersion=3;old.player.materials={sucata_ferro:7,essencia_arcana:2};old.player.knownRecipes=["future","future"];old.player.recipePity={future:4}');
- assert.equal(e.run('normalizeCheckpoint(old).schemaVersion'),4);
+ assert.equal(e.run('normalizeCheckpoint(old).schemaVersion'),5);
  assert.equal(e.run('normalizeCheckpoint(old).player.knownRecipes.length'),1);
  assert.equal(e.run('normalizeCheckpoint(old).player.materials.sucata_ferro'),7);
  assert.equal(e.run('JSON.stringify(normalizeCheckpoint(old))'),e.run('JSON.stringify(normalizeCheckpoint(normalizeCheckpoint(old)))'));
@@ -387,4 +390,92 @@ test('merchant audit: common gear costs 120–130, yields only one scrap, resale
   assert.deepEqual(JSON.parse(e.run('JSON.stringify(salvageQuote(player.inventory.at(-1).uid).yields)')),{sucata_ferro:1});
  }
  assert.equal(e.run('SHOP_ITEMS.every(it=>!it.salvageProfile)'),true);
+});
+
+test('swamp common sludge chance is 35%, excludes forest, bosses and minibosses, regardless of forge unlock',()=>{
+ const e=fresh();assert.equal(e.run('SWAMP_SLUDGE_CHANCE'),.35);
+ for(const chance of [.349999,.35,.99]){
+  e.run('player.materials={};ui.mapIndex=1;Math.random=()=>'+chance+';grantSwampForgeRewards(MAPS[1].monsters[0])');
+  assert.equal(e.run('player.materials.lodo_viscoso||0'),chance<.35?1:0);
+ }
+ e.run('player.materials={};Math.random=()=>0;ui.mapIndex=0;grantSwampForgeRewards(MAPS[0].monsters[0]);ui.mapIndex=1;grantSwampForgeRewards(MAPS[1].boss);grantSwampForgeRewards(MAPS[1].miniBoss)');
+ assert.equal(e.run('player.materials.lodo_viscoso||0'),0);
+ assert.equal(e.run('player.materials.escamas_grande_mae'),1);
+});
+test('recipe pity exact boundaries 20/30/45/65/100, fifth guaranteed, stops permanently after discovery',()=>{
+ const chances=[.2,.3,.45,.65,1],id='anel_grande_mae_lua';
+ for(let i=0;i<5;i++)for(const success of [true,false]){
+  if(i===4 && !success)continue;
+  const e=fresh();
+  e.run('ui.mapIndex=1;player.recipePity.'+id+'='+i+';Math.random=()=>'+(success?chances[i]-.000001:chances[i])+';grantSwampForgeRewards(MAPS[1].miniBoss)');
+  assert.equal(e.run('player.knownRecipes.includes("'+id+'")'),success);
+ }
+ const e=fresh();e.run('ui.mapIndex=1;Math.random=()=>.999999');
+ for(let i=1;i<=5;i++){
+  e.run('grantSwampForgeRewards(MAPS[1].miniBoss)');
+  assert.equal(e.run('player.materials.escamas_grande_mae'),i);
+  assert.equal(e.run('player.knownRecipes.length'),i===5?1:0);
+ }
+ assert.equal(e.run('player.recipePity.'+id),undefined);
+ e.run('Math.random=()=>{throw Error("no more recipe rolls")};grantSwampForgeRewards(MAPS[1].miniBoss)');
+ assert.equal(e.run('player.knownRecipes.length'),1);assert.equal(e.run('player.materials.escamas_grande_mae'),6);
+});
+test('pending Devorador victory reload replays complete result, never rerolls or advances pity twice',()=>{
+ const e=fresh();e.run('player.swampProgress.commonKills=14;requestCheckpoint();startBattle(1,MAPS[1].miniBoss,false);handleVictory(ui.monster)');
+ const snapshot=e.run('JSON.stringify(readCheckpoint().player)');
+ assert.equal(e.run('player.materials.escamas_grande_mae'),1);
+ assert.equal(e.run('player.recipePity.anel_grande_mae_lua'),1);
+ assert.equal(e.run('getSwampMiniBossTarget()'),21);
+ for(let i=0;i<3;i++){
+  const r=boot(e.storage);r.run('Math.random=()=>{throw Error("reroll")};continueSavedGame()');
+  assert.ok(r.run('ui.pendingVictory'));
+  assert.equal(r.run('JSON.stringify(player)'),snapshot);
+  assert.equal(r.run('requestCheckpoint()'),false);
+ }
+ const r=resumed(e);assert.equal(r.run('confirmPendingVictory()'),true);assert.equal(r.run('confirmPendingVictory()'),false);
+ assert.equal(r.run('readCheckpoint().pendingVictory'),undefined);
+ assert.equal(resumed(r).run('JSON.stringify(player)'),snapshot);
+});
+test('recipe discovery and all drops survive pending reload; blessing never doubles scale or recipe chance',()=>{
+ for(const blessing of [false,true]){
+  const e=fresh();e.run('isXpEventActive=()=>'+blessing+';Math.random=()=>0;startBattle(1,MAPS[1].miniBoss,false);var won=ui.monster;handleVictory(won)');
+  assert.equal(e.run('player.materials.escamas_grande_mae'),1);
+  assert.equal(e.run('player.knownRecipes.length'),1);
+  assert.equal(e.run('readCheckpoint().pendingVictory.notices.some(n=>n.eyebrow==="RECEITA DESCOBERTA")'),true);
+  const snapshot=e.run('JSON.stringify(player)');e.run('handleVictory(won)');assert.equal(e.run('JSON.stringify(player)'),snapshot);
+  const r=resumed(e);r.run('confirmPendingVictory()');assert.equal(r.run('player.knownRecipes[0]'),'anel_grande_mae_lua');
+  assert.equal(r.run('player.inventory.length'),e.run('player.inventory.length'));
+ }
+});
+test('flee/defeat grant no scale, old kills do not seed pity; failed confirmation retains pending result',()=>{
+ const e=fresh();e.run('player.swampProgress.miniBossKills=20;requestCheckpoint();startBattle(1,MAPS[1].miniBoss,false);fleeBattle()');
+ assert.equal(e.run('player.materials.escamas_grande_mae'),undefined);assert.equal(e.run('player.recipePity.anel_grande_mae_lua'),undefined);
+ e.run('startBattle(1,MAPS[1].miniBoss,false);handleDefeat()');e.close();
+ assert.equal(e.run('player.materials.escamas_grande_mae'),undefined);
+ e.run('startBattle(1,MAPS[1].miniBoss,false);handleVictory(ui.monster)');
+ const saved=e.storage.get('a-ultima-lua.checkpoint');
+ e.run('localStorage.setItem=()=>{throw Error("quota")};');
+ assert.equal(e.run('confirmPendingVictory()'),false);assert.ok(e.run('ui.pendingVictory'));
+ assert.equal(e.storage.get('a-ultima-lua.checkpoint'),saved);
+ assert.equal(resumed(e).run('player.materials.escamas_grande_mae'),1);
+});
+
+test('sludge victory survives reload and repeated confirmation without duplication',()=>{
+ const e=fresh();e.run('Math.random=()=>0;startBattle(1,MAPS[1].monsters[0],false);handleVictory(ui.monster)');
+ assert.equal(e.run('player.materials.lodo_viscoso'),1);
+ const r=resumed(e);r.close();r.close();
+ assert.equal(resumed(r).run('player.materials.lodo_viscoso'),1);
+ assert.equal(resumed(r).run('player.swampProgress.commonKills'),1);
+});
+test('blessing keeps recipe boundary at 20% and sludge at 35%; known recipe is visible without craft action',()=>{
+ for(const blessing of [false,true]){
+  const e=fresh();e.run('isXpEventActive=()=>'+blessing+';Math.random=()=>.2;startBattle(1,MAPS[1].miniBoss,false);handleVictory(ui.monster)');
+  assert.equal(e.run('player.knownRecipes.length'),0);assert.equal(e.run('player.materials.escamas_grande_mae'),1);
+  e.close();e.run('Math.random=()=>.35;startBattle(1,MAPS[1].monsters[0],false);handleVictory(ui.monster)');
+  assert.equal(e.run('player.materials.lodo_viscoso||0'),0);
+ }
+ const e=fresh();e.run('player.knownRecipes=["anel_grande_mae_lua"]');
+ const html=e.run('renderForgeWorkshop()');
+ assert.ok(html.includes('Anel da Grande Mãe Lua — Receita descoberta. Fabricação ainda indisponível.'));
+ assert.equal(e.run('RECIPE_DEFS.anel_grande_mae_lua.craftable'),false);
 });
