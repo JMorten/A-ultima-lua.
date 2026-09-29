@@ -388,7 +388,7 @@ function recomputeStats(){
   if(player.mp > player.mpMax) player.mp = player.mpMax;
 }
 
-function getDodgeChance(){ return Math.min(0.50, (player.agilidade||0) * 0.006 + equippedAffixTotal('dodge')); }
+function getDodgeChance(){ return Math.min(0.50, (player.agilidade||0) * 0.006 + equippedAffixTotal('dodge')) * (isSwampLord() && ui.buffs.atolado?.turnsLeft>0 ? 0.75 : 1); }
 function getExtraAttackChance(){ return Math.min(0.30, (player.agilidade||0) * 0.004); }
 
 function stagePoint(stat, delta){
@@ -1254,6 +1254,7 @@ function startBattle(mapIndex, monsterTemplate, isBoss){
     hp = Math.round(hp*1.3); atk = Math.round(atk*1.3); def = Math.round(def*1.3);
   }
   ui.monster = Object.assign({}, monsterTemplate, { hp, atk, def, hpMax: hp, isBoss: !!isBoss, eventBuffed: eventOn, battleBaseAtk: atk, battleBaseDef: def, bossPhase: 0, desperationTriggered:false, aiTurns:0, frenzyTriggered:false, heavyPrepared:false });
+  if(mapIndex===1 && monsterTemplate.id==='senhor_pantano')Object.assign(ui.monster,{swampPhase:1,swampNormals:0,swampPrepared:null,submerged:false,swampNextDomain:true,swampNextOffense:'ambush'});
   if(mapIndex===0){
     Object.assign(ui.monster, {
       grayPouncePrepared:false, youngHuntPrepared:false,
@@ -1424,7 +1425,10 @@ function tickCooldowns(){
   Object.keys(ui.buffs).forEach(key=>{
     if(!ui.buffs[key]) return;
     ui.buffs[key].turnsLeft--;
-    if(ui.buffs[key].turnsLeft <= 0) delete ui.buffs[key];
+    if(ui.buffs[key].turnsLeft <= 0){
+      if(key==='atolado')logPush('<b>ATOLADO terminou.</b> Você se liberta do lodo.');
+      delete ui.buffs[key];
+    }
   });
 }
 
@@ -1538,8 +1542,48 @@ function tryInterruptPreparedAttack(damage){
 }
 
 /* Comportamentos e avisos da Floresta Uivante. */
+function isSwampLord(){return ui.inBattle && ui.mapIndex===1 && ui.monster && ui.monster.id==='senhor_pantano';}
+function swampTargetBlocked(){
+  if(!isSwampLord() || !ui.monster.submerged)return false;
+  showToast('O Senhor do Pântano está submerso. Você não consegue alcançá-lo.');return true;
+}
+function waitForSwampLord(){
+  if(!isSwampLord() || !ui.monster.submerged || ui.locked)return;
+  logPush('Você aguarda o movimento sob o charco.');
+  monsterCounterTurn();
+}
+// Três ataques normais por ciclo; Domínio alterna com ofensivas disponíveis.
+// Um único estado preparado evita sobreposição. Fase III alterna as ofensivas.
+function swampLordAction(m){
+  if(m.swampPhase<2 && m.hp/m.hpMax<=.65){m.swampPhase=2;logPush('<b>PREDADOR DO LODO</b> O Senhor mergulha seus membros nas águas escuras.');}
+  if(m.swampPhase<3 && m.hp/m.hpMax<.30){m.swampPhase=3;logPush('<b>O PÂNTANO RECLAMA</b> O charco responde à fome de seu mestre.');}
+  if(m.swampPrepared){
+    const move=m.swampPrepared;m.swampPrepared=null;m.submerged=false;m.swampNormals=0;
+    if(move==='domain'){
+      if(!ui.buffs.atolado){ui.buffs.atolado={turnsLeft:3};logPush('<b>ATOLADO</b> Sua esquiva é reduzida em 25% por 2 ações.');}
+      m.swampNextDomain=false;return {prepared:true};
+    }
+    m.swampNextDomain=true;m.swampNextOffense=move==='ambush'?'drain':'ambush';
+    return {mult:1.5,name:move==='ambush'?'EMBOSCADA DO ABISMO':'DRENAGEM DO CHARCO',drain:move==='drain'};
+  }
+  if(m.swampNormals>=3){
+    let move;
+    if((m.swampPhase===1 || m.swampNextDomain) && !ui.buffs.atolado)move='domain';
+    else if(m.swampPhase>=2)move=m.swampPhase>=3?m.swampNextOffense:'ambush';
+    if(move){
+      m.swampPrepared=move;m.submerged=move==='ambush';
+      logPush(move==='domain'?'<b>DOMÍNIO DO CHARCO</b> O Senhor do Pântano finca seus membros no lodo. O charco começa a se mover...':move==='ambush'?'<b>SUBMERSÃO</b> O Senhor do Pântano desaparece sob as águas escuras... Ele está inalvejável. Prepare-se ou AGUARDE.':'<b>O PÂNTANO RECLAMA SEU SANGUE</b> A água escurece. O charco responde ao seu mestre. DRENAGEM DO CHARCO preparada!');
+      return {prepared:true};
+    }
+  }
+  m.swampNormals++;return {mult:1};
+}
 function enemyBehaviorChip(m){
   if(!m) return '';
+  if(m.id==='senhor_pantano' && ui.mapIndex===1){
+    if(m.submerged)return '<span class="arena-enemy-chip warning">SUBMERSO · INALVEJÁVEL · EMBOSCADA PREPARADA</span>';
+    if(m.swampPrepared)return '<span class="arena-enemy-chip warning">'+(m.swampPrepared==='domain'?'DOMÍNIO DO CHARCO PREPARADO':'DRENAGEM DO CHARCO PREPARADA')+'</span>';
+  }
   if(m.id==='romar') return romarBehaviorChip(m);
   if(m.id==='lobo_selvagem' && m.frenzyTriggered)
     return `<span class="arena-enemy-chip danger">🐺 FRENESI · mais forte e vulnerável</span>`;
@@ -1579,6 +1623,8 @@ function updateEnemyBehaviorBeforeCounter(){
 function resolveEnemyAttack(contextText='revida', retaliation=false){
   const m=ui.monster;
   if(!ui.inBattle || !m || m.hp<=0 || player.hp<=0) return;
+  const swampMove=isSwampLord()?swampLordAction(m):null;
+  if(swampMove && swampMove.prepared)return {dodged:false,damage:0,prepared:true};
   updateEnemyBehaviorBeforeCounter();
   if(!retaliation) m.aiTurns=(m.aiTurns||0)+1;
 
@@ -1612,8 +1658,8 @@ function resolveEnemyAttack(contextText='revida', retaliation=false){
     }
   }
 
-  let mult=retaliation ? 1.25 : 1;
-  let attackName=retaliation ? 'Retaliação do Alfa' : '';
+  let mult=swampMove?swampMove.mult:(retaliation ? 1.25 : 1);
+  let attackName=swampMove?swampMove.name||'':(retaliation ? 'Retaliação do Alfa' : '');
 
   // Lobisomem: a cada 3º ataque efetivo, uma mordida mais perigosa.
   if(!retaliation && m.id==='lobisomem_feroz' && m.aiTurns%3===0){
@@ -1643,7 +1689,12 @@ function resolveEnemyAttack(contextText='revida', retaliation=false){
 
   let dmg2=calcDamage(m.atk,getEffectiveDef());
   dmg2=Math.max(1,Math.round(dmg2*mult*(1-Math.min(.35,equippedAffixTotal('damageReduction')))));
+  const actualDamage=Math.min(player.hp,dmg2);
   player.hp=Math.max(0,player.hp-dmg2);
+  if(swampMove && swampMove.drain){
+    const heal=Math.min(Math.floor(actualDamage*.35),Math.floor(m.hpMax*.08),m.hpMax-m.hp);
+    m.hp+=heal;logPush('O Senhor drena '+heal+' HP do dano efetivamente causado.');
+  }
   floatNumber('player','-'+dmg2,'dmg');
   shakeSide('player');
 
@@ -1684,6 +1735,7 @@ function attackPackWolf(){
 
 /* Executa uma rodada: dano do jogador no monstro, depois (se vivo) contra-ataque do monstro */
 function resolvePlayerHit(dmg, isCrit, impacts=[dmg]){
+  if(swampTargetBlocked())return;
   const m = ui.monster;
   if(!ui.inBattle || ui.locked || !m || m.hp<=0 || player.hp<=0) return;
   setActionsLocked(true);
@@ -1748,6 +1800,7 @@ function resolvePlayerHit(dmg, isCrit, impacts=[dmg]){
 
 function playerAttack(){
   if(!ui.inBattle || ui.locked) return;
+  if(swampTargetBlocked())return;
   const m = ui.monster;
   const { dmg, isCrit } = rollDamage(getEffectiveAtk(), m.def);
   logPush(isCrit
@@ -1791,6 +1844,7 @@ function usarSkill(skillId){
   if(!ui.inBattle || ui.locked) return;
   const skill = (SKILLS[player.classKey]||[]).find(s=>s.id===skillId);
   if(!skill || player.level < skill.unlockLevel) return;
+  if(!skill.heal && !skill.buff && swampTargetBlocked())return;
   let actualMpCost=getSkillMpCost(skill);
   let hpPaid=0;
   let overcharged=false;
@@ -2466,6 +2520,7 @@ function renderBatalhaTab(){
 
   const buffChips = Object.entries(ui.buffs).map(([key,b])=>{
     if(!b || b.turnsLeft<=0) return '';
+    if(key==='atolado')return '<span class="arena-buff-chip">ATOLADO · Esquiva ×0,75 · '+b.turnsLeft+' ações</span>';
     if(key==='atkBoost') return `<span class="arena-buff-chip">💪 Força +${Math.round((b.mult-1)*100)}% · ${b.turnsLeft}t</span>`;
     if(key==='critBoost') return `<span class="arena-buff-chip">🎯 Crítico +${Math.round(b.bonus*100)}% · ${b.turnsLeft}t</span>`;
     if(key==='romarFracture') return `<span class="arena-buff-chip">💔 FRATURA · DEF −60% · 1 ação</span>`;
@@ -2495,6 +2550,7 @@ function renderBatalhaTab(){
     </div>
     <div class="battle-actions">
       <button class="action-btn" ${ui.locked?'disabled':''} onclick="playerAttack()">Atacar</button>
+      ${isSwampLord() && m.submerged ? `<button class="action-btn" ${ui.locked?'disabled':''} onclick="waitForSwampLord()">AGUARDAR</button>` : ''}
       <button class="action-btn secondary" ${ui.locked?'disabled':''} onclick="fleeBattle()">Fugir</button>
       ${ui.mapIndex===0 && m.id==='alfa_matilha' && m.bossPhase===0 && m.packWolfActive ? `<button class="action-btn secondary" ${ui.locked?'disabled':''} onclick="attackPackWolf()">🐺 Atacar Lobo da Matilha · ${m.packWolfHp}/${m.packWolfHpMax} HP</button>` : ''}
     </div>

@@ -479,3 +479,109 @@ test('blessing keeps recipe boundary at 20% and sludge at 35%; known recipe is v
  assert.ok(html.includes('Anel da Grande Mãe Lua — Receita descoberta. Fabricação ainda indisponível.'));
  assert.equal(e.run('RECIPE_DEFS.anel_grande_mae_lua.craftable'),false);
 });
+
+function lordBattle(){
+ const e=fresh();e.run('isMonsterEventActive=()=>false;startBattle(1,MAPS[1].boss,true);player.hp=10000;player.hpMax=10000;calcDamage=()=>20;');
+ return e;
+}
+function lordTurn(e){const out=e.run('resolveEnemyAttack()');e.run('tickCooldowns()');return out;}
+test('Senhor base stats unchanged; Domain after three normal actions, telegraph no damage, Atolado two actions x0.75',()=>{
+ const e=lordBattle();assert.equal(e.run('ui.monster.hpMax'),793);assert.equal(e.run('ui.monster.atk'),81);assert.equal(e.run('ui.monster.def'),30);
+ const dodge=e.run('getDodgeChance()');
+ for(let n=0;n<3;n++)assert.equal(lordTurn(e).damage,20);
+ const hp=e.run('player.hp');assert.equal(lordTurn(e).damage,0);
+ assert.equal(e.run('ui.monster.swampPrepared'),'domain');assert.equal(e.run('player.hp'),hp);
+ lordTurn(e);assert.equal(e.run('ui.buffs.atolado.turnsLeft'),2);assert.equal(e.run('getDodgeChance()'),dodge*.75);
+ lordTurn(e);assert.equal(e.run('ui.buffs.atolado.turnsLeft'),1);
+ lordTurn(e);assert.equal(e.run('ui.buffs.atolado'),undefined);assert.equal(e.run('getDodgeChance()'),dodge);
+ assert.ok(e.run('battleLog.join(" ")').includes('ATOLADO terminou'));
+});
+test('Senhor thresholds are monotonic, do not add actions, and exact 30% remains phase II',()=>{
+ const e=lordBattle();e.run('ui.monster.hp=ui.monster.hpMax*.65');
+ assert.equal(lordTurn(e).damage,20);assert.equal(e.run('ui.monster.swampPhase'),2);
+ e.run('ui.monster.hp=ui.monster.hpMax*.30');lordTurn(e);assert.equal(e.run('ui.monster.swampPhase'),2);
+ e.run('ui.monster.hp=ui.monster.hpMax*.29');lordTurn(e);assert.equal(e.run('ui.monster.swampPhase'),3);
+ e.run('ui.monster.hp=ui.monster.hpMax');lordTurn(e);
+ assert.equal(e.run('ui.monster.swampPhase'),3);
+ assert.equal(e.run('battleLog.filter(s=>s.includes("PREDADOR DO LODO")).length'),1);
+ assert.equal(e.run('battleLog.filter(s=>s.includes("<b>O PÂNTANO RECLAMA</b>")).length'),1);
+});
+test('Submersion blocks hits/skills with no RNG/resource/action cost; WAIT is exclusive and double click safe',()=>{
+ const e=lordBattle();e.run('ui.monster.hp=ui.monster.hpMax*.5;ui.monster.swampNormals=3;ui.monster.swampNextDomain=false');
+ const hp=e.run('player.hp');lordTurn(e);assert.equal(e.run('player.hp'),hp);assert.equal(e.run('ui.monster.submerged'),true);
+ const before=e.run('JSON.stringify([player,ui.monster,ui.skillCooldowns,ui.locked])');
+ e.run('Math.random=()=>{throw Error("blocked attack rolled RNG")};playerAttack();usarSkill("golpe_da_fe");resolvePlayerHit(999,true)');
+ assert.equal(e.run('JSON.stringify([player,ui.monster,ui.skillCooldowns,ui.locked])'),before);
+ assert.ok(e.run('renderBatalhaTab()').includes('AGUARDAR'));
+ e.run('Math.random=()=>.99;ui.skillCooldowns.fixture=2;waitForSwampLord();waitForSwampLord()');
+ assert.equal(e.run('player.hp'),hp);assert.equal(e.run('ui.locked'),true);
+ assert.equal(e.run('ui.skillCooldowns.fixture'),2);e.tick();
+ assert.equal(e.run('player.hp'),hp-30);assert.equal(e.run('ui.monster.submerged'),false);
+ assert.equal(e.run('ui.monster.swampNormals'),0);assert.equal(e.run('ui.skillCooldowns.fixture'),1);
+ e.tick();assert.equal(e.run('ui.locked'),false);
+ e.run('waitForSwampLord()');assert.equal(e.run('player.hp'),hp-30);
+ assert.ok(!e.run('renderBatalhaTab()').includes('AGUARDAR'));
+});
+test('Submerged accepts existing nonoffensive posture, and next response is delayed ambush',()=>{
+ const e=lordBattle();e.run('player.level=3;player.mp=30;ui.monster.hp=ui.monster.hpMax*.5;ui.monster.swampNormals=3;ui.monster.swampNextDomain=false');
+ lordTurn(e);e.run('usarSkill("postura_defensiva")');
+ assert.equal(e.run('player.mp'),20);assert.ok(e.run('ui.buffs.defBoost'));
+ assert.equal(e.run('ui.monster.submerged'),true);e.tick();assert.equal(e.run('ui.monster.submerged'),false);
+});
+test('Drain telegraph, x1.5 damage, effective damage healing, 8% cap, full HP cap and dodge',()=>{
+ for(const [hp,base,monsterHp,expectedHeal] of [[60,100,100,21],[10000,10000,100,63],[1000,100,790,3]]){
+  const e=lordBattle();e.run('ui.monster.hp=200;ui.monster.swampNormals=3;ui.monster.swampNextDomain=false;ui.monster.swampNextOffense="drain"');
+  assert.equal(lordTurn(e).damage,0);assert.equal(e.run('ui.monster.swampPrepared'),'drain');
+  e.run('player.hp='+hp+';ui.monster.hp='+monsterHp+';calcDamage=()=>'+base);
+  const hit=lordTurn(e);assert.equal(hit.damage,Math.round(base*1.5));assert.equal(e.run('ui.monster.hp'),monsterHp+expectedHeal);
+ }
+ const e=lordBattle();e.run('ui.monster.hp=200;ui.monster.swampNormals=3;ui.monster.swampNextDomain=false;ui.monster.swampNextOffense="drain"');lordTurn(e);
+ e.run('Math.random=()=>0');lordTurn(e);assert.equal(e.run('ui.monster.hp'),200);
+});
+test('deterministic cumulative cycles keep one preparation, normal gaps and alternate phase III offense',()=>{
+ const e=lordBattle();e.run('ui.monster.hp=200');
+ const executed=[];let normals=0;
+ for(let n=0;n<65;n++){
+  const pending=e.run('ui.monster.swampPrepared');
+  const turn=lordTurn(e);
+  if(turn.damage===20)normals++;
+  if(turn.damage===30){
+   assert.ok(normals>=3);normals=0;executed.push(pending);
+  }
+  assert.equal(e.run('ui.monster.submerged'),e.run('ui.monster.swampPrepared==="ambush"'));
+  if(e.run('ui.monster.submerged'))assert.equal(e.run('ui.monster.swampPrepared'),'ambush');
+ }
+ assert.ok(executed.length>=3);
+ executed.forEach((move,i)=>assert.equal(move,i%2?'drain':'ambush'));
+});
+test('Devorador and other bosses have no new state or WAIT; schema 5 reload discards Senhor preparations/debuffs',()=>{
+ const e=fresh();e.run('startBattle(1,MAPS[1].miniBoss,false)');
+ assert.equal(e.run('ui.monster.swampPhase'),undefined);assert.ok(!e.run('renderBatalhaTab()').includes('AGUARDAR'));
+ e.run('waitForSwampLord()');assert.equal(e.run('ui.locked'),false);
+ for(const move of ['ambush','drain']){
+  const b=fresh();b.run('startBattle(1,MAPS[1].boss,true);ui.monster.hp=200;ui.monster.swampNormals=3;ui.monster.swampNextDomain=false;ui.monster.swampNextOffense="'+move+'";ui.buffs.atolado={turnsLeft:2};resolveEnemyAttack()');
+  const r=resumed(b);assert.equal(r.run('SAVE_SCHEMA_VERSION'),5);assert.equal(r.run('ui.monster'),null);
+  assert.equal(r.run('ui.inBattle'),false);assert.equal(r.run('Object.keys(ui.buffs).length'),0);assert.equal(r.run('Object.keys(ui.skillCooldowns).length'),0);
+ }
+});
+
+test('WAIT has zero resource cost and normal effect ticks, never refreshes Atolado or grants a benefit',()=>{
+ const e=lordBattle();e.run('ui.monster.hp=300;ui.monster.swampNormals=3;ui.monster.swampNextDomain=false');lordTurn(e);
+ e.run('player.mp=0;player.consumables={hp:0,mp:0};ui.buffs.atolado={turnsLeft:2};ui.buffs.atkBoost={turnsLeft:2,mult:1.3};ui.skillCooldowns.fixture=2');
+ const resources=e.run('JSON.stringify([player.mp,player.consumables])');
+ e.run('playerAttack()');assert.equal(e.run('ui.buffs.atolado.turnsLeft'),2);
+ e.run('waitForSwampLord();waitForSwampLord()');e.tick();
+ assert.equal(e.run('JSON.stringify([player.mp,player.consumables])'),resources);
+ assert.equal(e.run('ui.buffs.atolado.turnsLeft'),1);assert.equal(e.run('ui.buffs.atkBoost.turnsLeft'),1);assert.equal(e.run('ui.skillCooldowns.fixture'),1);
+ e.tick();assert.equal(e.run('ui.locked'),false);
+});
+test('Devorador desperation remains +20% at 40%, other bosses never gain Lord states',()=>{
+ const e=fresh();e.run('startBattle(1,MAPS[1].miniBoss,false);var originalAtk=ui.monster.atk;ui.monster.hp=ui.monster.hpMax*.4;resolvePlayerHit(1,false)');e.tick();
+ assert.equal(e.run('ui.monster.desperationTriggered'),true);
+ assert.equal(e.run('ui.monster.atk'),e.run('Math.round(originalAtk*1.2)'));
+ for(const index of [0,2,3]){
+  const b=fresh();b.run('startBattle('+index+',MAPS['+index+'].boss,true)');
+  assert.equal(b.run('ui.monster.swampPhase'),undefined);assert.equal(b.run('ui.monster.submerged'),undefined);
+  assert.ok(!b.run('renderBatalhaTab()').includes('AGUARDAR'));
+ }
+});
