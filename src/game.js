@@ -265,6 +265,7 @@ function buyBaseGear(idx){
     twoHanded:false, levelReq:0, statReq:{},
     name: tmpl.name, artKey:tmpl.artKey||null, value: Math.round(tmpl.price*0.4),
   };
+  assignSalvageProfile(item);
   player.inventory.push(item);
   player.newItemCount = (player.newItemCount||0) + 1;
   showToast(`${tmpl.name} comprado.`);
@@ -541,6 +542,7 @@ function generateItem(mapIndex, tier, isBoss, forceMinRarity){
     item.name = `${SLOT_META[slot].label} ${pick(RARITY_PREFIX[rarity])}`;
   }
 
+  assignSalvageProfile(item);
   addItemAffixes(item);
   item.value = Math.round(9 * mult * (1+mapIndex*0.5) * roll * (1 + (item.affixes?.length||0)*0.35));
   return item;
@@ -560,6 +562,7 @@ function generateBossUnique(mapIndex){
   else if(classKey==='guerreiro') item.atk=18;
   else { item.atk=13; item.def=5; }
   item.affixes=[{key:'crit',label:'Marca do Alfa',value:.07},{key:'execute',label:'Predador Supremo',value:.14}];
+  delete item.salvageProfile;
   item.uniqueEffect={id:'alfa',desc:'Legado do Alfa: crítico e dano de execução elevados'};
   item.value=180;
   return item;
@@ -934,6 +937,97 @@ function renderRomarDiscovery(){
   </article>`;
 }
 
+// Economia aprovada: classificação explícita por slot e classe; nunca por nome.
+const MATERIAL_DEFS={
+  sucata_ferro:{name:'Sucata de Ferro'},
+  essencia_arcana:{name:'Essência Arcana'},
+  fragmento_refinado:{name:'Fragmento Refinado'},
+  lodo_viscoso:{name:'Lodo Viscoso',territorial:true},
+  escamas_grande_mae:{name:'Escamas da Grande Mãe',territorial:true}
+};
+// profile: {version, yieldsByRarity:{raridade:{materialId:quantidade}}}
+// item.salvageProfile: {id,version}. Instâncias ambíguas continuam bloqueadas.
+const SALVAGE_PROFILES={
+  physical:{version:1,yieldsByRarity:{comum:{sucata_ferro:1},raro:{sucata_ferro:2},épico:{sucata_ferro:4,fragmento_refinado:1},lendário:{sucata_ferro:7,fragmento_refinado:2}}},
+  arcane:{version:1,yieldsByRarity:{comum:{essencia_arcana:1},raro:{essencia_arcana:2},épico:{essencia_arcana:4,fragmento_refinado:1},lendário:{essencia_arcana:7,fragmento_refinado:2}}},
+  hybrid:{version:1,yieldsByRarity:{comum:{sucata_ferro:1},raro:{sucata_ferro:1,essencia_arcana:1},épico:{sucata_ferro:2,essencia_arcana:2,fragmento_refinado:1},lendário:{sucata_ferro:3,essencia_arcana:3,fragmento_refinado:2}}}
+};
+function assignSalvageProfile(item){
+  if(item.salvageProfile || item.uniqueEffect || item.protected || item.special || item.isProtected || item.isSpecial || item.isUnique || item.questClue)return item;
+  let id=null;
+  if(['accessory','necklace','earring','bracelet'].includes(item.slot))id='hybrid';
+  else if(['weapon','shield','helmet','armor','gloves','boots'].includes(item.slot)){
+    if(item.classReq==='mago')id='arcane';
+    else if(['arqueiro','guerreiro','cavaleiro'].includes(item.classReq))id='physical';
+  }
+  if(id)item.salvageProfile={id,version:1};
+  return item;
+}
+// recipe: {version, ingredients:[{materialId,quantity}], resultSlot, requirements,
+// fixedPropertiesByRarity, affixRules}. Conhecimento é uma lista de IDs no save.
+// Instâncias futuras: {origin:'craft',recipeId,recipeVersion,fixedProperties}.
+const RECIPE_DEFS={};
+function normalizeForgeEconomy(p){
+  for(const key of ['materials','recipePity']){
+    if(!p[key] || typeof p[key]!=='object' || Array.isArray(p[key]))p[key]={};
+    for(const value of Object.values(p[key]))if(!Number.isSafeInteger(value) || value<0)throw new Error('Quantidade econômica inválida');
+  }
+  p.knownRecipes=Array.isArray(p.knownRecipes)?[...new Set(p.knownRecipes.filter(id=>typeof id==='string' && id.length>0))]:[];
+}
+function forgeText(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function forgeAvailable(){
+  return !!player && !!(player.forgeProgress && player.forgeProgress.lucas && player.forgeProgress.lucas.forgeUnlocked) &&
+    ui.mapIndex===1 && ui.lucasScene==='workshop' && !ui.inBattle && !ui.monster && !ui.locked && !ui.romarResult && !pendingForestEvent && !hasPendingRomarDiscovery();
+}
+function salvageQuote(uid){
+  if(!player || typeof uid!=='string')return null;
+  const matches=player.inventory.filter(it=>it.uid===uid);
+  if(matches.length!==1 || Object.values(player.equipment).some(it=>it && it.uid===uid))return null;
+  const item=matches[0];
+  if(!Object.prototype.hasOwnProperty.call(SLOT_META,item.slot) || item.protected || item.special || item.isProtected || item.isSpecial || item.isUnique || item.uniqueEffect || item.questClue || item.category==='quest' || item.category==='consumable')return null;
+  if(Object.values(player.questItems||{}).some(q=>q && q.uid===uid))return null;
+  const ref=item.salvageProfile;
+  if(!ref || !Object.prototype.hasOwnProperty.call(SALVAGE_PROFILES,ref.id))return null;
+  const profile=SALVAGE_PROFILES[ref.id];
+  if(!profile || !profile.yieldsByRarity || profile.version!==ref.version || !Object.prototype.hasOwnProperty.call(profile.yieldsByRarity,item.rarity))return null;
+  const yields=profile.yieldsByRarity[item.rarity];
+  if(!yields || !Object.keys(yields).length || Object.entries(yields).some(([id,n])=>!Object.prototype.hasOwnProperty.call(MATERIAL_DEFS,id)||!Number.isSafeInteger(n)||n<=0))return null;
+  return {uid,item:JSON.stringify(item),yields:JSON.parse(JSON.stringify(yields))};
+}
+function previewSalvage(uid){
+  if(!forgeAvailable())return;
+  ui.salvageConfirmation=salvageQuote(uid);render();
+}
+function cancelSalvage(){ui.salvageConfirmation=null;render();}
+function confirmSalvage(){
+  if(!forgeAvailable() || !ui.salvageConfirmation)return false;
+  const preview=ui.salvageConfirmation;
+  ui.salvageConfirmation=null; // Consome a requisição antes de qualquer escrita.
+  const current=salvageQuote(preview.uid);
+  if(!current || JSON.stringify(current)!==JSON.stringify(preview)){showToast('O equipamento ou rendimento mudou. Confira novamente.');render();return false;}
+  const next=JSON.parse(JSON.stringify(player));
+  next.inventory.splice(next.inventory.findIndex(it=>it.uid===preview.uid),1);
+  normalizeForgeEconomy(next);
+  for(const [id,n] of Object.entries(current.yields))next.materials[id]=(next.materials[id]||0)+n;
+  const saved=commitForgeTransaction(next);
+  if(saved)showToast('Equipamento desmontado. Materiais recebidos.');
+  render();return saved;
+}
+function renderForgeMaterials(){
+  const rows=Object.entries(player.materials||{}).filter(([,n])=>n>0);
+  return '<h3>MATERIAIS</h3>'+ (rows.length?rows.map(([id,n])=>'<p>'+forgeText(MATERIAL_DEFS[id]?.name||id)+' · '+n+'</p>').join(''):'<p>Nenhum material disponível.</p>');
+}
+function renderForgeWorkshop(){
+  const preview=ui.salvageConfirmation;
+  if(preview){
+    const item=JSON.parse(preview.item);
+    return '<h3>DESMONTAR</h3><p>'+forgeText(item.name)+' · '+forgeText(item.rarity)+'</p><p>'+forgeText(itemDesc(item))+'</p><p>Rendimento garantido:</p>'+Object.entries(preview.yields).map(([id,n])=>'<p>'+forgeText(MATERIAL_DEFS[id].name)+' · '+n+'</p>').join('')+'<p><strong>ESTE EQUIPAMENTO SERÁ DESTRUÍDO PERMANENTEMENTE.</strong></p><button class="enter-map-btn" onclick="confirmSalvage()">DESMONTAR</button><button class="enter-map-btn" onclick="cancelSalvage()">CANCELAR</button>';
+  }
+  const eligible=player.inventory.filter(it=>salvageQuote(it.uid));
+  const recipes=(player.knownRecipes||[]).filter(id=>Object.prototype.hasOwnProperty.call(RECIPE_DEFS,id));
+  return '<h3>FABRICAR</h3><p>'+(recipes.length?'Receitas conhecidas. Fabricação ainda indisponível.':'Nenhuma receita conhecida.')+'</p><h3>DESMONTAR</h3>'+ (eligible.length?eligible.map(it=>'<button class="enter-map-btn" onclick="previewSalvage('+forgeText(JSON.stringify(it.uid))+')">'+forgeText(it.name)+' · '+forgeText(it.rarity)+'</button>').join(''):'<p>Nenhum equipamento elegível para desmontagem.</p>')+renderForgeMaterials();
+}
+
 // Lucas: cena transitória separada da progressão permanente.
 const LUCAS_ART='assets/images/npcs/lucas.jpg';
 function normalizeLucasProgress(forge){
@@ -973,7 +1067,7 @@ function lucasSceneAction(action){
   if(scene==='unlock' && action==='finish'){
     state.discovered=true;state.forgeUnlocked=true;state.waitExplorations=0;ui.lucasScene=null;render();return;
   }
-  if(scene==='workshop' && action==='finish'){ui.lucasScene=null;render();}
+  if(scene==='workshop' && action==='finish'){ui.salvageConfirmation=null;ui.lucasScene=null;render();}
 }
 function renderLucasScene(){
   const scenes={
@@ -989,7 +1083,8 @@ function renderLucasScene(){
   const scene=scenes[ui.lucasScene];if(!scene)return '';
   const title=getLucasProgress().discovered && ui.lucasScene.startsWith('fragment')?'LUCAS, O FERREIRO MARCADO':scene.title;
   const art=!['sound','approach'].includes(ui.lucasScene)?`<img class="romar-discovery-art" src="${LUCAS_ART}" alt="Lucas" onerror="this.style.display='none'">`:'';
-  return `<article class="romar-discovery interactive-card">${art}<div class="romar-discovery-text"><h2>${title}</h2>${scene.text.map(t=>`<p>${t}</p>`).join('')}${scene.buttons.map(b=>`<button type="button" class="enter-map-btn" onclick="lucasSceneAction('${b[0]}')">${b[1]}</button>`).join('')}</div></article>`;
+  const body=ui.lucasScene==='workshop'?renderForgeWorkshop():scene.text.map(t=>`<p>${t}</p>`).join('');
+  return `<article class="romar-discovery interactive-card">${art}<div class="romar-discovery-text"><h2>${title}</h2>${body}${ui.salvageConfirmation?'':scene.buttons.map(b=>`<button type="button" class="enter-map-btn" onclick="lucasSceneAction('${b[0]}')">${b[1]}</button>`).join('')}</div></article>`;
 }
 
 const FOREST_EVENTS = [
@@ -2474,6 +2569,7 @@ function renderInventarioTab(){
     </div>
     <div class="inv-grid">${invRows}</div>
     ${renderQuestItems()}
+    ${renderForgeMaterials()}
   `;
 }
 

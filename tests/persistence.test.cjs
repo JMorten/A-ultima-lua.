@@ -118,9 +118,9 @@ test('storage errors are handled without destroying last checkpoint',()=>{
 test('schema 1 bracelet migration preserves exact instance and ring across repeated loads; legacy sells but cannot equip',()=>{
  const e=fresh();
  e.run('var old=readCheckpoint();old.schemaVersion=1;old.player.equipment.bracelet={uid:"it90",slot:"bracelet",name:"Bracelete legado",rarity:"raro",atk:3,agi:2,hp:10,mp:4,value:37,statReq:{defesa:2},affixes:[{key:"crit",value:.057321}],extra:{origin:"legacy"}};old.player.equipment.accessory={uid:"it91",slot:"accessory",name:"Anel legado",rarity:"raro",def:2,value:50};old.player.atk+=3;old.player.agilidade+=2;old.player.hpMax+=10;old.player.hp+=10;old.player.mpMax+=4;old.player.mp+=4;delete old.player.equipment.legs;localStorage.setItem(SAVE_KEY,JSON.stringify(old))');
- const bracelet=e.run('JSON.stringify(old.player.equipment.bracelet)'),ring=e.run('JSON.stringify(old.player.equipment.accessory)');
+ const bracelet=JSON.stringify({...JSON.parse(e.run('JSON.stringify(old.player.equipment.bracelet)')),salvageProfile:{id:'hybrid',version:1}}),ring=JSON.stringify({...JSON.parse(e.run('JSON.stringify(old.player.equipment.accessory)')),salvageProfile:{id:'hybrid',version:1}});
  let loaded=boot(e.storage);loaded.run('continueSavedGame()');
- assert.equal(loaded.run('SAVE_SCHEMA_VERSION'),3);
+ assert.equal(loaded.run('SAVE_SCHEMA_VERSION'),4);
  assert.equal(loaded.run('JSON.stringify(player.inventory[0])'),bracelet);
  assert.equal(loaded.run('JSON.stringify(player.equipment.accessory)'),ring);
  assert.equal(loaded.run('player.equipment.bracelet'),undefined);
@@ -284,6 +284,107 @@ test('Lucas scene blocks exploration/navigation, has persistent handlers and saf
  assert.ok(html.includes("lucasSceneAction('reply')"));
  const r=resumed(e);assert.equal(r.run('getLucasProgress().discovered'),false);
  r.run('var old=readCheckpoint();old.schemaVersion=2;delete old.player.forgeProgress.lucas');
- assert.equal(r.run('normalizeCheckpoint(old).schemaVersion'),3);
+ assert.equal(r.run('normalizeCheckpoint(old).schemaVersion'),4);
  assert.equal(r.run('JSON.stringify(normalizeCheckpoint(old))'),r.run('JSON.stringify(normalizeCheckpoint(normalizeCheckpoint(old)))'));
+});
+
+function salvageFixture(){
+ const e=swampReady();meetLucas(e);
+ // Quantidades artificiais APENAS para testar atomicidade; nunca catálogo do jogo.
+ e.run('SALVAGE_PROFILES.fixture={version:1,yieldsByRarity:{comum:{sucata_ferro:2,essencia_arcana:1}}};player.inventory.push({uid:"it700",slot:"bracelet",name:"Fixture legado",rarity:"comum",value:5,atk:1,salvageProfile:{id:"fixture",version:1}});requestCheckpoint();visitForge()');
+ return e;
+}
+test('forge catalogs contain approved profiles and no craft recipes; materials and knowledge migrate idempotently',()=>{
+ const e=fresh();assert.equal(e.run('Object.keys(SALVAGE_PROFILES).length'),3);assert.equal(e.run('Object.keys(RECIPE_DEFS).length'),0);
+ e.run('var old=readCheckpoint();old.schemaVersion=3;old.player.materials={sucata_ferro:7,essencia_arcana:2};old.player.knownRecipes=["future","future"];old.player.recipePity={future:4}');
+ assert.equal(e.run('normalizeCheckpoint(old).schemaVersion'),4);
+ assert.equal(e.run('normalizeCheckpoint(old).player.knownRecipes.length'),1);
+ assert.equal(e.run('normalizeCheckpoint(old).player.materials.sucata_ferro'),7);
+ assert.equal(e.run('JSON.stringify(normalizeCheckpoint(old))'),e.run('JSON.stringify(normalizeCheckpoint(normalizeCheckpoint(old)))'));
+ e.run('localStorage.setItem(SAVE_KEY,JSON.stringify(old))');
+ const r=resumed(e);assert.equal(r.run('player.recipePity.future'),4);
+ assert.equal(r.run('player.knownRecipes[0]'),'future');
+});
+test('salvage atomic commit, duplicate request and reload never duplicate materials; fragment unchanged',()=>{
+ const e=salvageFixture();e.run('player.questItems={fragmento_ferro_runico:{questClue:true}};previewSalvage("it700")');
+ const html=e.run('renderForgeWorkshop()');assert.ok(html.includes('ESTE EQUIPAMENTO SERÁ DESTRUÍDO PERMANENTEMENTE.'));assert.ok(html.includes('Sucata de Ferro · 2'));
+ assert.equal(e.run('confirmSalvage()'),true);assert.equal(e.run('confirmSalvage()'),false);
+ assert.equal(e.run('player.materials.sucata_ferro'),2);assert.equal(e.run('player.inventory.length'),0);
+ const r=resumed(e);assert.equal(r.run('player.materials.essencia_arcana'),1);
+ assert.equal(r.run('player.questItems.fragmento_ferro_runico.questClue'),true);
+ assert.equal(r.run('ui.salvageConfirmation'),null);
+});
+test('salvage cancel/reload before confirmation preserve item; storage failure rolls back',()=>{
+ const e=salvageFixture();e.run('previewSalvage("it700");cancelSalvage()');
+ assert.equal(e.run('confirmSalvage()'),false);assert.equal(e.run('player.inventory.length'),1);
+ e.run('previewSalvage("it700")');
+ assert.equal(resumed(e).run('player.inventory.length'),1);
+ const raw=e.storage.get('a-ultima-lua.checkpoint');
+ e.run('localStorage.setItem=()=>{throw Error("QuotaExceeded")};');
+ assert.equal(e.run('confirmSalvage()'),false);
+ assert.equal(e.run('player.inventory.length'),1);assert.equal(e.run('player.materials.sucata_ferro'),undefined);
+ assert.equal(e.storage.get('a-ultima-lua.checkpoint'),raw);
+});
+test('salvage blocks equipped/special/protected/quest/consumable/unknown profiles and absent inventory instances',()=>{
+ const e=salvageFixture();
+ for(const flag of ['protected','special','isProtected','isSpecial','uniqueEffect','questClue']){
+  e.run('player.inventory[0].'+flag+'=true');assert.equal(e.run('salvageQuote("it700")'),null);e.run('delete player.inventory[0].'+flag);
+ }
+ e.run('player.equipment.bracelet=player.inventory[0]');assert.equal(e.run('salvageQuote("it700")'),null);e.run('delete player.equipment.bracelet');
+ e.run('player.inventory[0].slot="consumable"');assert.equal(e.run('salvageQuote("it700")'),null);
+ e.run('player.inventory[0].slot="bracelet";player.inventory[0].salvageProfile.id="missing"');assert.equal(e.run('salvageQuote("it700")'),null);
+ e.run('player.inventory[0].salvageProfile.id="fixture";previewSalvage("it700");player.inventory=[]');
+ assert.equal(e.run('confirmSalvage()'),false);assert.equal(e.run('player.materials.sucata_ferro'),undefined);
+});
+test('salvage rejects changed instance/yield, duplicate uid, locked forge and integer overflow',()=>{
+ const e=salvageFixture();e.run('previewSalvage("it700");player.inventory[0].atk++');
+ assert.equal(e.run('confirmSalvage()'),false);
+ e.run('previewSalvage("it700");SALVAGE_PROFILES.fixture.yieldsByRarity.comum.sucata_ferro++');
+ assert.equal(e.run('confirmSalvage()'),false);
+ e.run('player.inventory.push(JSON.parse(JSON.stringify(player.inventory[0])))');assert.equal(e.run('salvageQuote("it700")'),null);
+ e.run('player.inventory.pop();previewSalvage("it700");player.forgeProgress.lucas.forgeUnlocked=false');
+ assert.equal(e.run('confirmSalvage()'),false);
+ e.run('player.forgeProgress.lucas.forgeUnlocked=true;player.materials.sucata_ferro=Number.MAX_SAFE_INTEGER;previewSalvage("it700")');
+ assert.equal(e.run('confirmSalvage()'),false);assert.equal(e.run('player.inventory.length'),1);
+});
+test('workshop shows three areas with official art and separates materials from quest fragment',()=>{
+ const e=swampReady(true);meetLucas(e,true);e.run('visitForge();player.materials={fragmento_refinado:3}');
+ const html=e.run('renderLucasScene()');
+ for(const text of ['FABRICAR','DESMONTAR','MATERIAIS','Nenhuma receita conhecida.','assets/images/npcs/lucas.jpg','Fragmento Refinado · 3'])assert.ok(html.includes(text));
+ assert.ok(!e.run('renderForgeMaterials()').includes('Ferro Rúnico'));
+ assert.ok(!html.includes('confirmSalvage()'));
+});
+
+test('approved yield matrix is exact for every profile and rarity',()=>{
+ const e=fresh(),rarities=['comum','raro','épico','lendário'];
+ const expected={
+ physical:[{sucata_ferro:1},{sucata_ferro:2},{sucata_ferro:4,fragmento_refinado:1},{sucata_ferro:7,fragmento_refinado:2}],
+ arcane:[{essencia_arcana:1},{essencia_arcana:2},{essencia_arcana:4,fragmento_refinado:1},{essencia_arcana:7,fragmento_refinado:2}],
+ hybrid:[{sucata_ferro:1},{sucata_ferro:1,essencia_arcana:1},{sucata_ferro:2,essencia_arcana:2,fragmento_refinado:1},{sucata_ferro:3,essencia_arcana:3,fragmento_refinado:2}]
+ };
+ for(const [profile,rows] of Object.entries(expected))rarities.forEach((rarity,i)=>{
+  e.run('player.inventory=[{uid:"it900",slot:"weapon",rarity:'+JSON.stringify(rarity)+',salvageProfile:{id:'+JSON.stringify(profile)+',version:1}}]');
+  assert.deepEqual(JSON.parse(e.run('JSON.stringify(salvageQuote("it900").yields)')),rows[i]);
+ });
+});
+test('profile mapping uses only approved structural slots/classes, preserves explicit profiles and protects Alfa',()=>{
+ const e=fresh();
+ for(const slot of ['weapon','shield','helmet','armor','gloves','boots'])for(const cls of ['mago','arqueiro','guerreiro','cavaleiro']){
+  assert.equal(e.run('assignSalvageProfile({slot:'+JSON.stringify(slot)+',classReq:'+JSON.stringify(cls)+',name:"nome irrelevante"}).salvageProfile.id'),cls==='mago'?'arcane':'physical');
+ }
+ for(const slot of ['accessory','necklace','earring','bracelet'])assert.equal(e.run('assignSalvageProfile({slot:'+JSON.stringify(slot)+'}).salvageProfile.id'),'hybrid');
+ assert.equal(e.run('assignSalvageProfile({slot:"armor",name:"Armadura Arcana"}).salvageProfile'),undefined);
+ assert.equal(e.run('assignSalvageProfile({slot:"legs",classReq:"mago"}).salvageProfile'),undefined);
+ assert.equal(e.run('assignSalvageProfile({slot:"accessory",salvageProfile:{id:"future",version:9}}).salvageProfile.id'),'future');
+ e.run('player.inventory=[generateBossUnique(0)]');assert.equal(e.run('salvageQuote(player.inventory[0].uid)'),null);
+});
+test('merchant audit: common gear costs 120–130, yields only one scrap, resale loses gold, consumables excluded',()=>{
+ const e=swampReady();meetLucas(e);e.run('player.coins=10000;');
+ for(let i=0;i<3;i++){
+  e.run('buyBaseGear('+i+')');
+  assert.ok(e.run('FERREIRO_BASE_GEAR['+i+'].price')>=120);
+  assert.ok(e.run('player.inventory.at(-1).value<FERREIRO_BASE_GEAR['+i+'].price'));
+  assert.deepEqual(JSON.parse(e.run('JSON.stringify(salvageQuote(player.inventory.at(-1).uid).yields)')),{sucata_ferro:1});
+ }
+ assert.equal(e.run('SHOP_ITEMS.every(it=>!it.salvageProfile)'),true);
 });

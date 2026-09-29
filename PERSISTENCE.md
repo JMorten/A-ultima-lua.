@@ -3,7 +3,7 @@
 ## Schema e armazenamento
 
 - Chave localStorage: a-ultima-lua.checkpoint.
-- Schema explícito: 3.
+- Schema explícito: 4.
 - Envelope: { schemaVersion, player, itemSeq, world }.
 - player conserva os dados permanentes completos e os valores exatos de cada item,
   incluindo uid, requisitos e afixos. Não recalcula equipamento ao carregar.
@@ -85,3 +85,49 @@ elegível após três abates comuns, sem exigir o Devorador. Após descoberta, o
 à Forja é permanente no Pântano; reconhecimento posterior do Fragmento ocorre uma vez.
 Arte futura: assets/images/npcs/lucas.jpg. Sem esse arquivo, a imagem fica oculta;
 nenhuma arte substituta foi adicionada.
+
+## Economia da oficina (schema 4)
+
+materials é um mapa materialId → inteiro não negativo; knownRecipes é uma lista
+de IDs únicos, independente do inventário. recipePity reserva contadores inteiros
+por ID de receita, sem ativar pity. IDs desconhecidos válidos são preservados para
+compatibilidade futura. Quantidades inválidas rejeitam o save sem sobrescrevê-lo.
+Saves schema 3 migram sem modificar instâncias ou progresso.
+
+MATERIAL_DEFS registra sucata_ferro, essencia_arcana, fragmento_refinado e reserva
+lodo_viscoso / escamas_grande_mae. Não há novos drops. Fragmento de Ferro Rúnico
+continua exclusivamente em questItems. RECIPE_DEFS permanece vazio. SALVAGE_PROFILES contém os três perfis aprovados.
+A migração atribui somente o metadado salvageProfile, sem alterar valores do item.
+
+Contrato de perfil: {version, yieldsByRarity: {raridade: {materialId: quantidade}}}.
+A instância referencia {salvageProfile: {id, version}}. A prévia guarda uid, instância
+completa e rendimento; confirmar revalida os três. Equipados, especiais, protegidos,
+quest items, consumíveis, uid duplicado e perfil ausente/incompatível são recusados.
+Uma gravação localStorage contém remoção e concessão juntas. Somente após sucesso
+a memória é substituída; falha preserva o item. Requisição consumida, ausência do uid
+e estado transitório da confirmação impedem reaplicação por toque duplo/reload.
+
+Contrato futuro de receita (nenhuma cadastrada): version; ingredients com materialId
+e quantity; resultSlot; requirements; fixedPropertiesByRarity; affixRules. Futuras
+instâncias fabricadas terão origin: "craft", recipeId, recipeVersion e fixedProperties.
+Não há função de fabricação nesta etapa.
+
+### Perfis aprovados e auditoria do Mercador
+
+physical: weapon/shield/helmet/armor/gloves/boots de Arqueiro, Guerreiro ou
+Cavaleiro. arcane: os mesmos slots de Mago. hybrid: accessory/necklace/earring
+e bracelet legado. Sem classe reconhecida nos slots de classe, ou sem slot
+previsto, a instância permanece sem perfil e não é desmontável. Nomes não são
+consultados. Perfis existentes não são sobrescritos; uniqueEffect protege o Alfa.
+
+Comum/raro/épico/lendário físicos: 1/2/4/7 Sucatas; arcanos: 1/2/4/7 Essências.
+Épicos acrescentam 1 Fragmento Refinado; lendários, 2. Híbridos: comum 1 Sucata;
+raro 1 Sucata + 1 Essência; épico 2 + 2 + 1 Refinado; lendário 3 + 3 + 2 Refinados.
+Nenhum sorteio é usado.
+
+Mercador: Brinco e Colar custam 120 e revendem por 48; Anel custa 130 e revende
+por 52. Todos são comuns/híbridos: desmontar dá apenas 1 Sucata, sem retorno de
+moedas. Materiais não são vendáveis e não há fabricação/conversão para fechar
+um ciclo de lucro. Não há rota comercial para Essência ou Refinado nesta etapa.
+Preços e desbloqueio comercial permanecem inalterados; reauditar ao adicionar
+receitas ou venda de materiais.

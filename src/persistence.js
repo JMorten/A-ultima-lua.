@@ -1,13 +1,13 @@
 /* Persistência local de checkpoints. Script clássico, carregado após game.js. */
 const SAVE_KEY='a-ultima-lua.checkpoint';
-const SAVE_SCHEMA_VERSION=3;
+const SAVE_SCHEMA_VERSION=4;
 let saveNotice='';
 let saveActionDepth=0;
 let saveReplacementApproved=false;
 let lastSavedPayload=null;
 
 function normalizeCheckpoint(input){
-  if(!input || typeof input!=='object' || ![0,1,2,SAVE_SCHEMA_VERSION].includes(input.schemaVersion)) throw new Error('Schema incompatível');
+  if(!input || typeof input!=='object' || ![0,1,2,3,SAVE_SCHEMA_VERSION].includes(input.schemaVersion)) throw new Error('Schema incompatível');
   const data=JSON.parse(JSON.stringify(input));
   const p=data.player;
   const object=value=>value && typeof value==='object' && !Array.isArray(value);
@@ -37,6 +37,7 @@ function normalizeCheckpoint(input){
     for(const key of ['atk','def','hp','mp','magia','agi','value']){
       if(item[key]!==undefined && !Number.isFinite(item[key])) throw new Error('Valor de item inválido');
     }
+    assignSalvageProfile(item);
     ids.add(item.uid);
     const match=/^it(\d+)$/.exec(item.uid);
     if(match){const n=Number(match[1]);if(!Number.isSafeInteger(n)||n>=Number.MAX_SAFE_INTEGER-1)throw new Error('uid inválido');next=Math.max(next,n+1);}
@@ -55,6 +56,7 @@ function normalizeCheckpoint(input){
   for(const key of ['questItems','materials','recipePity','forgeProgress'])if(!object(p[key]))p[key]={};
   normalizeLucasProgress(p.forgeProgress);
   if(!Array.isArray(p.knownRecipes))p.knownRecipes=[];
+  normalizeForgeEconomy(p);
   // Checkpoints não restauram cenas. Schema 0 é o envelope de importação/normalização.
   if(p.romarDiscoveries && p.romarDiscoveries.pending)throw new Error('Cena pendente');
   const state=object(data.world)?data.world:{};
@@ -111,6 +113,19 @@ function persistCombatResources(){
     showToast(saveNotice);return false;
   }
 }
+// Escreve remoção + materiais num único envelope antes de publicar o novo estado
+// em memória. Falha/quota preserva a instância original e permite nova prévia.
+function commitForgeTransaction(nextPlayer){
+  if(!forgeAvailable())return false;
+  try{
+    const checkpoint=normalizeCheckpoint({schemaVersion:SAVE_SCHEMA_VERSION,player:nextPlayer,itemSeq:ui.itemSeq,
+      world:{forestEventCooldown,lastForestEventId}});
+    const payload=JSON.stringify(checkpoint);
+    localStorage.setItem(SAVE_KEY,payload);
+    player=checkpoint.player;ui.itemSeq=checkpoint.itemSeq;lastSavedPayload=payload;
+    return true;
+  }catch(error){showToast('Não foi possível salvar a desmontagem. O equipamento foi preservado.');return false;}
+}
 function combatResourceAction(action){
   return function(...args){
     const active=ui.inBattle;
@@ -132,7 +147,7 @@ function continueSavedGame(){
   if(!checkpoint){renderSaveEntry();return false;}
   player=checkpoint.player;
   Object.assign(ui,{tab:'mapa',mapIndex:null,monster:null,inBattle:false,locked:false,skillCooldowns:{},buffs:{},
-    lucasScene:null,romarResult:null,selectedEquipSlot:null,itemSeq:checkpoint.itemSeq,gameStart:Date.now(),
+    salvageConfirmation:null,lucasScene:null,romarResult:null,selectedEquipSlot:null,itemSeq:checkpoint.itemSeq,gameStart:Date.now(),
     pendingAlloc:{forca:0,defesa:0,vitalidade:0,espirito:0,magia:0,agilidade:0}});
   pendingForestEvent=null;forestEventCooldown=checkpoint.world.forestEventCooldown;
   lastForestEventId=checkpoint.world.lastForestEventId;
@@ -173,7 +188,7 @@ const chooseClassWithoutSave=chooseClass;
 chooseClass=function(key){
   if(player || !Object.prototype.hasOwnProperty.call(CLASSES,key))return;
   if(readCheckpoint() && !saveReplacementApproved){renderSaveEntry();return;}
-  chooseClassWithoutSave(key);saveReplacementApproved=false;lastSavedPayload=null;requestCheckpoint();
+  chooseClassWithoutSave(key);normalizeForgeEconomy(player);saveReplacementApproved=false;lastSavedPayload=null;requestCheckpoint();
 };
 lucasSceneAction=checkpointAction(lucasSceneAction);
 visitForge=checkpointAction(visitForge,true);
