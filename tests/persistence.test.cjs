@@ -120,7 +120,7 @@ test('schema 1 bracelet migration preserves exact instance and ring across repea
  e.run('var old=readCheckpoint();old.schemaVersion=1;old.player.equipment.bracelet={uid:"it90",slot:"bracelet",name:"Bracelete legado",rarity:"raro",atk:3,agi:2,hp:10,mp:4,value:37,statReq:{defesa:2},affixes:[{key:"crit",value:.057321}],extra:{origin:"legacy"}};old.player.equipment.accessory={uid:"it91",slot:"accessory",name:"Anel legado",rarity:"raro",def:2,value:50};old.player.atk+=3;old.player.agilidade+=2;old.player.hpMax+=10;old.player.hp+=10;old.player.mpMax+=4;old.player.mp+=4;delete old.player.equipment.legs;localStorage.setItem(SAVE_KEY,JSON.stringify(old))');
  const bracelet=e.run('JSON.stringify(old.player.equipment.bracelet)'),ring=e.run('JSON.stringify(old.player.equipment.accessory)');
  let loaded=boot(e.storage);loaded.run('continueSavedGame()');
- assert.equal(loaded.run('SAVE_SCHEMA_VERSION'),2);
+ assert.equal(loaded.run('SAVE_SCHEMA_VERSION'),3);
  assert.equal(loaded.run('JSON.stringify(player.inventory[0])'),bracelet);
  assert.equal(loaded.run('JSON.stringify(player.equipment.accessory)'),ring);
  assert.equal(loaded.run('player.equipment.bracelet'),undefined);
@@ -209,4 +209,81 @@ test('combat tonic remains consumed with its duration; resource overlay clamps t
  let r=resumed(e);assert.equal(r.run('player.consumables.xpbuff'),0);assert.equal(r.run('player.xpBuffUntil'),e.run('player.xpBuffUntil'));
  e.run('player.hp=999;player.mp=999;persistCombatResources()');r=resumed(e);
  assert.equal(r.run('player.hp'),r.run('player.hpMax'));assert.equal(r.run('player.mp'),r.run('player.mpMax'));
+});
+
+function swampReady(fragment=false){
+ const e=fresh();e.run('player.defeatedBosses=[0];player.level=5;recomputeStats();player.swampProgress.commonKills=3;ui.mapIndex=1;requestCheckpoint()');
+ if(fragment)e.run('player.questItems={fragmento_ferro_runico:{name:"Fragmento",questClue:true}};requestCheckpoint()');
+ return e;
+}
+function meetLucas(e,fragment=false){
+ e.run('explorarMapa(1)');assert.equal(e.run('ui.lucasScene'),'sound');
+ e.run('lucasSceneAction("investigate");lucasSceneAction("next")');
+ assert.equal(e.run('ui.lucasScene'),fragment?'fragment1':'unknown');
+ if(fragment)e.run('lucasSceneAction("next");lucasSceneAction("next")');
+ e.run('lucasSceneAction("reply");lucasSceneAction("next")');
+ assert.equal(e.run('ui.lucasScene'),'unlock');
+ assert.equal(e.run('readCheckpoint().player.forgeProgress.lucas.discovered'),false);
+ e.run('lucasSceneAction("finish")');
+}
+test('Lucas only in swamp after three common kills; trap and miniboss keep priority and RNG',()=>{
+ const e=swampReady();e.run('player.swampProgress.commonKills=2;explorarMapa(1)');
+ assert.equal(e.run('ui.lucasScene'),undefined);assert.equal(e.run('ui.inBattle'),true);
+ e.run('fleeBattle();player.swampProgress.commonKills=3;var rolls=0;Math.random=()=>{rolls++;return 0};explorarMapa(1)');
+ assert.equal(e.run('ui.lucasScene'),undefined);assert.equal(e.run('ui.inBattle'),false);
+ e.close();e.run('var seq=[.99,0];Math.random=()=>seq.length?seq.shift():.99;explorarMapa(1)');
+ assert.equal(e.run('ui.monster.id'),'devorador_charco');assert.equal(e.run('ui.lucasScene'),undefined);
+ e.run('fleeBattle();Math.random=()=>{rolls++;return .99};rolls=0;explorarMapa(1)');
+ assert.equal(e.run('rolls'),2);assert.equal(e.run('ui.lucasScene'),'sound');
+ assert.equal(e.run('player.swampProgress.commonKills'),3);
+ assert.equal(e.run('player.swampProgress.miniBossDefeated'),false);
+});
+test('Lucas refusal repeats after three accepted swamp explorations; blocked clicks never count',()=>{
+ const e=swampReady();e.run('explorarMapa(1);lucasSceneAction("leave")');
+ assert.equal(resumed(e).run('player.forgeProgress.lucas.waitExplorations'),3);
+ for(let cycle=0;cycle<2;cycle++){
+  for(let n=2;n>=0;n--){
+   e.run('explorarMapa(1)');assert.equal(e.run('getLucasProgress().waitExplorations'),n);
+   assert.equal(e.run('ui.inBattle'),true);
+   e.run('explorarMapa(1)');assert.equal(e.run('getLucasProgress().waitExplorations'),n);
+   e.run('fleeBattle()');
+  }
+  e.run('explorarMapa(1)');assert.equal(e.run('ui.lucasScene'),'sound');
+  e.run('lucasSceneAction("leave")');assert.equal(e.run('getLucasProgress().waitExplorations'),3);
+ }
+});
+for(const fragment of [false,true])test('Lucas first encounter, persistent unlock and no repeats; fragment='+fragment,()=>{
+ const e=swampReady(fragment);
+ const before=e.run('JSON.stringify([player.swampProgress,player.forestProgress,player.defeatedBosses,player.inventory,player.totalXp,player.coins])');
+ meetLucas(e,fragment);
+ assert.equal(e.run('JSON.stringify([player.swampProgress,player.forestProgress,player.defeatedBosses,player.inventory,player.totalXp,player.coins])'),before);
+ const r=resumed(e);assert.equal(r.run('getLucasProgress().forgeUnlocked'),true);
+ assert.equal(r.run('getLucasProgress().fragmentSeen'),fragment);
+ assert.equal(r.run('lucasHasFragment()'),fragment);
+ r.run('ui.mapIndex=1;visitForge()');assert.equal(r.run('ui.lucasScene'),'workshop');
+ r.run('lucasSceneAction("finish");explorarMapa(1)');assert.equal(r.run('ui.lucasScene'),null);
+ assert.equal(r.run('ui.inBattle'),true);
+});
+test('later fragment recognized once, never consumed; reload in scene returns prior checkpoint',()=>{
+ const e=swampReady();meetLucas(e);
+ e.run('player.questItems={fragmento_ferro_runico:{name:"Fragmento",questClue:true}};requestCheckpoint();visitForge()');
+ assert.equal(e.run('ui.lucasScene'),'fragment1');
+ assert.equal(e.run('requestCheckpoint()'),false);
+ let r=resumed(e);assert.equal(r.run('ui.lucasScene'),null);assert.equal(r.run('getLucasProgress().fragmentSeen'),false);
+ r.run('ui.mapIndex=1;visitForge();lucasSceneAction("next");lucasSceneAction("next");lucasSceneAction("finish")');
+ r=resumed(r);assert.equal(r.run('getLucasProgress().fragmentSeen'),true);
+ r.run('ui.mapIndex=1;visitForge()');assert.equal(r.run('ui.lucasScene'),'workshop');
+ assert.equal(r.run('lucasHasFragment()'),true);
+});
+test('Lucas scene blocks exploration/navigation, has persistent handlers and safe missing art; old save migration idempotent',()=>{
+ const e=swampReady();e.run('explorarMapa(1);lucasSceneAction("investigate");lucasSceneAction("next")');
+ assert.equal(e.run('ui.lucasScene'),'unknown');
+ e.run('switchTab("inventario");explorarMapa(1);startBattle(1,MAPS[1].boss,true)');
+ assert.equal(e.run('ui.lucasScene'),'unknown');assert.equal(e.run('ui.inBattle'),false);
+ const html=e.run('renderMapaTab()');assert.ok(html.includes('interactive-card'));assert.ok(html.includes('onerror='));
+ assert.ok(html.includes("lucasSceneAction('reply')"));
+ const r=resumed(e);assert.equal(r.run('getLucasProgress().discovered'),false);
+ r.run('var old=readCheckpoint();old.schemaVersion=2;delete old.player.forgeProgress.lucas');
+ assert.equal(r.run('normalizeCheckpoint(old).schemaVersion'),3);
+ assert.equal(r.run('JSON.stringify(normalizeCheckpoint(old))'),r.run('JSON.stringify(normalizeCheckpoint(normalizeCheckpoint(old)))'));
 });

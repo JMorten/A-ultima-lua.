@@ -934,6 +934,64 @@ function renderRomarDiscovery(){
   </article>`;
 }
 
+// Lucas: cena transitória separada da progressão permanente.
+const LUCAS_ART='assets/images/npcs/lucas.jpg';
+function normalizeLucasProgress(forge){
+  const old=forge.lucas||{};
+  forge.lucas={version:1,discovered:old.discovered===true,forgeUnlocked:old.discovered===true,
+    fragmentSeen:old.fragmentSeen===true,
+    waitExplorations:Number.isInteger(old.waitExplorations)?Math.max(0,Math.min(3,old.waitExplorations)):0};
+  return forge.lucas;
+}
+function getLucasProgress(){
+  player.forgeProgress=player.forgeProgress||{};
+  return normalizeLucasProgress(player.forgeProgress);
+}
+function lucasHasFragment(){return !!(player.questItems && player.questItems.fragmento_ferro_runico);}
+function advanceLucasExploration(){
+  const state=getLucasProgress();
+  if(state.discovered)return false;
+  if(state.waitExplorations>0){state.waitExplorations--;return false;}
+  return !!(player.swampProgress && player.swampProgress.commonKills>=3);
+}
+function showLucasScene(scene){ui.lucasScene=scene;ui.mapIndex=1;ui.tab='mapa';render();}
+function visitForge(){
+  if(ui.mapIndex!==1 || ui.lucasScene || ui.inBattle || ui.locked || ui.monster || ui.romarResult ||
+    hasPendingRomarDiscovery() || pendingForestEvent || document.querySelectorAll('.interactive-card').length || !getLucasProgress().forgeUnlocked)return;
+  showLucasScene(lucasHasFragment() && !getLucasProgress().fragmentSeen?'fragment1':'workshop');
+}
+function lucasSceneAction(action){
+  const scene=ui.lucasScene;if(!scene)return;
+  const state=getLucasProgress();
+  if(scene==='sound' && action==='leave'){state.waitExplorations=3;ui.lucasScene=null;render();return;}
+  if(scene==='sound' && action==='investigate')return showLucasScene('approach');
+  if(scene==='approach' && action==='next')return showLucasScene(lucasHasFragment() && !state.fragmentSeen?'fragment1':'unknown');
+  if(scene==='fragment1' && action==='next')return showLucasScene('fragment2');
+  if(scene==='fragment2' && action==='next'){state.fragmentSeen=true;return showLucasScene(state.discovered?'workshop':'unknown');}
+  if(scene==='unknown' && action==='reply')return showLucasScene('name');
+  if(scene==='name' && action==='next')return showLucasScene('unlock');
+  if(scene==='unlock' && action==='finish'){
+    state.discovered=true;state.forgeUnlocked=true;state.waitExplorations=0;ui.lucasScene=null;render();return;
+  }
+  if(scene==='workshop' && action==='finish'){ui.lucasScene=null;render();}
+}
+function renderLucasScene(){
+  const scenes={
+    sound:{title:'DESCOBERTA — MARTELADAS NA NÉVOA',text:['CLANG.','O som atravessa o pântano.','Você para.','Por alguns instantes, apenas água, insetos e o vento entre as árvores mortas.','CLANG.','Metal contra metal.','Não é o som de uma criatura.','E não parece vir de muito longe.'],buttons:[['investigate','INVESTIGAR O SOM'],['leave','SEGUIR CAMINHO']]},
+    approach:{title:'MARTELADAS NA NÉVOA',text:['Você segue as marteladas através da névoa.','O cheiro pútrido do pântano começa a se misturar a outro.','Carvão. Ferro quente.','Entre árvores mortas surge uma construção de madeira escurecida. Uma chaminé improvisada expele fumaça para a noite.','Alguém mantém uma forja acesa aqui.'],buttons:[['next','APROXIMAR-SE']]},
+    unknown:{title:'FERREIRO DESCONHECIDO',text:['O homem percebe sua presença, mas não interrompe o trabalho.','CLANG.','Mais um golpe.','Só então repousa o martelo sobre a bigorna.','“Se veio roubar, escolha alguma coisa leve.”','Ele finalmente olha para você.','“Vai facilitar quando eu for buscar de volta.”'],buttons:[['reply','NÃO VIM ROUBAR']]},
+    name:{title:'FERREIRO DESCONHECIDO',text:['“Ótimo.”','O homem volta os olhos para o metal sobre a bigorna.','“Lucas.”','“Se pretende continuar aparecendo por aqui, é melhor saber o nome de quem vai consertar o que você quebrar.”'],buttons:[['next','CONTINUAR']]},
+    fragment1:{title:'FERREIRO DESCONHECIDO',text:['O olhar do ferreiro desce até seus pertences.','Ele para.','Pela primeira vez desde que você chegou, sua expressão muda.','“Isso.”','Ele aponta para o fragmento.','“Coloque sobre a bancada.”'],buttons:[['next','CONTINUAR']]},
+    fragment2:{title:'FERREIRO DESCONHECIDO',text:['Lucas aproxima a mão.','As marcas escuras que atravessam seus dedos parecem reagir.','Um brilho vermelho quase imperceptível percorre algumas delas.','Ele recua a mão.','“Onde conseguiu isso?”','Você relata apenas o necessário sobre o guerreiro encontrado na Floresta.','“Então ainda existe mais.”','Silêncio.','“Eu já trabalhei esse metal uma vez.”','Ele observa a própria mão.','“Uma vez foi o bastante.”'],buttons:[['next','CONTINUAR']]},
+    unlock:{title:'LUCAS, O FERREIRO MARCADO',text:['SISTEMA DESCOBERTO — FORJA','A oficina agora está acessível no Pântano Podre.'],buttons:[['finish','CONTINUAR']]},
+    workshop:{title:'LUCAS, O FERREIRO MARCADO',text:['FORJA','A oficina de Lucas permanece acesa entre as árvores mortas.','Forja desbloqueada. Os serviços de fabricação e desmontagem ainda não estão disponíveis.'],buttons:[['finish','VOLTAR AO PÂNTANO']]}
+  };
+  const scene=scenes[ui.lucasScene];if(!scene)return '';
+  const title=getLucasProgress().discovered && ui.lucasScene.startsWith('fragment')?'LUCAS, O FERREIRO MARCADO':scene.title;
+  const art=!['sound','approach'].includes(ui.lucasScene)?`<img class="romar-discovery-art" src="${LUCAS_ART}" alt="Lucas" onerror="this.style.display='none'">`:'';
+  return `<article class="romar-discovery interactive-card">${art}<div class="romar-discovery-text"><h2>${title}</h2>${scene.text.map(t=>`<p>${t}</p>`).join('')}${scene.buttons.map(b=>`<button type="button" class="enter-map-btn" onclick="lucasSceneAction('${b[0]}')">${b[1]}</button>`).join('')}</div></article>`;
+}
+
 const FOREST_EVENTS = [
   { id:'chest', eyebrow:'ENCONTRO', title:'Baú Abandonado',
     sub:'Entre raízes retorcidas, um velho baú permanece fechado. Há marcas recentes no barro ao redor.',
@@ -1013,8 +1071,10 @@ function resolveForestEvent(accept){
   showForestEventResult(eyebrow,title,sub);
 }
 function explorarMapa(mapIndex){
+  if(ui.lucasScene)return;
   if(ui.inBattle) return;
   if(hasPendingRomarDiscovery() || ui.romarResult || (ui.monster && ui.monster.romarChoice) || pendingForestEvent || document.querySelectorAll('.interactive-card').length) return;
+  const lucasReady=mapIndex===1 && player.hp>0 ? advanceLucasExploration() : false;
   if(mapIndex===0) advanceRomarExploration();
   const map = MAPS[mapIndex];
   if(Math.random() < TRAP_CHANCE){
@@ -1042,11 +1102,13 @@ function explorarMapa(mapIndex){
     startBattle(mapIndex, map.miniBoss, false);
     return;
   }
+  if(lucasReady){showLucasScene('sound');return;}
   const monster = pickWeightedMonster(map);
   startBattle(mapIndex, monster, false);
 }
 
 function startBattle(mapIndex, monsterTemplate, isBoss){
+  if(ui.lucasScene)return;
   if(hasPendingRomarDiscovery()) return;
   if(ui.romarResult || (ui.monster && ui.monster.romarChoice)) return;
   ui.mapIndex = mapIndex;
@@ -2069,6 +2131,7 @@ function chooseClass(key){
 }
 
 function switchTab(tab){
+  if(ui.lucasScene)return;
   if(hasPendingRomarDiscovery()) return;
   if(ui.romarResult || (ui.monster && ui.monster.romarChoice)) return;
   ui.tab = tab;
@@ -2134,6 +2197,7 @@ function renderHUD(){
 }
 
 function renderMapaTab(){
+  if(ui.lucasScene)return renderLucasScene();
   if(hasPendingRomarDiscovery()) return renderRomarDiscovery();
   if(ui.mapIndex===null){
     return `
@@ -2240,6 +2304,7 @@ function renderMapaTab(){
     ${potionRow}
     ${forestProgressBox}
     ${swampProgressBox}
+    ${ui.mapIndex===1 && player.forgeProgress && player.forgeProgress.lucas && player.forgeProgress.lucas.forgeUnlocked ? '<div class="explore-box"><h3>FORJA</h3><p>Lucas, o Ferreiro Marcado</p><button class="enter-map-btn" onclick="visitForge()">VISITAR A OFICINA</button></div>' : ''}
     <div class="explore-box">
       <p style="color:var(--bone-dim);font-size:13.5px;margin:0 0 14px;">Os monstros da região aparecem aleatoriamente ao explorar — e nem tudo que se encontra na escuridão é uma criatura viva.</p>
       <button class="enter-map-btn" style="width:100%;" onclick="explorarMapa(${ui.mapIndex})">🌑 Explorar Território</button>

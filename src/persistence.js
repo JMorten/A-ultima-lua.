@@ -1,13 +1,13 @@
 /* Persistência local de checkpoints. Script clássico, carregado após game.js. */
 const SAVE_KEY='a-ultima-lua.checkpoint';
-const SAVE_SCHEMA_VERSION=2;
+const SAVE_SCHEMA_VERSION=3;
 let saveNotice='';
 let saveActionDepth=0;
 let saveReplacementApproved=false;
 let lastSavedPayload=null;
 
 function normalizeCheckpoint(input){
-  if(!input || typeof input!=='object' || ![0,1,SAVE_SCHEMA_VERSION].includes(input.schemaVersion)) throw new Error('Schema incompatível');
+  if(!input || typeof input!=='object' || ![0,1,2,SAVE_SCHEMA_VERSION].includes(input.schemaVersion)) throw new Error('Schema incompatível');
   const data=JSON.parse(JSON.stringify(input));
   const p=data.player;
   const object=value=>value && typeof value==='object' && !Array.isArray(value);
@@ -53,6 +53,7 @@ function normalizeCheckpoint(input){
   delete p.equipment.bracelet;
   for(const slot of SLOT_ORDER) if(p.equipment[slot]===undefined)p.equipment[slot]=null;
   for(const key of ['questItems','materials','recipePity','forgeProgress'])if(!object(p[key]))p[key]={};
+  normalizeLucasProgress(p.forgeProgress);
   if(!Array.isArray(p.knownRecipes))p.knownRecipes=[];
   // Checkpoints não restauram cenas. Schema 0 é o envelope de importação/normalização.
   if(p.romarDiscoveries && p.romarDiscoveries.pending)throw new Error('Cena pendente');
@@ -70,7 +71,7 @@ function readCheckpoint(){
   }catch(error){saveNotice='Não foi possível carregar o save local. O arquivo armazenado foi preservado.';return null;}
 }
 function isSafeCheckpoint(){
-  return !!player && player.hp>0 && !ui.inBattle && !ui.locked && !ui.monster &&
+  return !ui.lucasScene && !!player && player.hp>0 && !ui.inBattle && !ui.locked && !ui.monster &&
     !ui.romarResult && !hasPendingRomarDiscovery() && !pendingForestEvent &&
     document.querySelectorAll('.interactive-card').length===0;
 }
@@ -131,7 +132,7 @@ function continueSavedGame(){
   if(!checkpoint){renderSaveEntry();return false;}
   player=checkpoint.player;
   Object.assign(ui,{tab:'mapa',mapIndex:null,monster:null,inBattle:false,locked:false,skillCooldowns:{},buffs:{},
-    romarResult:null,selectedEquipSlot:null,itemSeq:checkpoint.itemSeq,gameStart:Date.now(),
+    lucasScene:null,romarResult:null,selectedEquipSlot:null,itemSeq:checkpoint.itemSeq,gameStart:Date.now(),
     pendingAlloc:{forca:0,defesa:0,vitalidade:0,espirito:0,magia:0,agilidade:0}});
   pendingForestEvent=null;forestEventCooldown=checkpoint.world.forestEventCooldown;
   lastForestEventId=checkpoint.world.lastForestEventId;
@@ -174,6 +175,8 @@ chooseClass=function(key){
   if(readCheckpoint() && !saveReplacementApproved){renderSaveEntry();return;}
   chooseClassWithoutSave(key);saveReplacementApproved=false;lastSavedPayload=null;requestCheckpoint();
 };
+lucasSceneAction=checkpointAction(lucasSceneAction);
+visitForge=checkpointAction(visitForge,true);
 explorarMapa=checkpointAction(explorarMapa,true);
 startBattle=checkpointAction(startBattle,true);
 startRomarEncounter=checkpointAction(startRomarEncounter,true);

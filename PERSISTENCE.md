@@ -3,7 +3,7 @@
 ## Schema e armazenamento
 
 - Chave localStorage: a-ultima-lua.checkpoint.
-- Schema explícito: 2.
+- Schema explícito: 3.
 - Envelope: { schemaVersion, player, itemSeq, world }.
 - player conserva os dados permanentes completos e os valores exatos de cada item,
   incluindo uid, requisitos e afixos. Não recalcula equipamento ao carregar.
@@ -70,4 +70,18 @@ de unload/pagehide. HP/MP são limitados aos máximos do checkpoint. Na janela d
 HP zero anterior à resolução da derrota, a recarga mantém zero, fora do combate,
 sem registrar derrota nem conceder cura; as ações existentes de recuperação ficam
 disponíveis. Romar conserva a recuperação não letal de 20% já aplicada pelo combate.
-O schema continua 2: saves anteriores permanecem compatíveis.
+O schema 3 mantém o mesmo modelo de recursos; saves anteriores permanecem compatíveis.
+
+## Lucas e Forja (schema 3)
+
+A migração inicializa forgeProgress.lucas com version: 1, discovered, forgeUnlocked,
+fragmentSeen e waitExplorations. É idempotente; descoberta confirma o desbloqueio.
+ui.lucasScene é transitório: reload antes da confirmação final volta ao checkpoint
+anterior, sem desbloquear parcialmente a oficina nem consumir o Fragmento.
+Recusa confirma espera de três explorações aceitas do Pântano (cliques bloqueados
+não contam); após as três, a próxima oportunidade livre reapresenta a cena.
+Armadilhas e minibosses mantêm prioridade e seus sorteios originais. Lucas torna-se
+elegível após três abates comuns, sem exigir o Devorador. Após descoberta, o acesso
+à Forja é permanente no Pântano; reconhecimento posterior do Fragmento ocorre uma vez.
+Arte futura: assets/images/npcs/lucas.jpg. Sem esse arquivo, a imagem fica oculta;
+nenhuma arte substituta foi adicionada.
