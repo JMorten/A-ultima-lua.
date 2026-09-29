@@ -2,7 +2,7 @@ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const assert=require('node:assert/strict'),{test}=require('node:test');
 const root=path.join(__dirname,'..'),gameCode=fs.readFileSync(path.join(root,'src/game.js'),'utf8'),saveCode=fs.readFileSync(path.join(root,'src/persistence.js'),'utf8');
 function boot(storage=new Map()){
- const cards=[],elements=new Map(),listeners={};
+ const cards=[],elements=new Map(),listeners={},timers=[];
  function element(){
   const events={},children={};
   return {style:{},dataset:{},innerHTML:'',classList:{add(){},remove(){}},isConnected:false,
@@ -21,12 +21,12 @@ function boot(storage=new Map()){
   createElement:element,addEventListener(type,fn){listeners[type]=fn}
  };
  const localStorage={getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)};
- const context=vm.createContext({console,Date,Math:Object.create(Math),document,localStorage,setTimeout(){},clearTimeout(){},setInterval(){}});
+ const context=vm.createContext({console,Date,Math:Object.create(Math),document,localStorage,setTimeout(fn){timers.push(fn)},clearTimeout(){},setInterval(){}});
  vm.runInContext(gameCode,context);
- vm.runInContext('render=()=>{};showToast=()=>{};Math.random=()=>0.99;isMonsterEventActive=()=>false;isXpEventActive=()=>false;',context);
+ vm.runInContext('render=()=>{};showToast=()=>{};floatNumber=()=>{};shakeSide=()=>{};Math.random=()=>0.99;isMonsterEventActive=()=>false;isXpEventActive=()=>false;',context);
  vm.runInContext(saveCode,context);
  const run=s=>vm.runInContext(s,context);
- return {run,storage,document,close(){for(const card of [...cards])card.querySelector(card.id==='forest-event-result'?'button':'.notif-continue').click();}};
+ return {run,storage,document,tick(){const fn=timers.shift();if(fn)fn();},close(){for(const card of [...cards])card.querySelector(card.id==='forest-event-result'?'button':'.notif-continue').click();}};
 }
 function fresh(){const env=boot();env.run('chooseClass("cavaleiro")');return env;}
 test('absent/corrupt/unsupported saves do not crash startup or delete stored bytes',()=>{
@@ -53,7 +53,7 @@ test('normalization and schema 0 migration are idempotent without duplicating it
  const two=e.run('JSON.stringify(normalizeCheckpoint(normalizeCheckpoint(old)))');
  assert.equal(two,one);
 });
-test('checkpoint refuses combat and unconfirmed attribute drafts; reload rolls back entire encounter',()=>{
+test('full checkpoint refuses unsafe arbitrary mutations; only explicit resource hooks persist combat',()=>{
  const e=fresh();const safe=e.storage.get('a-ultima-lua.checkpoint');
  e.run('startBattle(0,MAPS[0].monsters[0],false);player.hp=1;player.consumables.hp=0;player.coins+=99');
  assert.equal(e.run('requestCheckpoint()'),false);
@@ -156,4 +156,57 @@ test('ten active slots, no generated bracelet/legs or merchant offer; legs does 
  assert.equal(e.run('player.equipment.shield'),null);
  e.run('equipItem("it502")');
  assert.equal(e.run('player.equipment.shield.uid'),'it502');
+});
+
+function resumed(e){const r=boot(e.storage);assert.equal(r.run('continueSavedGame()'),true);assert.equal(r.run('ui.inBattle'),false);return r;}
+test('reported 34→27 HP / 6 MP survives an actual enemy attack and reload',()=>{
+ const e=boot();e.run('chooseClass("mago");player.hp=34;player.mp=6;requestCheckpoint();startBattle(0,MAPS[0].monsters[0],false);calcDamage=()=>7;resolveEnemyAttack()');
+ const r=resumed(e);assert.equal(r.run('player.hp'),27);assert.equal(r.run('player.mp'),6);
+ assert.equal(r.run('player.totalXp'),0);assert.equal(r.run('player.coins'),25);
+ assert.equal(r.run('player.forestProgress.commonKills'),0);
+});
+test('skill MP, potion use and healing persist before the asynchronous enemy response',()=>{
+ const e=boot();e.run('chooseClass("mago");player.level=3;recomputeStats();player.hp=10;player.mp=40;requestCheckpoint();startBattle(0,MAPS[0].monsters[0],false);usarSkill("toque_sombrio")');
+ let r=resumed(e);assert.equal(r.run('player.mp'),30);assert.equal(r.run('player.hp'),e.run('player.hp'));
+ e.tick();r=resumed(e);assert.equal(r.run('player.hp'),e.run('player.hp'));
+ e.tick();e.run('usarConsumivelBatalha("hp")');
+ r=resumed(e);assert.equal(r.run('player.consumables.hp'),0);assert.equal(r.run('player.hp'),e.run('player.hp'));
+ e.tick();e.tick();e.run('usarConsumivelBatalha("mp")');
+ r=resumed(e);assert.equal(r.run('player.consumables.mp'),0);assert.equal(r.run('player.mp'),e.run('player.mp'));
+ assert.ok(r.run('player.hp<=player.hpMax && player.mp<=player.mpMax'));
+});
+test('common/miniboss/boss interrupted resources do not consolidate rewards, level-up or territorial state',()=>{
+ for(const template of ['MAPS[0].monsters[0]','MAPS[0].miniBoss','MAPS[0].boss','MAPS[1].miniBoss']){
+  const e=fresh();e.run('player.hp=40;player.mp=15;requestCheckpoint()');
+  const baseline=e.run('JSON.stringify(readCheckpoint().player)');
+  e.run('startBattle('+ (template.includes('[1]')?1:0) +','+template+',false);calcDamage=()=>7;resolveEnemyAttack()');
+  const hp=e.run('player.hp');assert.equal(resumed(e).run('player.hp'),hp);
+  e.run('ui.monster.xp=10000;handleVictory(ui.monster)');
+  const r=resumed(e),expected=JSON.parse(baseline);expected.hp=hp;
+  assert.deepEqual(JSON.parse(r.run('JSON.stringify(player)')),expected);
+  e.close();assert.ok(resumed(e).run('player.totalXp')>0);
+ }
+});
+test('lethal callback window retains zero HP without recording defeat; confirmed defeat still works',()=>{
+ const e=fresh();e.run('startBattle(0,MAPS[0].monsters[0],false);calcDamage=()=>999;resolveEnemyAttack()');
+ let r=resumed(e);assert.equal(r.run('player.hp'),0);assert.equal(r.run('player.totalXp'),0);
+ e.run('handleDefeat()');r=resumed(e);assert.equal(r.run('player.hp'),0);
+ e.close();assert.equal(resumed(e).run('player.hp'),e.run('player.hp'));
+});
+test('Romar resources persist through nonlethal defeat and final choice without premature quest reward',()=>{
+ const e=fresh();e.run('startRomarEncounter();calcDamage=()=>7;romarStrike(ui.monster,"Ataque",1,0,false)');
+ assert.equal(resumed(e).run('player.hp'),e.run('player.hp'));
+ e.run('calcDamage=()=>999;romarStrike(ui.monster,"Ataque",1,0,false)');
+ let r=resumed(e);assert.equal(r.run('player.hp'),e.run('Math.max(1,Math.round(player.hpMax*.2))'));
+ assert.equal(r.run('player.romar_first_choice'),undefined);
+ e.run('continueRomarResult();startRomarEncounter();resolvePlayerHit(99999,false);chooseRomarFirst("attacked")');
+ r=resumed(e);assert.equal(r.run('player.romar_first_choice'),undefined);assert.equal(r.run('player.questItems.fragmento_ferro_runico'),undefined);
+ e.run('continueRomarResult()');assert.equal(resumed(e).run('player.romar_first_choice'),'attacked');
+});
+
+test('combat tonic remains consumed with its duration; resource overlay clamps to checkpoint maxima',()=>{
+ const e=fresh();e.run('player.consumables.xpbuff=1;requestCheckpoint();startBattle(0,MAPS[0].monsters[0],false);usarTonicoFuria()');
+ let r=resumed(e);assert.equal(r.run('player.consumables.xpbuff'),0);assert.equal(r.run('player.xpBuffUntil'),e.run('player.xpBuffUntil'));
+ e.run('player.hp=999;player.mp=999;persistCombatResources()');r=resumed(e);
+ assert.equal(r.run('player.hp'),r.run('player.hpMax'));assert.equal(r.run('player.mp'),r.run('player.mpMax'));
 });

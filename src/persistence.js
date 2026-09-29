@@ -18,7 +18,7 @@ function normalizeCheckpoint(input){
   for(const key of ['hp','hpMax','mp','mpMax','statPoints','coins','xp','atk','def','magia','agilidade']){
     if(!Number.isFinite(p[key]) || p[key]<0) throw new Error('Atributo inválido');
   }
-  if(p.hpMax<=0 || p.hp<=0 || p.hp>p.hpMax || p.mp>p.mpMax) throw new Error('Checkpoint inseguro');
+  if(p.hpMax<=0 || p.hp<0 || p.hp>p.hpMax || p.mp>p.mpMax) throw new Error('Checkpoint inseguro');
   for(const key of ['forca','defesa','vitalidade','espirito','magia','agilidade']){
     if(!Number.isInteger(p.allocated[key]) || p.allocated[key]<0) throw new Error('Pontos inválidos');
   }
@@ -89,6 +89,42 @@ function requestCheckpoint(){
     return false;
   }
 }
+// Durante a luta, somente recursos são sobrepostos ao checkpoint anterior.
+// Não copiar player inteiro: recompensas/resultados aguardam CONTINUAR.
+function persistCombatResources(){
+  const checkpoint=readCheckpoint();
+  if(!checkpoint || !player)return false;
+  const p=checkpoint.player;
+  p.hp=Math.max(0,Math.min(p.hpMax,player.hp));
+  p.mp=Math.max(0,Math.min(p.mpMax,player.mp));
+  if(player.consumables.xpbuff<p.consumables.xpbuff)p.xpBuffUntil=player.xpBuffUntil;
+  for(const key of Object.keys(p.consumables)){
+    if(Number.isInteger(player.consumables[key]))p.consumables[key]=Math.min(p.consumables[key],player.consumables[key]);
+  }
+  try{
+    const payload=JSON.stringify(normalizeCheckpoint(checkpoint));
+    if(payload!==lastSavedPayload){localStorage.setItem(SAVE_KEY,payload);lastSavedPayload=payload;}
+    return true;
+  }catch(error){
+    saveNotice='Não foi possível salvar os recursos do combate neste navegador.';
+    showToast(saveNotice);return false;
+  }
+}
+function combatResourceAction(action){
+  return function(...args){
+    const active=ui.inBattle;
+    const result=action.apply(this,args);
+    if(active && (ui.inBattle || ui.romarResult || (ui.monster && ui.monster.romarChoice)))persistCombatResources();
+    return result;
+  };
+}
+// Capturar antes de XP/level-up ou penalidades: nunca consolidar resultado parcial.
+function combatResultAction(action){
+  return function(...args){
+    if(ui.inBattle)persistCombatResources();
+    return action.apply(this,args);
+  };
+}
 function continueSavedGame(){
   if(player)return false;
   const checkpoint=readCheckpoint();
@@ -141,8 +177,8 @@ chooseClass=function(key){
 explorarMapa=checkpointAction(explorarMapa,true);
 startBattle=checkpointAction(startBattle,true);
 startRomarEncounter=checkpointAction(startRomarEncounter,true);
-handleVictory=checkpointAction(handleVictory);
-handleDefeat=checkpointAction(handleDefeat);
+handleVictory=checkpointAction(combatResultAction(handleVictory));
+handleDefeat=checkpointAction(combatResultAction(handleDefeat));
 fleeBattle=checkpointAction(fleeBattle);
 finishRomarDiscovery=checkpointAction(finishRomarDiscovery);
 continueRomarResult=checkpointAction(continueRomarResult);
@@ -159,6 +195,16 @@ usarTonicoFuria=checkpointAction(usarTonicoFuria);
 descansar=checkpointAction(descansar);
 buyShopItem=checkpointAction(buyShopItem);
 buyBaseGear=checkpointAction(buyBaseGear);
+
+// Hooks cobrem ações síncronas e ataques executados pelos callbacks existentes.
+// Gravação imediata: não depende de unload/pagehide, que Safari pode omitir.
+usarConsumivelFora=combatResourceAction(usarConsumivelFora);
+usarTonicoFuria=combatResourceAction(usarTonicoFuria);
+usarSkill=combatResourceAction(usarSkill);
+usarConsumivelBatalha=combatResourceAction(usarConsumivelBatalha);
+resolvePlayerHit=combatResourceAction(resolvePlayerHit);
+resolveEnemyAttack=combatResourceAction(resolveEnemyAttack);
+romarStrike=combatResourceAction(romarStrike);
 
 // O click propaga depois do listener que remove o card. Só persistimos confirmações.
 document.addEventListener('click',event=>{

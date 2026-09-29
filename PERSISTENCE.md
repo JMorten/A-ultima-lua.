@@ -23,7 +23,7 @@ Os hooks em persistence.js delimitam operações explícitas, com profundidade p
 impedir que uma chamada interna grave metade de uma operação externa.
 
 Antes de uma exploração ou combate iniciado em estado seguro, grava-se o personagem.
-Não se grava enquanto houver combate, monstro, bloqueio de ação, cena de Romar,
+Não se grava o personagem inteiro enquanto houver combate, monstro, bloqueio de ação, cena de Romar,
 escolha final, resultado de Romar, evento normal pendente ou card interativo aberto.
 
 A confirmação final dos cards persiste a ação completa. Vitórias, derrotas, armadilhas,
@@ -31,9 +31,11 @@ eventos, descobertas e escolhas de Romar são consolidados após sua interação
 Equipar/desequipar, vender/comprar, consumir fora de combate, descansar, confirmar
 atributos e escolher domínio solicitam checkpoint ao concluir, se o estado for seguro.
 
-Recarregar antes da confirmação retorna ao checkpoint anterior inteiro: recursos,
-itens, HP/MP e progresso daquele encontro ainda não são consolidados. A exploração
-pode ser refeita; não há tentativa de retomar animações ou callbacks.
+Recarregar antes da confirmação retorna à progressão do checkpoint anterior.
+Durante combate, HP/MP e consumo de poções são persistidos após cada ação;
+dano, cura e gastos não são desfeitos. XP, ouro, drops, chefes e demais resultados
+aguardam CONTINUAR. Cura por level-up também aguarda a confirmação da vitória.
+A exploração pode ser refeita; não há tentativa de retomar animações ou callbacks.
 Fugir conclui a batalha e pode consolidar os recursos gastos até a fuga.
 
 A carga abre o mapa sem batalha/cenas/buffs/cooldowns de habilidades/atributos pendentes.
@@ -58,3 +60,14 @@ A chave equipment.bracelet é removida e equipment.legs recebe null quando ausen
 Repetir a normalização não move nem desconta o item novamente. Anéis permanecem
 inalterados. Braceletes legados são vendáveis, mas não equipáveis. Novos sorteios e
 o Mercador não oferecem Braceletes; Pernas é um slot vazio, sem conteúdo gerado.
+
+## Recursos de combate interrompido
+
+persistCombatResources() grava o mesmo envelope atomicamente, sem restaurar o
+combate ou copiar resultados parciais. Os hooks cobrem habilidades, consumíveis,
+roubo de vida, ataques inimigos (incluindo callbacks e matilha) e Romar. Não depende
+de unload/pagehide. HP/MP são limitados aos máximos do checkpoint. Na janela de
+HP zero anterior à resolução da derrota, a recarga mantém zero, fora do combate,
+sem registrar derrota nem conceder cura; as ações existentes de recuperação ficam
+disponíveis. Romar conserva a recuperação não letal de 20% já aplicada pelo combate.
+O schema continua 2: saves anteriores permanecem compatíveis.
