@@ -1,0 +1,5 @@
+exclude:
+  - _qa
+  - _qa-dist
+  - tests/qa-debug.test.cjs
+  - tests/qa-build.test.cjs
