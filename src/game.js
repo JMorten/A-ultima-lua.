@@ -46,19 +46,22 @@ const CLASS_KEYS = ['mago','arqueiro','guerreiro','cavaleiro'];
 
 const SLOT_META = {
   weapon:   { label:'Arma',      icon:'🗡️' },
-  armor:    { label:'Armadura',  icon:'🛡️' },
-  shield:   { label:'Escudo',    icon:'🔰' },
-  helmet:   { label:'Elmo',      icon:'⛑️' },
+  armor:    { label:'Peitoral',  icon:'🛡️' },
+  shield:   { label:'Mão Secundária/Escudo',    icon:'🔰' },
+  helmet:   { label:'Cabeça',      icon:'⛑️' },
   boots:    { label:'Botas',     icon:'🥾' },
-  gloves:   { label:'Luvas',     icon:'🧤' },
+  gloves:   { label:'Mãos',     icon:'🧤' },
   accessory:{ label:'Anel',      icon:'💍' },
-  earring:  { label:'Brinco',    icon:'👂' },
+  earring:  { label:'Brincos',    icon:'👂' },
+  legs:     { label:'Pernas', icon:'🦵' },
   bracelet: { label:'Bracelete', icon:'📿' },
-  necklace: { label:'Colar',     icon:'🔗' },
+  necklace: { label:'Amuleto',     icon:'🔗' },
 };
-const CLASS_SLOTS = ['weapon','armor','shield','helmet','boots','gloves'];
-const UNIVERSAL_SLOTS = ['accessory','earring','bracelet','necklace'];
+const CLASS_SLOTS = ['weapon','armor','shield','helmet','boots','gloves','legs'];
+const UNIVERSAL_SLOTS = ['accessory','earring','necklace'];
 const SLOT_ORDER = [...CLASS_SLOTS, ...UNIVERSAL_SLOTS];
+// Pernas ainda não possui conteúdo; braceletes permanecem apenas como legado vendável.
+const DROP_SLOTS = SLOT_ORDER.filter(slot=>slot!=='legs');
 
 const CLASS_LABEL = { mago:'Mago', arqueiro:'Arqueiro', guerreiro:'Guerreiro', cavaleiro:'Cavaleiro' };
 
@@ -248,7 +251,6 @@ const SHOP_ITEMS = [
 const FERREIRO_GEAR_UNLOCK_MAP = 3; // índice do 4º mapa
 const FERREIRO_BASE_GEAR = [
   { slot:'earring', name:'Brinco de Osso Polido', icon:'👂', artKey:'earring', magia:3, hp:5, price:120 },
-  { slot:'bracelet', name:'Bracelete de Couro Cravejado', icon:'📿', artKey:'bracelet', atk:3, agi:3, price:120 },
   { slot:'necklace', name:'Colar de Presas', icon:'🔗', artKey:'necklace', def:3, hp:6, price:120 },
   { slot:'accessory', name:'Anel de Ferro Rúnico', icon:'💍', artKey:'ring', atk:2, def:2, hp:4, price:130 },
 ];
@@ -359,7 +361,7 @@ function newPlayer(classKey){
     inventory:[],
     consumables:{ hp:1, hp_medium:0, hp_major:0, mp:1, mp_medium:0, mp_major:0, xpbuff:0 },
     xpBuffUntil:0,
-    equipment:{ weapon:null, armor:null, shield:null, helmet:null, boots:null, gloves:null, accessory:null, earring:null, bracelet:null, necklace:null },
+    equipment:{ weapon:null, armor:null, shield:null, helmet:null, boots:null, gloves:null, accessory:null, earring:null, legs:null, necklace:null },
   };
   recomputeStats();
   player.hp = player.hpMax;
@@ -465,7 +467,7 @@ function rollRarity(tier, isBoss, mapIndex){
 }
 
 function generateItem(mapIndex, tier, isBoss, forceMinRarity){
-  const slot = pick(SLOT_ORDER);
+  const slot = pick(DROP_SLOTS);
   let rarity = rollRarity(tier, isBoss, mapIndex);
   if(forceMinRarity){
     const order = ['comum','raro','épico','lendário'];
@@ -1915,6 +1917,7 @@ function equipItem(uid){
   const idx = player.inventory.findIndex(i=>i.uid===uid);
   if(idx===-1) return;
   const item = player.inventory[idx];
+  if(!SLOT_ORDER.includes(item.slot)){showToast('Este equipamento legado não pode mais ser equipado.');return;}
 
   if(item.classReq && item.classReq !== player.classKey){
     showToast(`Somente ${CLASS_LABEL[item.classReq]} pode usar este item.`);
@@ -1965,7 +1968,7 @@ function sellItem(uid){
   const item = player.inventory[idx];
   player.coins += item.value;
   player.inventory.splice(idx,1);
-  showToast(`Vendido ao ferreiro por ${item.value} moedas.`);
+  showToast(`Vendido ao mercador por ${item.value} moedas.`);
   render();
 }
 
@@ -2328,7 +2331,7 @@ function renderQuestItems(){
 }
 function renderInventarioTab(){
   const LEFT_COL = ['helmet','necklace','earring','armor','boots'];
-  const RIGHT_COL = ['weapon','shield','gloves','accessory','bracelet'];
+  const RIGHT_COL = ['weapon','shield','gloves','accessory','legs'];
 
   const pdSlot = (slot) => {
     const item = player.equipment[slot];
@@ -2371,7 +2374,7 @@ function renderInventarioTab(){
   }
 
   const invRows = player.inventory.length ? player.inventory.map(item=>{
-    const meets = itemMeetsRequirements(item);
+    const meets = SLOT_ORDER.includes(item.slot) && itemMeetsRequirements(item);
     const reqLabel = itemRequirementLabel(item);
     return `
     <div class="inv-item-row" style="${meets?'':'opacity:.55;'}">
@@ -2461,7 +2464,7 @@ function renderLojaTab(){
   `).join('');
 
   return `
-    <h2 style="margin-bottom:4px;">O Ferreiro</h2>
+    <h2 style="margin-bottom:4px;">MERCADOR</h2>
     <p style="color:var(--bone-dim);margin:0 0 20px;">"Aço forjado à luz da lua. Traga suas relíquias, saia mais forte."</p>
     <div class="section-title">POÇÕES E TÔNICOS</div>
     <div class="shop-grid">${cards}</div>
@@ -2470,7 +2473,7 @@ function renderLojaTab(){
       <div class="shop-grid">${gearCards}</div>
     ` : `
       <div class="section-title">RELICÁRIOS ANCESTRAIS</div>
-      <p style="color:var(--bone-dim);font-size:13px;margin:0 0 24px;">🔒 O ferreiro só revela seus itens mais raros para quem já provou valor na Cripta Sangrenta (nível ${MAPS[FERREIRO_GEAR_UNLOCK_MAP].unlockLevel}+).</p>
+      <p style="color:var(--bone-dim);font-size:13px;margin:0 0 24px;">🔒 O mercador só revela seus itens mais raros para quem já provou valor na Cripta Sangrenta (nível ${MAPS[FERREIRO_GEAR_UNLOCK_MAP].unlockLevel}+).</p>
     `}
     <div class="section-title">VENDER ITENS</div>
     ${sellRows}
