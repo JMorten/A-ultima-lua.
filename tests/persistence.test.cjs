@@ -585,3 +585,96 @@ test('Devorador desperation remains +20% at 40%, other bosses never gain Lord st
   assert.ok(!b.run('renderBatalhaTab()').includes('AGUARDAR'));
  }
 });
+
+// Alerta de Guerra V1: apenas sessão; usa o combate e o checkpoint reais.
+function scoutBattle(){
+ const e=fresh();e.run('startBattle(2,MAPS[2].monsters[0],false);player.hp=player.hpMax=10000');return e;
+}
+function scoutResponse(e){e.run('monsterCounterTurn();monsterCounterTurn()');e.tick();e.tick();}
+function completeScoutAlert(e){for(let i=0;i<4;i++)scoutResponse(e);}
+
+test('Scout: two normal responses, harmless telegraph, full locked player action, harmless completion only once',()=>{
+ const e=scoutBattle();
+ for(let i=0;i<2;i++){const hp=e.run('player.hp');scoutResponse(e);assert.ok(e.run('player.hp')<hp);}
+ const hp=e.run('player.hp');scoutResponse(e);
+ assert.equal(e.run('player.hp'),hp);assert.equal(e.run('ui.monster.scoutAlertPrepared'),true);
+ assert.equal(e.run('trenchesSession.warAlert'),false);assert.match(e.run('enemyBehaviorChip(ui.monster)'),/ALERTA DE GUERRA/);
+ e.run('resolvePlayerHit(1,false);resolvePlayerHit(1,false)');
+ assert.equal(e.run('trenchesSession.warAlert'),false);assert.equal(e.run('ui.locked'),true);
+ e.tick();assert.equal(e.run('trenchesSession.warAlert'),true);assert.equal(e.run('player.hp'),hp);e.tick();
+ e.run('trenchesSession.warAlert=false');
+ for(let i=0;i<8;i++)scoutResponse(e);
+ assert.equal(e.run('trenchesSession.warAlert'),false);assert.equal(e.run('ui.monster.scoutAlertAttempted'),true);
+});
+
+test('Killing a prepared Scout prevents completion, including queued callbacks',()=>{
+ const e=scoutBattle();for(let i=0;i<3;i++)scoutResponse(e);
+ e.run('resolvePlayerHit(99999,false)');e.tick();e.tick();
+ assert.equal(e.run('trenchesSession.warAlert'),false);assert.ok(e.run('ui.pendingVictory'));
+ e.close();assert.equal(e.run('trenchesSession.warAlert'),false);
+});
+
+test('All four common Orcs consume alert; stance uses effective ATK x1.15 for exactly two actions without mutating templates',()=>{
+ for(let i=0;i<4;i++){
+  const e=fresh();const templates=e.run('JSON.stringify(MAPS)');
+  e.run('trenchesSession.warAlert=true;startBattle(2,MAPS[2].monsters['+i+'],false);player.hp=10000;var attacks=[];calcDamage=(atk)=>{attacks.push(atk);return 1}');
+  const atk=e.run('ui.monster.atk');assert.equal(e.run('trenchesSession.warAlert'),false);
+  e.run('resolveEnemyAttack();resolveEnemyAttack()');
+  assert.equal(e.run('attacks[0]'),atk*1.15);assert.equal(e.run('attacks[1]'),atk*1.15);
+  assert.equal(e.run('ui.monster.warStanceActions'),0);
+  if(i===0)e.run('resolveEnemyAttack();resolveEnemyAttack()');
+  e.run('resolveEnemyAttack()');assert.equal(e.run('attacks[2]'),atk);
+  assert.equal(e.run('ui.monster.atk'),atk);assert.equal(e.run('JSON.stringify(MAPS)'),templates);
+  assert.equal(e.run('trenchesSession.warAlert'),i===0);
+ }
+});
+
+test('Dodges consume stance actions too; telegraph responses are actions, not individual impacts',()=>{
+ const e=scoutBattle();e.run('ui.monster.warStanceActions=2;getDodgeChance=()=>1');
+ scoutResponse(e);scoutResponse(e);assert.equal(e.run('ui.monster.warStanceActions'),0);
+ e.run('ui.monster.warStanceActions=2');scoutResponse(e);scoutResponse(e);
+ assert.equal(e.run('ui.monster.warStanceActions'),0);assert.equal(e.run('trenchesSession.warAlert'),true);
+});
+
+test('Mini/boss neither consume alert nor gain stance; Butcher desperation is unchanged',()=>{
+ for(const kind of ['miniBoss','boss']){
+  const e=fresh();e.run('trenchesSession.warAlert=true;startBattle(2,MAPS[2].'+kind+','+(kind==='boss')+');player.hp=10000');
+  assert.equal(e.run('trenchesSession.warAlert'),true);assert.equal(e.run('ui.monster.warStanceActions'),undefined);
+  if(kind==='miniBoss'){
+   const atk=e.run('ui.monster.atk');e.run('ui.monster.hp=ui.monster.hpMax*.4;resolvePlayerHit(1,false)');e.tick();
+   assert.equal(e.run('ui.monster.atk'),Math.round(atk*1.2));assert.equal(e.run('ui.monster.desperationTriggered'),true);
+  }
+ }
+});
+
+test('Navigation and traps retain alert; actual external battle clears without buff; rejected start retains',()=>{
+ const e=fresh();e.run('trenchesSession.warAlert=true;ui.mapIndex=0;render()');assert.equal(e.run('trenchesSession.warAlert'),true);
+ e.run('Math.random=()=>0;explorarMapa(0)');assert.equal(e.run('trenchesSession.warAlert'),true);assert.equal(e.run('ui.inBattle'),false);e.close();
+ e.run('ui.lucasScene="blocked";startBattle(0,MAPS[0].monsters[0],false)');assert.equal(e.run('trenchesSession.warAlert'),true);
+ e.run('ui.lucasScene=null;startBattle(0,MAPS[0].monsters[0],false)');assert.equal(e.run('trenchesSession.warAlert'),false);assert.equal(e.run('ui.monster.warStanceActions'),undefined);
+ e.run('fleeBattle();startBattle(2,MAPS[2].monsters[1],false)');assert.equal(e.run('ui.monster.warStanceActions'),undefined);
+});
+
+test('Flee/defeat before completion create nothing; after completion retain alert; consumed alert never returns on flee',()=>{
+ for(const end of ['fleeBattle()','handleDefeat()'])for(const completed of [false,true]){
+  const e=scoutBattle();for(let i=0;i<(completed?4:3);i++)scoutResponse(e);
+  e.run(end);assert.equal(e.run('trenchesSession.warAlert'),completed);
+  if(completed){e.close();e.run('startBattle(2,MAPS[2].monsters[1],false);fleeBattle()');assert.equal(e.run('trenchesSession.warAlert'),false);}
+ }
+});
+
+test('Pending victory and repeated CONTINUAR preserve one session alert; schema 5 stores no alert and reload discards it',()=>{
+ const e=scoutBattle();completeScoutAlert(e);e.run('resolvePlayerHit(99999,false)');e.tick();
+ assert.ok(e.run('ui.pendingVictory'));assert.equal(e.run('trenchesSession.warAlert'),true);
+ const raw=e.storage.get('a-ultima-lua.checkpoint');assert.equal(JSON.parse(raw).schemaVersion,5);assert.ok(!raw.includes('warAlert'));assert.ok(!raw.includes('scoutAlert'));
+ const r=boot(e.storage);r.run('continueSavedGame()');assert.equal(r.run('trenchesSession.warAlert'),false);assert.equal(r.run('ui.monster'),null);
+ e.close();e.run('confirmPendingVictory();confirmPendingVictory()');assert.equal(e.run('trenchesSession.warAlert'),true);
+ e.run('startBattle(2,MAPS[2].monsters[1],false)');assert.equal(e.run('ui.monster.warStanceActions'),2);assert.equal(e.run('trenchesSession.warAlert'),false);
+});
+
+test('Reload drops preparation and stance, without restoring combat or changing schema',()=>{
+ for(const prepared of [false,true]){
+  const e=scoutBattle();if(prepared){for(let i=0;i<3;i++)scoutResponse(e);}else e.run('ui.monster.warStanceActions=2');
+  const r=boot(e.storage);r.run('continueSavedGame()');assert.equal(r.run('ui.monster'),null);assert.equal(r.run('trenchesSession.warAlert'),false);assert.equal(r.run('SAVE_SCHEMA_VERSION'),5);
+ }
+});

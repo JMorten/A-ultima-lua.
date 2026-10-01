@@ -276,6 +276,9 @@ function buyBaseGear(idx){
    ESTADO
    ========================================================= */
 let player = null;
+// T3: estado apenas desta página. Reload descarta alerta e combate (Schema 5 inalterado).
+const trenchesSession = { warAlert:false };
+const WAR_ALERT_ORCS = ['orc_batedor','orc_guerreiro','orc_xama','orc_capitao'];
 let ui = {
   tab:'mapa', mapIndex:null, monster:null, inBattle:false, itemSeq:1, locked:false,
   skillCooldowns:{}, buffs:{}, gameStart: Date.now(),
@@ -1254,6 +1257,14 @@ function startBattle(mapIndex, monsterTemplate, isBoss){
     hp = Math.round(hp*1.3); atk = Math.round(atk*1.3); def = Math.round(def*1.3);
   }
   ui.monster = Object.assign({}, monsterTemplate, { hp, atk, def, hpMax: hp, isBoss: !!isBoss, eventBuffed: eventOn, battleBaseAtk: atk, battleBaseDef: def, bossPhase: 0, desperationTriggered:false, aiTurns:0, frenzyTriggered:false, heavyPrepared:false });
+  if(mapIndex===2 && monsterTemplate.id==='orc_batedor')Object.assign(ui.monster,{scoutNormals:0,scoutAlertPrepared:false,scoutAlertAttempted:false});
+  if(trenchesSession.warAlert){
+    if(mapIndex!==2)trenchesSession.warAlert=false;
+    else if(WAR_ALERT_ORCS.includes(monsterTemplate.id)){
+      trenchesSession.warAlert=false;
+      ui.monster.warStanceActions=2;
+    }
+  }
   if(mapIndex===1 && monsterTemplate.id==='senhor_pantano')Object.assign(ui.monster,{swampPhase:1,swampNormals:0,swampPrepared:null,submerged:false,swampNextDomain:true,swampNextOffense:'ambush'});
   if(mapIndex===0){
     Object.assign(ui.monster, {
@@ -1278,6 +1289,7 @@ function startBattle(mapIndex, monsterTemplate, isBoss){
       ? [`<b>🧟 A Onda Sombria fortalece a região!</b> Você encontrou <b>${ui.monster.name}</b> ${ui.monster.emoji} (+30% de poder). A batalha começa!`]
       : [`Você encontrou <b>${ui.monster.name}</b> ${ui.monster.emoji}. A batalha começa!`];
   }
+  if(ui.monster.warStanceActions)logPush('<b>ELES ESTAVAM ESPERANDO</b> O chamado do Batedor chegou antes de você. O Orc assume posição de combate. POSTURA DE GUERRA: ATQ +15% nas duas primeiras ações.');
   ui.tab = 'batalha';
   render();
 }
@@ -1578,8 +1590,26 @@ function swampLordAction(m){
   }
   m.swampNormals++;return {mult:1};
 }
+// Uma chamada por resposta inimiga; preparação e conclusão ocupam ações distintas.
+function orcScoutAction(m){
+  if(m.scoutAlertPrepared){
+    m.scoutAlertPrepared=false;
+    trenchesSession.warAlert=true;
+    logPush('<b>ALERTA CONCLUÍDO!</b> O chifre ecoa pelas Trincheiras. O próximo Orc comum estará esperando por você.');
+    return true;
+  }
+  if(!m.scoutAlertAttempted && m.scoutNormals>=2){
+    m.scoutAlertAttempted=true;m.scoutAlertPrepared=true;
+    logPush('<b>ALERTA DE GUERRA</b> O Orc Batedor leva o chifre aos lábios. Se ele completar o chamado, as Trincheiras saberão que você está aqui.');
+    return true;
+  }
+  m.scoutNormals++;
+  return false;
+}
 function enemyBehaviorChip(m){
   if(!m) return '';
+  if(m.scoutAlertPrepared)return '<span class="arena-enemy-chip warning">ALERTA DE GUERRA PREPARADO · elimine o Batedor antes do chamado</span>';
+  if(m.warStanceActions>0)return '<span class="arena-enemy-chip danger">POSTURA DE GUERRA · ATQ +15%</span>';
   if(m.id==='senhor_pantano' && ui.mapIndex===1){
     if(m.submerged)return '<span class="arena-enemy-chip warning">SUBMERSO · INALVEJÁVEL · EMBOSCADA PREPARADA</span>';
     if(m.swampPrepared)return '<span class="arena-enemy-chip warning">'+(m.swampPrepared==='domain'?'DOMÍNIO DO CHARCO PREPARADO':'DRENAGEM DO CHARCO PREPARADA')+'</span>';
@@ -1623,6 +1653,10 @@ function updateEnemyBehaviorBeforeCounter(){
 function resolveEnemyAttack(contextText='revida', retaliation=false){
   const m=ui.monster;
   if(!ui.inBattle || !m || m.hp<=0 || player.hp<=0) return;
+  // Consome por ação, antes de telegraphs/esquiva; nunca por hit ou animação.
+  const warStance=!retaliation && m.warStanceActions>0;
+  if(warStance)m.warStanceActions--;
+  if(!retaliation && ui.mapIndex===2 && m.id==='orc_batedor' && orcScoutAction(m))return {dodged:false,damage:0,prepared:true};
   const swampMove=isSwampLord()?swampLordAction(m):null;
   if(swampMove && swampMove.prepared)return {dodged:false,damage:0,prepared:true};
   updateEnemyBehaviorBeforeCounter();
@@ -1687,7 +1721,7 @@ function resolveEnemyAttack(contextText='revida', retaliation=false){
     return {dodged:true, damage:0};
   }
 
-  let dmg2=calcDamage(m.atk,getEffectiveDef());
+  let dmg2=calcDamage(warStance?m.atk*1.15:m.atk,getEffectiveDef());
   dmg2=Math.max(1,Math.round(dmg2*mult*(1-Math.min(.35,equippedAffixTotal('damageReduction')))));
   const actualDamage=Math.min(player.hp,dmg2);
   player.hp=Math.max(0,player.hp-dmg2);
