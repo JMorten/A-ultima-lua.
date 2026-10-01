@@ -2,35 +2,75 @@ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const assert=require('node:assert/strict'),{test}=require('node:test');
 const root=path.join(__dirname,'..'),gameCode=fs.readFileSync(path.join(root,'src/game.js'),'utf8'),saveCode=fs.readFileSync(path.join(root,'src/persistence.js'),'utf8');
 function boot(storage=new Map()){
- const cards=[],elements=new Map(),listeners={},timers=[];
+ const cards=[],elements=new Map(),listeners={},timers=[],intervals=[];
  function element(){
   const events={},children={};
-  return {value:'0',hidden:false,disabled:false,replaceChildren(...items){this.value=items[0]?.value??'';},querySelectorAll(){return [];},style:{},dataset:{},innerHTML:'',classList:{add(){},remove(){}},isConnected:false,
+  return {value:'0',hidden:false,disabled:false,replaceChildren(...items){this.value=items[0]?.value??'';},querySelectorAll(sel){return sel==='button'?[...this.innerHTML.matchAll(/<button[^>]*id="([^"]+)"/g)].map(match=>document.getElementById(match[1])):[];},focus(){this.focused=true;},style:{},dataset:{},innerHTML:'',classList:{add(){},remove(){},toggle(){}},isConnected:false,
    addEventListener(type,fn){events[type]=fn},
    insertAdjacentHTML(where,html){this.innerHTML+=html},
    appendChild(child){child.isConnected=true;cards.push(child)},
    remove(){this.isConnected=false;const i=cards.indexOf(this);if(i>=0)cards.splice(i,1)},
    querySelector(sel){if(!children[sel]){children[sel]=element();children[sel].parent=this;}return children[sel]},
    closest(){return this.parent||null},
-   click(){if(events.click)events.click();if(listeners.click)listeners.click({target:this})}
+   click(){if(this.disabled)return;if(events.click)events.click();if(listeners.click)listeners.click({target:this})}
   };
  }
- const document={body:{prepend(){}},
-  getElementById(id){if(id==='forest-event-card'||id==='forest-event-result')return cards.find(x=>x.id===id)||null;if(!elements.has(id))elements.set(id,element());return elements.get(id)},
+ const document={body:{prepend(panel){this.panel=panel;}},
+  getElementById(id){if(id==='forest-event-card'||id==='forest-event-result')return cards.find(x=>x.id===id)||null;if(!elements.has(id))elements.set(id,Object.assign(element(),{id}));return elements.get(id)},
   querySelectorAll(sel){return sel==='.interactive-card'?cards.filter(x=>(x.className||'').includes('interactive-card')):[]},
   createElement:element,addEventListener(type,fn){listeners[type]=fn}
  };
  const localStorage={getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)};
- const context=vm.createContext({console,Date,location:{reload(){}},Math:Object.create(Math),document,localStorage,setTimeout(fn){timers.push(fn)},clearTimeout(){},setInterval(){}});
+ const context=vm.createContext({console,Date,location:{reload(){}},Math:Object.create(Math),document,localStorage,setTimeout(fn){timers.push(fn)},clearTimeout(){},setInterval(fn){intervals.push(fn)}});
  vm.runInContext(gameCode,context);
- vm.runInContext('render=()=>{};showToast=()=>{};floatNumber=()=>{};shakeSide=()=>{};Math.random=()=>0.99;isMonsterEventActive=()=>false;isXpEventActive=()=>false;',context);
+ vm.runInContext('showToast=()=>{};floatNumber=()=>{};shakeSide=()=>{};Math.random=()=>0.99;isMonsterEventActive=()=>false;isXpEventActive=()=>false;',context);
  vm.runInContext(saveCode,context);
  vm.runInContext('var qaRandomCalls=0;Math.random=()=>{qaRandomCalls++;return .99;}',context);
  vm.runInContext(fs.readFileSync(path.join(root,'_qa/debug.js'),'utf8'),context);
  const run=s=>vm.runInContext(s,context);
- return {run,storage,document,tick(){const fn=timers.shift();if(fn)fn();},close(){for(const card of [...cards])card.querySelector(card.id==='forest-event-result'?'button':'.notif-continue').click();}};
+ return {run,storage,document,refresh(){intervals.forEach(fn=>fn());},tick(){const fn=timers.shift();if(fn)fn();},close(){for(const card of [...cards])card.querySelector(card.id==='forest-event-result'?'button':'.notif-continue').click();}};
 }
 function fresh(){const env=boot();env.run('chooseClass("cavaleiro")');return env;}
+
+const applyFields={level:'10',statPoints:'37',forca:'0',agilidade:'0',magia:'75',espirito:'0',vitalidade:'0',defesa:'0'};
+function applyClick(e,fields=applyFields){e.refresh();for(const [key,value] of Object.entries(fields))e.document.getElementById('qa-'+key).value=value;e.document.getElementById('qa-apply').click();}
+test('new QA reload requires CONTINUAR; dependent buttons disabled and local guidance visible',()=>{
+ const created=boot();created.run('QADebug.requestNew("mago");QADebug.confirmNew()');
+ const e=boot(created.storage);assert.equal(e.run('player'),null);
+ for(const id of ['apply','read','restore','mag-75','magic-reset','domain-destruidor','battle'])assert.equal(e.document.getElementById('qa-'+id).disabled,true);
+ assert.equal(e.document.getElementById('qa-new').disabled,false);
+ assert.match(e.document.getElementById('qa-player-notice').textContent,/salvo.*CONTINUAR/);
+ const html=e.document.body.panel.innerHTML;
+ assert.ok(html.indexOf('qa-player-notice')<html.indexOf('qa-apply'));
+ e.run('continueSavedGame()');e.refresh();assert.equal(e.document.getElementById('qa-apply').disabled,false);
+});
+test('actual apply listener updates HUD, investment, XP, points, local success and persisted reload',()=>{
+ const e=boot();e.run('chooseClass("mago")');applyClick(e);
+ assert.equal(e.run('player.level'),10);assert.equal(e.run('player.totalXp===totalXpForLevel(10)'),true);
+ assert.equal(e.run('player.allocated.magia'),75);assert.equal(e.run('player.statPoints'),37);
+ assert.equal(e.document.getElementById('hud-level').textContent,10);
+ const message=e.document.getElementById('qa-apply-message');assert.match(message.textContent,/Checkpoint gravado.*Nível 10.*Pontos disponíveis 37.*MAG investida 75/);assert.equal(message.focused,true);
+ assert.match(e.document.body.panel.innerHTML,/APLICAR NÍVEL, ATRIBUTOS E PONTOS<\/button><p id="qa-apply-message"/);
+ const loaded=boot(e.storage);loaded.run('continueSavedGame()');assert.equal(loaded.run('player.level'),10);assert.equal(loaded.run('player.allocated.magia'),75);assert.equal(loaded.run('player.statPoints'),37);assert.equal(loaded.run('player.magia'),e.run('player.magia'));
+});
+test('empty and out-of-range inputs identify the field locally without mutating player',()=>{
+ const e=fresh(),before=e.run('JSON.stringify(player)');
+ for(const [key,value,label] of [['level','','Nível'],['level','101','Nível'],['magia','','MAG investida'],['magia','10001','MAG investida'],['statPoints','-1','Pontos disponíveis'],['defesa','1.5','DEF']]){
+  applyClick(e,{...applyFields,[key]:value});assert.ok(e.document.getElementById('qa-apply-message').textContent.startsWith(label+': informe um inteiro entre '));assert.equal(e.run('JSON.stringify(player)'),before);
+ }
+});
+test('checkpoint failure produces focused local error and preserves last saved checkpoint',()=>{
+ const e=fresh(),saved=e.storage.get('a-ultima-lua.checkpoint');
+ e.run('localStorage.setItem=()=>{throw Error("storage failed")}');applyClick(e);
+ assert.match(e.document.getElementById('qa-apply-message').textContent,/Alteração em memória; checkpoint não gravado/);
+ assert.equal(e.document.getElementById('qa-apply-message').focused,true);assert.equal(e.storage.get('a-ultima-lua.checkpoint'),saved);
+});
+test('unsafe states keep Apply disabled and UI click leaves character unchanged',()=>{
+ for(const state of ['ui.inBattle=true','ui.locked=true','ui.monster={}','ui.pendingVictory={}','ui.lucasScene={}','ui.romarResult={}','pendingForestEvent={}']){
+  const e=fresh();e.run(state);e.refresh();assert.equal(e.document.getElementById('qa-apply').disabled,true);
+  const before=e.run('JSON.stringify(player)');e.document.getElementById('qa-apply').click();assert.equal(e.run('JSON.stringify(player)'),before);
+ }
+});
 
 test('QA uses real classes, requires confirmation and persists fresh schema 5 character',()=>{
  for(const key of ['mago','arqueiro','guerreiro','cavaleiro']){
