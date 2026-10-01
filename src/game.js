@@ -175,7 +175,7 @@ const MAPS = [
     name:'Trincheiras Orc', sub:'Acampamento de guerra orc', theme:'👺', fam:'fam-orc',
     unlockLevel:9,
     monsters:[
-      { id:'orc_batedor',  name:'Orc Batedor', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_batedor.jpg', hp:190, atk:30, def:14, xp:95,  coinMin:30, coinMax:45, tier:0 },
+      { id:'orc_batedor',  name:'Orc Batedor', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_batedor_nova_arte.png', hp:190, atk:30, def:14, xp:95,  coinMin:30, coinMax:45, tier:0 },
       { id:'orc_guerreiro',name:'Orc Guerreiro', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_guerreiro.jpg', hp:220, atk:35, def:16, xp:110, coinMin:35, coinMax:50, tier:1 },
       { id:'orc_xama',     name:'Orc Xamã', emoji:'💀', portrait:'assets/images/enemies/trenches/orc_xama.jpg', hp:200, atk:40, def:13, xp:120, coinMin:38, coinMax:55, tier:2 },
       { id:'orc_capitao',  name:'Orc Capitão', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_capitao.jpg', hp:260, atk:44, def:19, xp:135, coinMin:44, coinMax:64, tier:3 },
@@ -453,6 +453,7 @@ function classAvatarHtml(classKey, cssClass){
 /* Mesma ideia, mas pra monstros (que não vêm de CLASSES) */
 function monsterAvatarHtml(monster, cssClass){
   if(monster.id==='romar') return `<span class="romar-avatar ${monster.romarTransform?'romar-transform':''}"><span aria-label="Romar">⚔️</span><img src="${monster.portrait}" class="${cssClass}" alt="Romar" onerror="this.style.display='none'"></span>`;
+  if(monster.id==='orc_batedor' && monster.scoutHornVisual) return `<img src="assets/images/enemies/trenches/orc_batedor_alerta_chifre.png" class="${cssClass}" alt="Orc Batedor tocando o chifre">`;
   if(monster.portrait) return `<img src="${monster.portrait}" class="${cssClass}" alt="${monster.name}">`;
   return monster.emoji;
 }
@@ -1257,7 +1258,7 @@ function startBattle(mapIndex, monsterTemplate, isBoss){
     hp = Math.round(hp*1.3); atk = Math.round(atk*1.3); def = Math.round(def*1.3);
   }
   ui.monster = Object.assign({}, monsterTemplate, { hp, atk, def, hpMax: hp, isBoss: !!isBoss, eventBuffed: eventOn, battleBaseAtk: atk, battleBaseDef: def, bossPhase: 0, desperationTriggered:false, aiTurns:0, frenzyTriggered:false, heavyPrepared:false });
-  if(mapIndex===2 && monsterTemplate.id==='orc_batedor')Object.assign(ui.monster,{scoutNormals:0,scoutAlertPrepared:false,scoutAlertAttempted:false});
+  if(mapIndex===2 && monsterTemplate.id==='orc_batedor')Object.assign(ui.monster,{scoutNormals:0,scoutAlertPrepared:false,scoutAlertAttempted:false,scoutHornVisual:false});
   if(trenchesSession.warAlert){
     if(mapIndex!==2)trenchesSession.warAlert=false;
     else if(WAR_ALERT_ORCS.includes(monsterTemplate.id)){
@@ -1599,10 +1600,11 @@ function orcScoutAction(m){
     return true;
   }
   if(!m.scoutAlertAttempted && m.scoutNormals>=2){
-    m.scoutAlertAttempted=true;m.scoutAlertPrepared=true;
+    m.scoutAlertAttempted=true;m.scoutAlertPrepared=true;m.scoutHornVisual=true;
     logPush('<b>ALERTA DE GUERRA</b> O Orc Batedor leva o chifre aos lábios. Se ele completar o chamado, as Trincheiras saberão que você está aqui.');
     return true;
   }
+  m.scoutHornVisual=false;
   m.scoutNormals++;
   return false;
 }
@@ -2563,6 +2565,7 @@ function renderBatalhaTab(){
   }).join('');
 
   return `
+    ${m.warStanceActions>0 ? '<div class="status-card" role="status"><h3>ELES ESTAVAM ESPERANDO</h3><p>O chamado do Batedor chegou antes de você. O Orc assume posição de combate.</p></div>' : ''}
     <div class="battle-arena">
       <div class="combatant">
         <div class="portrait-ring player" id="portrait-player">${classAvatarHtml(player.classKey,'avatar-img-circle')}</div>

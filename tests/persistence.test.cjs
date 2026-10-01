@@ -678,3 +678,37 @@ test('Reload drops preparation and stance, without restoring combat or changing 
   const r=boot(e.storage);r.run('continueSavedGame()');assert.equal(r.run('ui.monster'),null);assert.equal(r.run('trenchesSession.warAlert'),false);assert.equal(r.run('SAVE_SCHEMA_VERSION'),5);
  }
 });
+
+test('Scout portraits follow preparation, completion and next normal response without mutating templates',()=>{
+ const e=scoutBattle(),template=e.run('JSON.stringify(MAPS[2].monsters[0])');
+ const art=()=>e.run('monsterAvatarHtml(ui.monster,"avatar-img-circle")');
+ assert.match(art(),/orc_batedor_nova_arte.png/);
+ scoutResponse(e);scoutResponse(e);scoutResponse(e);assert.match(art(),/orc_batedor_alerta_chifre.png/);
+ scoutResponse(e);assert.match(art(),/orc_batedor_alerta_chifre.png/);
+ scoutResponse(e);assert.match(art(),/orc_batedor_nova_arte.png/);
+ assert.equal(e.run('JSON.stringify(MAPS[2].monsters[0])'),template);
+});
+
+test('Scout visual state never leaks after flee or death; other portraits remain canonical',()=>{
+ for(const death of [false,true]){
+  const e=scoutBattle();for(let i=0;i<3;i++)scoutResponse(e);
+  if(death){e.run('resolvePlayerHit(99999,false)');e.tick();e.close();}else e.run('fleeBattle()');
+  e.run('startBattle(2,MAPS[2].monsters[0],false)');assert.equal(e.run('ui.monster.scoutHornVisual'),false);
+  assert.match(e.run('monsterAvatarHtml(ui.monster)'),/orc_batedor_nova_arte.png/);
+ }
+ const e=fresh();assert.equal(e.run('MAPS.every(map=>[...map.monsters,map.miniBoss,map.boss].filter(Boolean).every(m=>monsterAvatarHtml(m).includes(m.portrait)))'),true);
+});
+
+test('War stance narrative is rendered before arena and controls, and remains in battle log',()=>{
+ const e=fresh();e.run('trenchesSession.warAlert=true;startBattle(2,MAPS[2].monsters[1],false)');
+ const html=e.run('renderBatalhaTab()');assert.ok(html.indexOf('ELES ESTAVAM ESPERANDO')<html.indexOf('battle-arena'));
+ assert.ok(e.run('battleLog.some(s=>s.includes("ELES ESTAVAM ESPERANDO"))'));
+ e.run('ui.monster.warStanceActions=0');assert.ok(!e.run('renderBatalhaTab()').split('battle-arena')[0].includes('ELES ESTAVAM ESPERANDO'));
+});
+
+test('Approved Scout PNG assets exist at portrait paths with expected dimensions',()=>{
+ for(const name of ['orc_batedor_nova_arte.png','orc_batedor_alerta_chifre.png']){
+  const bytes=fs.readFileSync(path.join(root,'assets/images/enemies/trenches',name));
+  assert.equal(bytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(bytes.readUInt32BE(16),627);assert.equal(bytes.readUInt32BE(20),1254);
+ }
+});
