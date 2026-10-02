@@ -175,7 +175,7 @@ const MAPS = [
     name:'Trincheiras Orc', sub:'Acampamento de guerra orc', theme:'👺', fam:'fam-orc',
     unlockLevel:9,
     monsters:[
-      { id:'orc_batedor',  name:'Orc Batedor', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_batedor_nova_arte.png', hp:190, atk:30, def:14, xp:95,  coinMin:30, coinMax:45, tier:0 },
+      { id:'orc_batedor',  name:'Orc Batedor', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_batedor_nova_arte.png', portraitLayout:'natural', hp:190, atk:30, def:14, xp:95,  coinMin:30, coinMax:45, tier:0 },
       { id:'orc_guerreiro',name:'Orc Guerreiro', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_guerreiro.jpg', hp:220, atk:35, def:16, xp:110, coinMin:35, coinMax:50, tier:1 },
       { id:'orc_xama',     name:'Orc Xamã', emoji:'💀', portrait:'assets/images/enemies/trenches/orc_xama.jpg', hp:200, atk:40, def:13, xp:120, coinMin:38, coinMax:55, tier:2 },
       { id:'orc_capitao',  name:'Orc Capitão', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_capitao.jpg', hp:260, atk:44, def:19, xp:135, coinMin:44, coinMax:64, tier:3 },
@@ -452,9 +452,11 @@ function classAvatarHtml(classKey, cssClass){
 }
 /* Mesma ideia, mas pra monstros (que não vêm de CLASSES) */
 function monsterAvatarHtml(monster, cssClass){
+  // As duas artes do Batedor reservam a mesma proporção antes do carregamento.
+  const imageSize=monster.id==='orc_batedor' && monster.portraitLayout==='natural' ? ' width="627" height="1254"' : '';
   if(monster.id==='romar') return `<span class="romar-avatar ${monster.romarTransform?'romar-transform':''}"><span aria-label="Romar">⚔️</span><img src="${monster.portrait}" class="${cssClass}" alt="Romar" onerror="this.style.display='none'"></span>`;
-  if(monster.id==='orc_batedor' && monster.scoutHornVisual) return `<img src="assets/images/enemies/trenches/orc_batedor_alerta_chifre.png" class="${cssClass}" alt="Orc Batedor tocando o chifre">`;
-  if(monster.portrait) return `<img src="${monster.portrait}" class="${cssClass}" alt="${monster.name}">`;
+  if(monster.id==='orc_batedor' && monster.scoutHornVisual) return `<img src="assets/images/enemies/trenches/orc_batedor_alerta_chifre.png" class="${cssClass}" alt="Orc Batedor tocando o chifre"${imageSize}>`;
+  if(monster.portrait) return `<img src="${monster.portrait}" class="${cssClass}" alt="${monster.name}"${imageSize}>`;
   return monster.emoji;
 }
 function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
@@ -1475,7 +1477,7 @@ function rollDamage(atkStat, defStat){
 function logPush(html){ battleLog.push(html); if(battleLog.length>40) battleLog.shift(); }
 
 function floatNumber(side, text, cls){
-  const el = document.getElementById(side==='player' ? 'portrait-player' : 'portrait-enemy');
+  const el = document.getElementById(side==='player' ? 'effects-player' : 'effects-enemy');
   if(!el) return;
   const span = document.createElement('span');
   span.className = 'float-num ' + cls;
@@ -2568,21 +2570,31 @@ function renderBatalhaTab(){
     ${m.warStanceActions>0 ? '<div class="status-card" role="status"><h3>ELES ESTAVAM ESPERANDO</h3><p>O chamado do Batedor chegou antes de você. O Orc assume posição de combate.</p></div>' : ''}
     <div class="battle-arena">
       <div class="combatant">
-        <div class="portrait-ring player" id="portrait-player">${classAvatarHtml(player.classKey,'avatar-img-circle')}</div>
-        <h4>${player.name} (Nv.${player.level})</h4>
+        <div class="combatant-art-stage art-legacy">
+          <div class="combatant-artwork portrait-ring player" id="portrait-player">${classAvatarHtml(player.classKey,'avatar-img-circle')}</div>
+          <div class="combatant-effects" id="effects-player" aria-hidden="true"></div>
+        </div>
+        <div class="combatant-heading"><h4>${player.name} (Nv.${player.level})</h4></div>
+        <div class="combatant-hud">
         <div class="mini-bar"><div class="mini-bar-fill player" id="arena-hp-player" style="width:${pPct}%"></div></div>
         <div class="hp-num" id="arena-hp-player-text">${player.hp}/${player.hpMax} HP</div>
         <div class="mini-bar" style="margin-top:5px;"><div class="mini-bar-fill mpbar" id="arena-mp-player" style="width:${mpPct}%"></div></div>
         <div class="hp-num" id="arena-mp-player-text">${player.mp}/${player.mpMax} MP</div>
-        ${buffChips ? `<div class="arena-buffs">${buffChips}</div>` : ''}
+        </div>
+        <div class="combatant-statuses">${buffChips ? `<div class="arena-buffs">${buffChips}</div>` : ''}</div>
       </div>
       <div class="vs-glyph">VS</div>
       <div class="combatant">
-        <div class="portrait-ring ${map.fam} ${(m.isBoss||m.isMiniBoss)?'fam-boss':''}" id="portrait-enemy">${monsterAvatarHtml(m,'avatar-img-circle')}</div>
-        <h4>${m.name}${m.isBoss?' 👑':m.isMiniBoss?' ⚠️':''}</h4>
+        <div class="combatant-art-stage ${m.portraitLayout==='natural'?'art-natural':'art-legacy'}">
+          <div class="combatant-artwork portrait-ring ${m.portraitLayout==='natural'?'portrait-natural':''} ${map.fam} ${(m.isBoss||m.isMiniBoss)?'fam-boss':''}" id="portrait-enemy">${monsterAvatarHtml(m,'avatar-img-circle')}</div>
+          <div class="combatant-effects" id="effects-enemy" aria-hidden="true"></div>
+        </div>
+        <div class="combatant-heading"><h4>${m.name}${m.isBoss?' 👑':m.isMiniBoss?' ⚠️':''}</h4></div>
+        <div class="combatant-hud">
         <div class="mini-bar"><div class="mini-bar-fill enemy" id="arena-hp-enemy" style="width:${ePct}%"></div></div>
         <div class="hp-num" id="arena-hp-enemy-text">${m.hp}/${m.hpMax} HP</div>
-        ${enemyBehaviorChip(m) ? `<div class="arena-enemy-state">${enemyBehaviorChip(m)}</div>` : ''}
+        </div>
+        <div class="combatant-statuses">${enemyBehaviorChip(m) ? `<div class="arena-enemy-state">${enemyBehaviorChip(m)}</div>` : ''}</div>
       </div>
     </div>
     <div class="battle-actions">

@@ -712,3 +712,48 @@ test('Approved Scout PNG assets exist at portrait paths with expected dimensions
   assert.equal(bytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(bytes.readUInt32BE(16),627);assert.equal(bytes.readUInt32BE(20),1254);
  }
 });
+
+test('Natural portrait layout is opt-in, survives Scout art changes and never changes player or templates',()=>{
+ const e=scoutBattle(),template=e.run('JSON.stringify(MAPS)');
+ assert.equal(e.run('MAPS[2].monsters[0].portraitLayout'),'natural');
+ const enemy=()=>e.run('renderBatalhaTab()').match(/<div class="([^"]*)" id="portrait-enemy">/)[1];
+ for(let i=0;i<6;i++){
+  assert.match(enemy(),/portrait-natural/);
+  assert.match(e.run('monsterAvatarHtml(ui.monster)'),/width="627" height="1254"/);
+  assert.ok(!e.run('renderBatalhaTab()').match(/<div class="([^"]*)" id="portrait-player">/)[1].includes('portrait-natural'));
+  scoutResponse(e);
+ }
+ assert.equal(e.run('JSON.stringify(MAPS)'),template);
+ e.run('fleeBattle();startBattle(2,MAPS[2].monsters[1],false)');assert.ok(!enemy().includes('portrait-natural'));
+ e.run('ui.monster.portraitLayout="natural"');assert.match(enemy(),/portrait-natural/);
+ e.run('delete ui.monster.portraitLayout');assert.ok(!enemy().includes('portrait-natural'));
+ assert.equal(e.run('MAPS.flatMap(map=>[...map.monsters,map.boss,map.miniBoss]).filter(m=>m && m.portraitLayout).length'),1);
+ const css=fs.readFileSync(path.join(root,'styles/game.css'),'utf8');
+ assert.match(css,/\.portrait-ring\.portrait-natural\{height:auto;max-width:100%;\}/);
+ assert.match(css,/\.portrait-ring\.portrait-natural > \.avatar-img-circle\{display:block;width:100%;height:auto;\}/);
+});
+
+test('Arena foundation separates artwork, effects, heading, resources and states with legacy fallback',()=>{
+ const e=scoutBattle();let html=e.run('renderBatalhaTab()');
+ for(const name of ['combatant-art-stage','combatant-artwork','combatant-effects','combatant-heading','combatant-hud','combatant-statuses'])assert.equal((html.match(new RegExp('class="'+name+'(?: |")','g'))||[]).length,2,name);
+ assert.match(html,/combatant-art-stage art-legacy/);assert.match(html,/combatant-art-stage art-natural/);
+ assert.match(html,/id="portrait-enemy">[\s\S]*?<\/div>\s*<div class="combatant-effects" id="effects-enemy"/);
+ e.run('fleeBattle();startBattle(2,MAPS[2].monsters[1],false)');html=e.run('renderBatalhaTab()');
+ assert.equal((html.match(/combatant-art-stage art-legacy/g)||[]).length,2);assert.ok(!html.includes('art-natural'));
+});
+
+test('Existing floating numbers target effects; shake targets artwork; action lock preserves forced disabled controls',()=>{
+ const e=fresh();
+ e.run(gameCode.slice(gameCode.indexOf('function floatNumber('),gameCode.indexOf('function updateArenaBarsOnly(')));
+ for(const side of ['player','enemy']){
+  const effects=e.document.getElementById('effects-'+side),art=e.document.getElementById('portrait-'+side);
+  let floated=null,shaken=false;effects.appendChild=x=>{floated=x};art.appendChild=()=>{throw Error('numbers must not enter artwork')};
+  art.classList.add=name=>{shaken=name==='shake'};
+  e.run('floatNumber("'+side+'","-12","dmg");shakeSide("'+side+'")');
+  assert.equal(floated.textContent,'-12');assert.equal(shaken,true);
+ }
+ const buttons=[{dataset:{}},{dataset:{forceDisabled:'1'}}];const original=e.document.querySelectorAll;
+ e.document.querySelectorAll=sel=>sel.includes('.battle-actions')?buttons:original(sel);
+ e.run('setActionsLocked(true)');assert.ok(buttons.every(b=>b.disabled));
+ e.run('setActionsLocked(false)');assert.equal(buttons[0].disabled,false);assert.equal(buttons[1].disabled,true);
+});
