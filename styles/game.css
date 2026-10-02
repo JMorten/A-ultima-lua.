@@ -668,3 +668,54 @@
 .romar-discovery-text h2 { font-size:1.1rem; line-height:1.5; overflow-wrap:break-word; }
 .romar-discovery-text p { line-height:1.65; margin:18px 0; }
 .romar-discovery-text button { width:100%; white-space:normal; min-height:44px; }
+
+/* Arena V2.4: scene-stage compartilhado; arte, efeitos e HUD seguem independentes.
+   Assets de combate devem ter fundo transparente, personagem inteiro ocupando bem o canvas,
+   pouca margem vazia, armas longas em diagonal, orientação voltada ao adversario e
+   composicao compatível com object-fit:contain. Mudancas de estado trocam artwork;
+   ataques/acoes devem evoluir por animacao/efeitos, sem virar novos portraits fixos. */
+.battle-arena.arena-battlefield{
+  --stage-height:clamp(318px,86vw,378px);
+  display:block;padding:0 8px 12px;isolation:isolate;overflow:hidden;
+}
+.arena-stage{position:relative;height:var(--stage-height);margin:0 -8px;overflow:hidden;}
+.battlefield-background{
+  position:absolute;inset:0;
+  background-color:#111217;background-size:cover;background-position:center 60%;
+  border-radius:6px 6px 0 0;pointer-events:none;z-index:0;
+}
+.arena-actor{
+  position:absolute;left:var(--actor-x);bottom:var(--actor-ground);
+  width:var(--actor-w);height:var(--actor-h);
+  transform:translate(var(--actor-anchor-x), var(--actor-anchor-y));
+  transform-origin:center bottom;overflow:visible;z-index:1;
+}
+.arena-actor.actor-player{z-index:2;}
+.arena-actor.actor-enemy{z-index:3;}
+.arena-actor > .combatant-artwork{
+  width:100%;height:100%;border:0;border-radius:0;background:none;box-shadow:none;
+  overflow:visible;display:flex;align-items:flex-end;justify-content:center;margin:0;
+}
+.arena-actor > .combatant-artwork::after{display:none;}
+.arena-actor .avatar-img-circle{
+  display:block;width:100%;height:100%;object-fit:contain;object-position:center bottom;border-radius:0;
+}
+.arena-actor.art-legacy > .combatant-artwork{aspect-ratio:1;}
+.arena-actor.art-legacy .avatar-img-circle{height:100%;object-fit:cover;object-position:center 18%;}
+.arena-actor > .combatant-effects{
+  position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:4;
+}
+.arena-global-effects{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:5;}
+.arena-hud-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 12px;margin-top:8px;}
+.arena-hud-grid .combatant-ui{text-align:center;min-width:0;}
+.arena-battlefield .combatant-heading h4{font-size:14px;line-height:1.25;margin:0;overflow-wrap:anywhere;}
+.arena-battlefield .combatant-hud{min-width:0;text-align:center;}
+.arena-battlefield .combatant-statuses{min-width:0;text-align:center;}
+.arena-battlefield .arena-enemy-chip{font-size:11px;letter-spacing:.02em;}
+@media(max-width:380px){
+  .battle-arena.arena-battlefield{--stage-height:clamp(310px,84vw,350px);}
+}
+@media(min-width:420px){
+  .battle-arena.arena-battlefield{--stage-height:clamp(330px,84vw,390px);}
+}
+@media(min-width:701px){.battle-arena.arena-battlefield{max-width:640px;margin-left:auto;margin-right:auto;}}

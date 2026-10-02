@@ -682,10 +682,10 @@ test('Reload drops preparation and stance, without restoring combat or changing 
 test('Scout portraits follow preparation, completion and next normal response without mutating templates',()=>{
  const e=scoutBattle(),template=e.run('JSON.stringify(MAPS[2].monsters[0])');
  const art=()=>e.run('monsterAvatarHtml(ui.monster,"avatar-img-circle")');
- assert.match(art(),/orc_batedor_nova_arte.png/);
- scoutResponse(e);scoutResponse(e);scoutResponse(e);assert.match(art(),/orc_batedor_alerta_chifre.png/);
- scoutResponse(e);assert.match(art(),/orc_batedor_alerta_chifre.png/);
- scoutResponse(e);assert.match(art(),/orc_batedor_nova_arte.png/);
+ assert.match(art(),/orc_batedor_combat.png/);
+ scoutResponse(e);scoutResponse(e);scoutResponse(e);assert.match(art(),/orc_batedor_alerta_combat.png/);
+ scoutResponse(e);assert.match(art(),/orc_batedor_alerta_combat.png/);
+ scoutResponse(e);assert.match(art(),/orc_batedor_combat.png/);
  assert.equal(e.run('JSON.stringify(MAPS[2].monsters[0])'),template);
 });
 
@@ -694,7 +694,7 @@ test('Scout visual state never leaks after flee or death; other portraits remain
   const e=scoutBattle();for(let i=0;i<3;i++)scoutResponse(e);
   if(death){e.run('resolvePlayerHit(99999,false)');e.tick();e.close();}else e.run('fleeBattle()');
   e.run('startBattle(2,MAPS[2].monsters[0],false)');assert.equal(e.run('ui.monster.scoutHornVisual'),false);
-  assert.match(e.run('monsterAvatarHtml(ui.monster)'),/orc_batedor_nova_arte.png/);
+  assert.match(e.run('monsterAvatarHtml(ui.monster)'),/orc_batedor_combat.png/);
  }
  const e=fresh();assert.equal(e.run('MAPS.every(map=>[...map.monsters,map.miniBoss,map.boss].filter(Boolean).every(m=>monsterAvatarHtml(m).includes(m.portrait)))'),true);
 });
@@ -707,9 +707,9 @@ test('War stance narrative is rendered before arena and controls, and remains in
 });
 
 test('Approved Scout PNG assets exist at portrait paths with expected dimensions',()=>{
- for(const name of ['orc_batedor_nova_arte.png','orc_batedor_alerta_chifre.png']){
+ for(const [name,w,h] of [['orc_batedor_combat.png',1427,1102],['orc_batedor_alerta_combat.png',1254,1254]]){
   const bytes=fs.readFileSync(path.join(root,'assets/images/enemies/trenches',name));
-  assert.equal(bytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(bytes.readUInt32BE(16),627);assert.equal(bytes.readUInt32BE(20),1254);
+  assert.equal(bytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(bytes.readUInt32BE(16),w);assert.equal(bytes.readUInt32BE(20),h);
  }
 });
 
@@ -719,7 +719,7 @@ test('Natural portrait layout is opt-in, survives Scout art changes and never ch
  const enemy=()=>e.run('renderBatalhaTab()').match(/<div class="([^"]*)" id="portrait-enemy">/)[1];
  for(let i=0;i<6;i++){
   assert.match(enemy(),/portrait-natural/);
-  assert.match(e.run('monsterAvatarHtml(ui.monster)'),/width="627" height="1254"/);
+  assert.match(e.run('monsterAvatarHtml(ui.monster)'),/width="(?:1427|1254)" height="(?:1102|1254)"/);
   assert.ok(!e.run('renderBatalhaTab()').match(/<div class="([^"]*)" id="portrait-player">/)[1].includes('portrait-natural'));
   scoutResponse(e);
  }
@@ -733,13 +733,14 @@ test('Natural portrait layout is opt-in, survives Scout art changes and never ch
  assert.match(css,/\.portrait-ring\.portrait-natural > \.avatar-img-circle\{display:block;width:100%;height:auto;\}/);
 });
 
-test('Arena foundation separates artwork, effects, heading, resources and states with legacy fallback',()=>{
+test('Arena foundation separates stage actors, effects, HUD and states with legacy fallback',()=>{
  const e=scoutBattle();let html=e.run('renderBatalhaTab()');
- for(const name of ['combatant-art-stage','combatant-artwork','combatant-effects','combatant-heading','combatant-hud','combatant-statuses'])assert.equal((html.match(new RegExp('class="'+name+'(?: |")','g'))||[]).length,2,name);
- assert.match(html,/combatant-art-stage art-legacy/);assert.match(html,/combatant-art-stage art-natural/);
+ for(const name of ['arena-stage','arena-hud-grid','combatant-artwork','combatant-effects','combatant-heading','combatant-hud','combatant-statuses'])assert.ok(html.includes(name),name);
+ assert.equal((html.match(/class="arena-actor actor-/g)||[]).length,2);
+ assert.match(html,/arena-actor actor-player art-legacy/);assert.match(html,/arena-actor actor-enemy art-natural/);
  assert.match(html,/id="portrait-enemy">[\s\S]*?<\/div>\s*<div class="combatant-effects" id="effects-enemy"/);
  e.run('fleeBattle();startBattle(2,MAPS[2].monsters[1],false)');html=e.run('renderBatalhaTab()');
- assert.equal((html.match(/combatant-art-stage art-legacy/g)||[]).length,2);assert.ok(!html.includes('art-natural'));
+ assert.equal((html.match(/arena-actor actor-(?:player|enemy) art-legacy/g)||[]).length,2);assert.ok(!html.includes('art-natural'));
 });
 
 test('Existing floating numbers target effects; shake targets artwork; action lock preserves forced disabled controls',()=>{
@@ -756,4 +757,47 @@ test('Existing floating numbers target effects; shake targets artwork; action lo
  e.document.querySelectorAll=sel=>sel.includes('.battle-actions')?buttons:original(sel);
  e.run('setActionsLocked(true)');assert.ok(buttons.every(b=>b.disabled));
  e.run('setActionsLocked(false)');assert.equal(buttons[0].disabled,false);assert.equal(buttons[1].disabled,true);
+});
+
+test('Arena V2.4 selects only approved territory background and keeps combat art separate from class selection',()=>{
+ const e=fresh();
+ assert.match(e.run('classAvatarHtml("mago","class-portrait-img")'),/assets\/images\/classes\/mago.jpg/);
+ assert.match(e.run('classCombatAvatarHtml("mago")'),/characters\/combat\/mago.png/);
+ assert.match(e.run('classCombatAvatarHtml("mago")'),/width="1323" height="1189"/);
+ for(let map=0;map<4;map++){
+  e.run('startBattle('+map+',MAPS['+map+'].monsters[0],false)');
+  const html=e.run('renderBatalhaTab()');assert.equal(html.includes('backgrounds/trincheiras_orc_arena.png'),map===2);
+  assert.match(html,/battlefield-background/);assert.ok(!html.includes('vs-glyph'));e.run('fleeBattle()');
+ }
+ assert.equal(e.run('classCombatAvatarHtml("cavaleiro")'),e.run('classAvatarHtml("cavaleiro","avatar-img-circle")'));
+});
+
+test('Arena V2.4 Mage and Scout natural art keeps stable HUD, mechanics and intrinsic sizes across horn states',()=>{
+ const e=fresh();e.run('newPlayer("mago");startBattle(2,MAPS[2].monsters[0],false);player.hp=player.hpMax=10000;ui.buffs.atolado={turnsLeft:2}');
+ const template=e.run('JSON.stringify(MAPS)');
+ for(let i=0;i<6;i++){
+  const html=e.run('renderBatalhaTab()');assert.equal((html.match(/arena-actor actor-(?:player|enemy) art-natural/g)||[]).length,2);
+  assert.match(html,/id="arena-hp-player-text">10000\/10000 HP/);assert.match(html,/id="arena-mp-player-text"/);
+  assert.ok(html.indexOf('arena-stage')<html.indexOf('arena-hud-grid'));assert.match(html,/arena-global-effects/);
+  assert.match(html,/combatant-statuses/);assert.match(html,/ATOLADO/);
+  if(i===3 || i===4){assert.match(html,/orc_batedor_alerta_combat.png/);assert.match(html,/width="1254" height="1254"/);}
+  else {assert.match(html,/orc_batedor_combat.png/);assert.match(html,/width="1427" height="1102"/);}
+  // Exercise the real state resolver without mutating the mechanical state through rendering.
+  e.run('getDodgeChance=()=>1;resolveEnemyAttack()');
+ }
+ assert.equal(e.run('JSON.stringify(MAPS)'),template);
+ assert.equal(e.run('JSON.stringify(player).includes("COMBAT_PRESENTATION")'),false);
+});
+
+test('Arena V2.4 assets have approved formats and dimensions; stage and effects remain independent of HUD',()=>{
+ for(const [file,w,h] of [['characters/combat/mago.png',1323,1189],['enemies/trenches/orc_batedor_combat.png',1427,1102],['backgrounds/trincheiras_orc_arena.png',762,1024]]){
+  const b=fs.readFileSync(path.join(root,'assets/images',file));assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(b.readUInt32BE(16),w);assert.equal(b.readUInt32BE(20),h);
+ }
+ const css=fs.readFileSync(path.join(root,'styles/game.css'),'utf8');
+ assert.match(css,/--stage-height:clamp\(318px,86vw,378px\)/);
+ assert.match(css,/\.arena-stage\{position:relative;height:var\(--stage-height\)/);
+ assert.match(css,/\.arena-actor\{\s*position:absolute;left:var\(--actor-x\);bottom:var\(--actor-ground\)/);
+ assert.match(css,/\.arena-hud-grid\{display:grid;grid-template-columns:minmax\(0,1fr\) minmax\(0,1fr\)/);
+ assert.match(css,/\.arena-actor > \.combatant-effects\{\s*position:absolute;inset:0;pointer-events:none;overflow:visible/);
+ assert.doesNotMatch(css,/combatant-enemy \.art-natural > \.combatant-artwork\{width:(?:190|258)%/);
 });
