@@ -720,6 +720,84 @@ test('Shaman Blood retaliation applies through basic attacks and skills using ef
  assert.equal(s.run('ui.monster.shamanTargets.siphon.hp'),110);
 });
 
+function gorthakBattle(){
+ const e=fresh();e.run('startBattle(2,MAPS[2].boss,true);player.hp=player.hpMax=10000;Math.random=()=>0.99');return e;
+}
+function gorthakAction(e){
+ e.run('resolveEnemyAttack()');
+}
+
+test('Gorthak V1 uses approved base stats and boss scaling without mutating templates',()=>{
+ const e=gorthakBattle(),template=e.run('JSON.stringify(MAPS[2].boss)');
+ assert.equal(e.run('MAPS[2].boss.hp'),740);assert.equal(e.run('MAPS[2].boss.atk'),72);assert.equal(e.run('MAPS[2].boss.def'),30);
+ assert.equal(e.run('ui.monster.hpMax'),903);assert.equal(e.run('ui.monster.atk'),86);assert.equal(e.run('ui.monster.def'),33);
+ assert.equal(e.run('ui.monster.battleBaseAtk'),86);assert.equal(e.run('ui.monster.battleBaseDef'),33);
+ e.run('ui.monster.hp=ui.monster.hpMax*.25;updateGorthakPhase(ui.monster)');
+ assert.equal(e.run('getGorthakEffectiveAtk(ui.monster)'),108);assert.equal(e.run('getGorthakEffectiveDef(ui.monster)'),23);
+ assert.equal(e.run('JSON.stringify(MAPS[2].boss)'),template);
+});
+
+test('Gorthak phase 1 performs two normals, telegraphs harmless Demolisher, then executes 1.8x and resets',()=>{
+ const e=gorthakBattle();e.run('var attacks=[];calcDamage=(atk,def)=>{attacks.push({atk,def});return 10}');
+ gorthakAction(e);gorthakAction(e);
+ assert.equal(e.run('player.hp'),9980);assert.equal(e.run('ui.monster.gorthakCycle'),2);
+ const hp=e.run('player.hp');gorthakAction(e);
+ assert.equal(e.run('player.hp'),hp);assert.equal(e.run('ui.monster.gorthakDemolisherPrepared'),true);
+ assert.match(e.run('enemyBehaviorChip(ui.monster)'),/GOLPE DEMOLIDOR/);
+ assert.match(e.run('renderBatalhaTab()'),/GOLPE DEMOLIDOR[\s\S]*Gorthak ergue a arma/);
+ gorthakAction(e);
+ assert.equal(e.run('player.hp'),hp-18);assert.equal(e.run('ui.monster.gorthakDemolisherPrepared'),false);
+ assert.equal(e.run('ui.monster.gorthakCycle'),0);
+ gorthakAction(e);assert.equal(e.run('player.hp'),hp-28);
+});
+
+test('Gorthak phase 2 triggers once and cycles normal, Heavy 1.25x, telegraph and Demolisher without permanent ATK bonus',()=>{
+ const e=gorthakBattle();e.run('var calls=[];calcDamage=(atk)=>{calls.push(atk);return 20};ui.monster.hp=Math.floor(ui.monster.hpMax*.65);updateGorthakPhase(ui.monster)');
+ assert.equal(e.run('ui.monster.gorthakPhase'),2);assert.equal(e.run('ui.monster.gorthakPhase2Seen'),true);
+ assert.equal(e.run('ui.monster.atk'),86);assert.match(e.run('battleLog.join("|")'),/FÚRIA DE GUERRA/);
+ gorthakAction(e);assert.equal(e.run('player.hp'),9980);
+ gorthakAction(e);assert.equal(e.run('player.hp'),9955);
+ const hp=e.run('player.hp');gorthakAction(e);assert.equal(e.run('player.hp'),hp);assert.equal(e.run('ui.monster.gorthakDemolisherPrepared'),true);
+ gorthakAction(e);assert.equal(e.run('player.hp'),hp-36);assert.equal(e.run('ui.monster.gorthakCycle'),0);
+ assert.equal(e.run('ui.monster.atk'),86);
+});
+
+test('Gorthak Last Advance triggers once, cancels pending Demolisher, applies derived ATK/DEF and suppresses earlier specials',()=>{
+ const e=gorthakBattle();e.run('var attacks=[];calcDamage=(atk,def)=>{attacks.push({atk,def});return 10};ui.monster.gorthakDemolisherPrepared=true;ui.monster.gorthakCycle=2;ui.monster.hp=Math.floor(ui.monster.hpMax*.30);updateGorthakPhase(ui.monster)');
+ assert.equal(e.run('ui.monster.gorthakPhase'),3);assert.equal(e.run('ui.monster.gorthakPhase3Seen'),true);assert.equal(e.run('ui.monster.gorthakDemolisherPrepared'),false);
+ assert.match(e.run('enemyBehaviorChip(ui.monster)'),/ÚLTIMO AVANÇO/);
+ gorthakAction(e);gorthakAction(e);gorthakAction(e);
+ assert.deepEqual(JSON.parse(e.run('JSON.stringify(attacks.map(a=>a.atk))')),[108,108,108]);
+ assert.equal(e.run('ui.monster.atk'),86);assert.equal(e.run('ui.monster.def'),33);
+ assert.equal(e.run('getGorthakEffectiveDef(ui.monster)'),23);
+ e.run('player.atk=100;calcDamage=(atk,def)=>def;playerAttack()');
+ assert.equal(e.run('ui.monster.hp'),e.run('Math.floor(ui.monster.hpMax*.30)-23'));
+});
+
+test('Gorthak thresholds handle direct phase skips and lethal hits without residual transitions',()=>{
+ const e=gorthakBattle();e.run('var counters=0;resolveEnemyAttack=()=>{counters++};ui.monster.hp=ui.monster.hpMax;resolvePlayerHit(Math.ceil(ui.monster.hpMax*.75),false)');
+ e.tick();assert.equal(e.run('ui.monster.gorthakPhase'),3);assert.equal(e.run('ui.monster.gorthakPhase2Seen'),false);assert.equal(e.run('ui.monster.gorthakDemolisherPrepared'),false);assert.equal(e.run('counters'),1);
+ const lethal=gorthakBattle();lethal.run('resolvePlayerHit(99999,false)');lethal.tick();
+ assert.ok(lethal.run('ui.pendingVictory'));assert.ok(!lethal.run('battleLog.join(\"|\").includes(\"ÚLTIMO AVANÇO\")'));
+});
+
+test('Gorthak Last Advance blocks flee after one free warning without consuming action or alert state',()=>{
+ const e=gorthakBattle();e.run('trenchesSession.warAlert=true;ui.monster.hp=Math.floor(ui.monster.hpMax*.30);updateGorthakPhase(ui.monster);var hp=player.hp,mp=player.mp,turns=ui.monster.aiTurns');
+ assert.equal(e.run('ui.monster.gorthakFleeDenied'),false);
+ assert.doesNotMatch(e.run('renderBatalhaTab()'),/disabled[^>]*onclick="fleeBattle\(\)">Fugir/);
+ e.run('ui.locked=true');
+ assert.doesNotMatch(e.run('renderBatalhaTab()'),/disabled[^>]*onclick="fleeBattle\(\)">Fugir/);
+ assert.match(e.run('renderBatalhaTab()'),/<button class="action-btn" disabled onclick="playerAttack\(\)">Atacar<\/button>/);
+ e.run('ui.locked=false');
+ e.run('fleeBattle()');
+ assert.equal(e.run('ui.inBattle'),true);assert.equal(e.run('player.hp'),e.run('hp'));assert.equal(e.run('player.mp'),e.run('mp'));assert.equal(e.run('ui.monster.aiTurns'),e.run('turns'));
+ assert.equal(e.run('ui.monster.gorthakFleeDenied'),true);assert.match(e.run('battleLog.join("|")'),/SEM ESCAPATÓRIA/);
+ const deniedHtml=e.run('renderBatalhaTab()');
+ assert.match(deniedHtml,/<h3>SEM ESCAPATÓRIA<\/h3><p>Você tenta recuar, mas Gorthak já está vindo para cima\.<\/p>/);
+ assert.match(deniedHtml,/disabled data-force-disabled="1" onclick="fleeBattle\(\)">Fugir/);
+ e.run('fleeBattle()');assert.equal(e.run('ui.inBattle'),true);assert.equal(e.run('trenchesSession.warAlert'),true);
+ const before=fresh();before.run('startBattle(2,MAPS[2].boss,true);fleeBattle()');assert.equal(before.run('ui.inBattle'),false);
+});
 test('Shaman Blood retaliation uses Essence overkill effective damage and stops when Blood is destroyed',()=>{
  const e=fresh();e.run('startBattle(2,MAPS[2].miniBoss,false);player.hp=100;player.hpMax=100;Math.random=()=>0.99;ui.monster.selectedRitualTarget="siphon";ui.monster.shamanTargets.siphon.hp=10;resolveShamanRitualHit(100,false)');
  assert.equal(e.run('player.hp'),98);
@@ -801,7 +879,7 @@ test('Natural portrait layout is opt-in, survives Scout art changes and never ch
  e.run('fleeBattle();startBattle(2,MAPS[2].monsters[1],false)');assert.ok(!enemy().includes('portrait-natural'));
  e.run('ui.monster.portraitLayout="natural"');assert.match(enemy(),/portrait-natural/);
  e.run('delete ui.monster.portraitLayout');assert.ok(!enemy().includes('portrait-natural'));
- assert.equal(e.run('MAPS.flatMap(map=>[...map.monsters,map.boss,map.miniBoss]).filter(m=>m && m.portraitLayout).length'),2);
+ assert.equal(e.run('MAPS.flatMap(map=>[...map.monsters,map.boss,map.miniBoss]).filter(m=>m && m.portraitLayout).length'),3);
  const css=fs.readFileSync(path.join(root,'styles/game.css'),'utf8');
  assert.match(css,/\.portrait-ring\.portrait-natural\{height:auto;max-width:100%;\}/);
  assert.match(css,/\.portrait-ring\.portrait-natural > \.avatar-img-circle\{display:block;width:100%;height:auto;\}/);
@@ -864,7 +942,7 @@ test('Arena V2.4 Mage and Scout natural art keeps stable HUD, mechanics and intr
 });
 
 test('Arena V2.4 assets have approved formats and dimensions; stage and effects remain independent of HUD',()=>{
- for(const [file,w,h] of [['characters/combat/mago.png',1323,1189],['enemies/trenches/orc_batedor_combat.png',1427,1102],['backgrounds/trincheiras_orc_arena.png',762,1024]]){
+ for(const [file,w,h] of [['characters/combat/mago.png',1323,1189],['enemies/trenches/orc_batedor_combat.png',1427,1102],['enemies/trenches/warlord_gorthak_combat.png',1088,1445],['backgrounds/trincheiras_orc_arena.png',762,1024]]){
   const b=fs.readFileSync(path.join(root,'assets/images',file));assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(b.readUInt32BE(16),w);assert.equal(b.readUInt32BE(20),h);
  }
  const css=fs.readFileSync(path.join(root,'styles/game.css'),'utf8');

@@ -24,6 +24,7 @@ const COMBAT_PRESENTATION = {
   enemies:{
     orc_batedor:{ x:0.75, ground:0, w:0.58, h:0.76, ax:-0.5, ay:0 },
     orc_xama:{ x:0.72, ground:0, w:0.44, h:0.70, ax:-0.5, ay:0 },
+    warlord_gorthak:{ x:0.76, ground:0, w:0.50, h:0.94, ax:-0.5, ay:0 },
   },
   ritualTargets:{
     totem_sangue:{ x:0.55, ground:0.02, w:0.34, h:0.72, ax:-0.5, ay:0 },
@@ -196,7 +197,7 @@ const MAPS = [
       { id:'orc_capitao',  name:'Orc Capitão', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_capitao.jpg', hp:260, atk:44, def:19, xp:135, coinMin:44, coinMax:64, tier:2 },
       { id:'acougueiro_trincheira', name:'Açougueiro da Trincheira', emoji:'👺', portrait:'assets/images/enemies/trenches/acougueiro_trincheira.jpg', hp:460, atk:68, def:30, xp:240, coinMin:75, coinMax:105, tier:3 },
     ],
-    boss:{ id:'warlord_gorthak', name:'Warlord Gorthak', emoji:'👺', portrait:'assets/images/enemies/trenches/warlord_gorthak.jpg', hp:625, atk:67, def:29, xp:300, coinMin:150, coinMax:220, isBoss:true },
+    boss:{ id:'warlord_gorthak', name:'Warlord Gorthak', emoji:'👺', portrait:'assets/images/enemies/trenches/warlord_gorthak_combat.png', portraitLayout:'natural', hp:740, atk:72, def:30, xp:300, coinMin:150, coinMax:220, isBoss:true },
     miniBoss:{ id:'orc_xama', name:'Orc Xamã', emoji:'💀', portrait:'assets/images/enemies/trenches/orc_xama_transe.png', portraitLayout:'natural', hp:360, atk:48, def:20, xp:240, coinMin:75, coinMax:105, isMiniBoss:true },
   },
   {
@@ -1308,6 +1309,7 @@ function startBattle(mapIndex, monsterTemplate, isBoss){
     hp = Math.round(hp*1.3); atk = Math.round(atk*1.3); def = Math.round(def*1.3);
   }
   ui.monster = Object.assign({}, monsterTemplate, { hp, atk, def, hpMax: hp, isBoss: !!isBoss, eventBuffed: eventOn, battleBaseAtk: atk, battleBaseDef: def, bossPhase: 0, desperationTriggered:false, aiTurns:0, frenzyTriggered:false, heavyPrepared:false });
+  if(mapIndex===2 && monsterTemplate.id==='warlord_gorthak')initGorthakBattle(ui.monster);
   if(mapIndex===2 && monsterTemplate.id==='orc_batedor')Object.assign(ui.monster,{scoutNormals:0,scoutAlertPrepared:false,scoutAlertAttempted:false,scoutHornVisual:false});
   if(mapIndex===2 && monsterTemplate.id==='orc_xama')initShamanRitual(ui.monster);
   if(trenchesSession.warAlert){
@@ -1576,7 +1578,8 @@ function updateArenaBarsOnly(){
 function setActionsLocked(locked){
   ui.locked = locked;
   document.querySelectorAll('.battle-actions button, .skills-row button, .consumable-row button').forEach(b=>{
-    b.disabled = locked || b.dataset.forceDisabled==='1';
+    const gorthakFleeAttempt = locked && isGorthak() && ui.monster.gorthakPhase===3 && !ui.monster.gorthakFleeDenied && b.getAttribute && b.getAttribute('onclick')==='fleeBattle()';
+    b.disabled = (locked && !gorthakFleeAttempt) || b.dataset.forceDisabled==='1';
   });
 }
 
@@ -1763,6 +1766,55 @@ function waitForSwampLord(){
   logPush('Você aguarda o movimento sob o charco.');
   monsterCounterTurn();
 }
+function isGorthak(m=ui.monster){return !!m && ui.mapIndex===2 && m.id==='warlord_gorthak';}
+function initGorthakBattle(m){
+  Object.assign(m,{gorthakPhase:1,gorthakCycle:0,gorthakDemolisherPrepared:false,gorthakPhase2Seen:false,gorthakPhase3Seen:false,gorthakFleeDenied:false});
+}
+function getGorthakEffectiveAtk(m){
+  return isGorthak(m) && m.gorthakPhase===3 ? Math.round(m.atk*1.25) : m.atk;
+}
+function getGorthakEffectiveDef(m){
+  return isGorthak(m) && m.gorthakPhase===3 ? Math.max(0,Math.round(m.def*0.70)) : m.def;
+}
+function updateGorthakPhase(m){
+  if(!isGorthak(m) || !ui.inBattle || m.hp<=0)return false;
+  const pct=m.hp/m.hpMax;
+  if(pct<=0.30 && !m.gorthakPhase3Seen){
+    m.gorthakPhase=3;
+    m.gorthakPhase3Seen=true;
+    m.gorthakDemolisherPrepared=false;
+    m.gorthakCycle=0;
+    logPush('<b>ÚLTIMO AVANÇO</b> Ferido e encurralado, Gorthak abandona qualquer defesa e parte para o ataque final.');
+    return true;
+  }
+  if(pct<=0.65 && !m.gorthakPhase2Seen && !m.gorthakPhase3Seen){
+    m.gorthakPhase=2;
+    m.gorthakPhase2Seen=true;
+    if(!m.gorthakDemolisherPrepared)m.gorthakCycle=0;
+    logPush('<b>FÚRIA DE GUERRA</b> Gorthak abandona a disciplina e avança com violência crescente.');
+    return true;
+  }
+  return false;
+}
+function gorthakAction(m){
+  if(!isGorthak(m))return null;
+  if(m.gorthakPhase===3)return {mult:1,name:'Último Avanço',atk:getGorthakEffectiveAtk(m)};
+  if(m.gorthakDemolisherPrepared){
+    m.gorthakDemolisherPrepared=false;
+    m.gorthakCycle=0;
+    return {mult:1.8,name:'GOLPE DEMOLIDOR'};
+  }
+  if(m.gorthakPhase===2){
+    if(m.gorthakCycle===0){m.gorthakCycle=1;return {mult:1};}
+    if(m.gorthakCycle===1){m.gorthakCycle=2;return {mult:1.25,name:'GOLPE PESADO'};}
+  } else if(m.gorthakCycle<2){
+    m.gorthakCycle++;
+    return {mult:1};
+  }
+  m.gorthakDemolisherPrepared=true;
+  logPush('<b>GOLPE DEMOLIDOR</b> Gorthak ergue a arma para desferir um golpe devastador.');
+  return {prepared:true};
+}
 // Três ataques normais por ciclo; Domínio alterna com ofensivas disponíveis.
 // Um único estado preparado evita sobreposição. Fase III alterna as ofensivas.
 function swampLordAction(m){
@@ -1808,6 +1860,12 @@ function orcScoutAction(m){
 }
 function enemyBehaviorChip(m){
   if(!m) return '';
+  if(isGorthak(m)){
+    if(m.gorthakPhase===3)return '<span class="arena-enemy-chip danger">ÚLTIMO AVANÇO · ATQ +25% · DEF −30%</span>';
+    if(m.gorthakDemolisherPrepared)return '<span class="arena-enemy-chip warning">GOLPE DEMOLIDOR · PREPARANDO</span>';
+    if(m.gorthakPhase===2)return '<span class="arena-enemy-chip danger">FÚRIA DE GUERRA</span>';
+    return '<span class="arena-enemy-chip">COMANDANTE</span>';
+  }
   if(m.scoutAlertPrepared)return '<span class="arena-enemy-chip warning">ALERTA DE GUERRA PREPARADO · elimine o Batedor antes do chamado</span>';
   if(m.warStanceActions>0)return '<span class="arena-enemy-chip danger">POSTURA DE GUERRA · ATQ +15%</span>';
   if(m.id==='orc_xama' && ui.mapIndex===2){
@@ -1861,6 +1919,8 @@ function resolveEnemyAttack(contextText='revida', retaliation=false){
   const warStance=!retaliation && m.warStanceActions>0;
   if(warStance)m.warStanceActions--;
   if(!retaliation && ui.mapIndex===2 && m.id==='orc_batedor' && orcScoutAction(m))return {dodged:false,damage:0,prepared:true};
+  const gorthakMove=!retaliation?gorthakAction(m):null;
+  if(gorthakMove && gorthakMove.prepared)return {dodged:false,damage:0,prepared:true};
   const swampMove=isSwampLord()?swampLordAction(m):null;
   if(swampMove && swampMove.prepared)return {dodged:false,damage:0,prepared:true};
   updateEnemyBehaviorBeforeCounter();
@@ -1896,8 +1956,8 @@ function resolveEnemyAttack(contextText='revida', retaliation=false){
     }
   }
 
-  let mult=swampMove?swampMove.mult:(retaliation ? 1.25 : 1);
-  let attackName=swampMove?swampMove.name||'':(retaliation ? 'Retaliação do Alfa' : '');
+  let mult=gorthakMove?gorthakMove.mult:(swampMove?swampMove.mult:(retaliation ? 1.25 : 1));
+  let attackName=gorthakMove?gorthakMove.name||'':(swampMove?swampMove.name||'':(retaliation ? 'Retaliação do Alfa' : ''));
 
   // Lobisomem: a cada 3º ataque efetivo, uma mordida mais perigosa.
   if(!retaliation && m.id==='lobisomem_feroz' && m.aiTurns%3===0){
@@ -1925,7 +1985,8 @@ function resolveEnemyAttack(contextText='revida', retaliation=false){
     return {dodged:true, damage:0};
   }
 
-  let dmg2=calcDamage(warStance?m.atk*1.15:m.atk,getEffectiveDef());
+  const enemyAtk=gorthakMove && gorthakMove.atk ? gorthakMove.atk : (warStance?m.atk*1.15:m.atk);
+  let dmg2=calcDamage(enemyAtk,getEffectiveDef());
   dmg2=Math.max(1,Math.round(dmg2*mult*(1-Math.min(.35,equippedAffixTotal('damageReduction')))));
   const actualDamage=Math.min(player.hp,dmg2);
   player.hp=Math.max(0,player.hp-dmg2);
@@ -2010,6 +2071,7 @@ function resolvePlayerHit(dmg, isCrit, impacts=[dmg]){
       render();
       return;
     }
+    updateGorthakPhase(m);
     const moonAnnounced=updateAlfaBossPhase();
     // Mini-chefes entram em desespero quando muito feridos: um pico curto de perigo que
     // recompensa guardar cura/defesa para o fim, sem simplesmente multiplicar o HP.
@@ -2042,7 +2104,7 @@ function playerAttack(){
   const m = ui.monster;
   const ritualTarget = isShamanRitual() ? getSelectedShamanTarget() : null;
   if(isShamanRitual() && !ritualTarget)return;
-  const targetDef = ritualTarget ? ritualTarget.def : m.def;
+  const targetDef = ritualTarget ? ritualTarget.def : getGorthakEffectiveDef(m);
   const targetName = ritualTarget ? ritualTarget.name : m.name;
   const { dmg, isCrit } = rollDamage(getEffectiveAtk(), targetDef);
   logPush(isCrit
@@ -2134,7 +2196,7 @@ function usarSkill(skillId){
   if(isShamanRitual() && !ritualTarget)return;
   let pierce=skill.defPierce||0;
   if(player.classKey==='mago' && hasMagMilestone(75) && skill.mpCost>=14) pierce=Math.max(pierce,0.20);
-  const effDef=(ritualTarget ? ritualTarget.def : m.def)*(1-pierce);
+  const effDef=(ritualTarget ? ritualTarget.def : getGorthakEffectiveDef(m))*(1-pierce);
   const baseStat = player.classKey==='mago' ? player.magia : getEffectiveAtk();
   let buildMult = player.classKey==='mago' ? getMagicBuildMultiplier() : 1;
   if(overcharged) buildMult*=1.35;
@@ -2229,6 +2291,14 @@ function usarConsumivelBatalha(type){
 
 function fleeBattle(){
   if(ui.romarResult || (ui.monster && ui.monster.romarChoice)) return;
+  if(isGorthak() && ui.monster.gorthakPhase===3){
+    if(!ui.monster.gorthakFleeDenied){
+      ui.monster.gorthakFleeDenied=true;
+      logPush('<b>SEM ESCAPATÓRIA</b> Você tenta recuar, mas Gorthak já está vindo para cima.');
+      render();
+    }
+    return;
+  }
   delete ui.buffs.romarFracture;
   ui.inBattle = false; ui.monster = null; ui.tab = 'mapa'; ui.locked = false;
   render();
@@ -2794,9 +2864,20 @@ function renderBatalhaTab(){
     if(key==='defBoost') return `<span class="arena-buff-chip">🛡️ Defesa +${Math.round((b.mult-1)*100)}% · ${b.turnsLeft}t</span>`;
     return '';
   }).join('');
+  const gorthakDemolisherNotice = isGorthak(m) && m.gorthakDemolisherPrepared
+    ? '<div class="status-card" role="status"><h3>GOLPE DEMOLIDOR</h3><p>Gorthak ergue a arma para desferir um golpe devastador.</p></div>'
+    : '';
+  const gorthakFleeNotice = isGorthak(m) && m.gorthakPhase===3 && m.gorthakFleeDenied
+    ? '<div class="status-card" role="status"><h3>SEM ESCAPATÓRIA</h3><p>Você tenta recuar, mas Gorthak já está vindo para cima.</p></div>'
+    : '';
+  const fleeBlocked = isGorthak(m) && m.gorthakPhase===3 && m.gorthakFleeDenied;
+  const gorthakFleeAttemptAvailable = isGorthak(m) && m.gorthakPhase===3 && !m.gorthakFleeDenied;
+  const fleeDisabled = fleeBlocked || (ui.locked && !gorthakFleeAttemptAvailable);
 
   return `
     ${m.warStanceActions>0 ? '<div class="status-card" role="status"><h3>ELES ESTAVAM ESPERANDO</h3><p>O chamado do Batedor chegou antes de você. O Orc assume posição de combate.</p></div>' : ''}
+    ${gorthakDemolisherNotice}
+    ${gorthakFleeNotice}
     <div class="battle-arena arena-battlefield">
       <div class="arena-stage">
         <div class="battlefield-background" aria-hidden="true"${map.arenaBackground ? ` style="background-image:url('${map.arenaBackground}')"` : ''}></div>
@@ -2836,7 +2917,7 @@ function renderBatalhaTab(){
     <div class="battle-actions">
       <button class="action-btn" ${ui.locked?'disabled':''} onclick="playerAttack()">Atacar</button>
       ${isSwampLord() && m.submerged ? `<button class="action-btn" ${ui.locked?'disabled':''} onclick="waitForSwampLord()">AGUARDAR</button>` : ''}
-      <button class="action-btn secondary" ${ui.locked?'disabled':''} onclick="fleeBattle()">Fugir</button>
+      <button class="action-btn secondary" ${fleeDisabled?'disabled':''} ${fleeBlocked?'data-force-disabled="1"':''} onclick="fleeBattle()">Fugir</button>
       ${ui.mapIndex===0 && m.id==='alfa_matilha' && m.bossPhase===0 && m.packWolfActive ? `<button class="action-btn secondary" ${ui.locked?'disabled':''} onclick="attackPackWolf()">🐺 Atacar Lobo da Matilha · ${m.packWolfHp}/${m.packWolfHpMax} HP</button>` : ''}
     </div>
     ${player.classKey==='mago' && hasMagMilestone(100) && getMagDomain()==='destruidor' ? `<button class="action-btn secondary" style="width:100%;margin:0 0 8px;" onclick="player.overchargeNext=!player.overchargeNext;render()">🔥 Sobrecarga: ${player.overchargeNext?'ATIVA':'DESATIVADA'}</button>` : ''}
