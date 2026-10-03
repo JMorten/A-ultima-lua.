@@ -636,15 +636,18 @@ test('Dodges consume stance actions too; telegraph responses are actions, not in
  assert.equal(e.run('ui.monster.warStanceActions'),0);assert.equal(e.run('trenchesSession.warAlert'),true);
 });
 
-test('Mini/boss neither consume alert nor gain stance; Butcher desperation is unchanged',()=>{
+test('Shaman/Gorthak neither consume alert nor gain stance; Butcher is an eligible common Orc',()=>{
  for(const kind of ['miniBoss','boss']){
   const e=fresh();e.run('trenchesSession.warAlert=true;startBattle(2,MAPS[2].'+kind+','+(kind==='boss')+');player.hp=10000');
   assert.equal(e.run('trenchesSession.warAlert'),true);assert.equal(e.run('ui.monster.warStanceActions'),undefined);
   if(kind==='miniBoss'){
    const atk=e.run('ui.monster.atk');e.run('ui.monster.hp=ui.monster.hpMax*.4;resolvePlayerHit(1,false)');e.tick();
-   assert.equal(e.run('ui.monster.atk'),Math.round(atk*1.2));assert.equal(e.run('ui.monster.desperationTriggered'),true);
+   assert.equal(e.run('ui.monster.atk'),atk);assert.equal(e.run('ui.monster.desperationTriggered'),false);
   }
  }
+ const e=fresh();e.run('trenchesSession.warAlert=true;startBattle(2,MAPS[2].monsters[3],false);player.hp=10000');
+ assert.equal(e.run('ui.monster.id'),'acougueiro_trincheira');
+ assert.equal(e.run('trenchesSession.warAlert'),false);assert.equal(e.run('ui.monster.warStanceActions'),2);
 });
 
 test('Navigation and traps retain alert; actual external battle clears without buff; rejected start retains',()=>{
@@ -677,6 +680,77 @@ test('Reload drops preparation and stance, without restoring combat or changing 
   const e=scoutBattle();if(prepared){for(let i=0;i<3;i++)scoutResponse(e);}else e.run('ui.monster.warStanceActions=2');
   const r=boot(e.storage);r.run('continueSavedGame()');assert.equal(r.run('ui.monster'),null);assert.equal(r.run('trenchesSession.warAlert'),false);assert.equal(r.run('SAVE_SCHEMA_VERSION'),5);
  }
+});
+
+test('Shaman ritual creates two totem targets, blocks War Alert and wakes without a free attack',()=>{
+ const e=fresh();e.run('trenchesSession.warAlert=true;startBattle(2,MAPS[2].miniBoss,false);player.hp=10000;player.hpMax=10000;Math.random=()=>0.99');
+ assert.equal(e.run('ui.monster.id'),'orc_xama');assert.equal(e.run('ui.monster.shamanRitual'),true);
+ assert.equal(e.run('trenchesSession.warAlert'),true);assert.equal(e.run('ui.monster.warStanceActions'),undefined);
+ let html=e.run('renderBatalhaTab()');
+ for(const text of ['Totem de Sangue','Totem da Essência','ESSÊNCIA ABSORVIDA 0/54','portrait-target-blood','portrait-target-siphon'])assert.ok(html.includes(text),text);
+ e.run('resolveShamanRitualHit(150,false);resolveShamanRitualHit(150,false)');
+ e.tick();
+ assert.equal(e.run('ui.monster.shamanRitual'),false);assert.equal(e.run('ui.monster.shamanAwake'),true);
+ assert.equal(e.run('ui.monster.hp'),e.run('ui.monster.hpMax+30'));
+ assert.equal(e.run('player.hp'),10000);
+ assert.match(e.run('monsterAvatarHtml(ui.monster,"avatar-img-circle")'),/orc_xama_combat.png/);
+});
+
+test('Shaman totems use effective damage for terminal retaliation and siphon; totems grant no rewards',()=>{
+ const e=fresh();e.run('startBattle(2,MAPS[2].miniBoss,false);player.hp=1000;player.hpMax=1000;player.coins=25;player.totalXp=0;Math.random=()=>0.99');
+ e.run('ui.monster.selectedRitualTarget="siphon";ui.monster.shamanTargets.siphon.hp=10;resolveShamanRitualHit(100,false)');
+ e.tick();
+ assert.equal(e.run('player.hp'),998);assert.equal(e.run('ui.monster.shamanTargets.siphon.active'),false);
+ assert.equal(e.run('player.coins'),25);assert.equal(e.run('player.totalXp'),0);assert.equal(e.run('ui.pendingVictory==null'),true);
+ e.run('ui.monster.selectedRitualTarget="blood";ui.monster.shamanTargets.blood.hp=10;resolveShamanRitualHit(100,false)');
+ e.tick();
+ assert.equal(e.run('ui.monster.shamanSiphoned'),0);
+ assert.equal(e.run('ui.monster.shamanRitual'),false);
+});
+
+
+test('Shaman Blood retaliation applies through basic attacks and skills using effective Essence damage',()=>{
+ const e=fresh();e.run('startBattle(2,MAPS[2].miniBoss,false);player.hp=100;player.hpMax=100;player.mp=100;Math.random=()=>0.99;ui.monster.selectedRitualTarget="siphon";calcDamage=()=>40;playerAttack()');
+ assert.equal(e.run('player.hp'),92);
+ assert.equal(e.run('ui.monster.shamanTargets.siphon.hp'),110);
+ assert.match(e.run('battleLog.join("|")'),/RETALIAÇÃO DO SANGUE.*8/);
+ assert.deepEqual(e.run('var floats=[];floatNumber=(side,text,cls)=>floats.push({side,text,cls});startBattle(2,MAPS[2].miniBoss,false);player.hp=100;player.hpMax=100;Math.random=()=>0.99;ui.monster.selectedRitualTarget="siphon";resolveShamanRitualHit(40,false);JSON.stringify(floats.find(f=>f.side==="player"))'), JSON.stringify({side:'player',text:'RETALIAÇÃO\n-8',cls:'dmg retaliation'}));
+ const s=fresh();s.run('startBattle(2,MAPS[2].miniBoss,false);player.hp=100;player.hpMax=100;player.mp=100;Math.random=()=>0.99;ui.monster.selectedRitualTarget="siphon";calcDamage=()=>40;usarSkill("golpe_da_fe")');
+ assert.equal(s.run('player.hp'),92);
+ assert.equal(s.run('ui.monster.shamanTargets.siphon.hp'),110);
+});
+
+test('Shaman Blood retaliation uses Essence overkill effective damage and stops when Blood is destroyed',()=>{
+ const e=fresh();e.run('startBattle(2,MAPS[2].miniBoss,false);player.hp=100;player.hpMax=100;Math.random=()=>0.99;ui.monster.selectedRitualTarget="siphon";ui.monster.shamanTargets.siphon.hp=10;resolveShamanRitualHit(100,false)');
+ assert.equal(e.run('player.hp'),98);
+ assert.equal(e.run('ui.monster.shamanTargets.siphon.hp'),0);
+ const b=fresh();b.run('startBattle(2,MAPS[2].miniBoss,false);player.hp=100;player.hpMax=100;Math.random=()=>0.99;ui.monster.shamanTargets.blood.active=false;ui.monster.shamanTargets.blood.hp=0;ui.monster.selectedRitualTarget="siphon";resolveShamanRitualHit(40,false)');
+ assert.equal(b.run('player.hp'),100);
+});
+
+test('Shaman retaliation is terminal: no derived effects and lethal retaliation causes normal defeat without rewards',()=>{
+ const e=fresh();e.run('startBattle(2,MAPS[2].miniBoss,false);player.hp=50;player.hpMax=100;player.coins=25;player.totalXp=0;Math.random=()=>0.99;equippedAffixTotal=(key)=>key==="lifesteal"?.5:0;ui.monster.selectedRitualTarget="siphon";resolveShamanRitualHit(40,false)');
+ assert.equal(e.run('player.hp'),62);
+ assert.equal(e.run('player.coins'),25);
+ assert.equal(e.run('player.totalXp'),0);
+ assert.equal(e.run('ui.pendingVictory==null'),true);
+ const lethal=fresh();lethal.run('startBattle(2,MAPS[2].miniBoss,false);player.hp=5;player.hpMax=100;player.coins=25;player.totalXp=0;ui.monster.selectedRitualTarget="siphon";resolveShamanRitualHit(40,false)');
+ assert.equal(lethal.run('player.hp'),0);
+ lethal.tick();
+ assert.equal(lethal.run('ui.inBattle'),false);
+ assert.equal(lethal.run('ui.pendingVictory==null'),true);
+ assert.equal(lethal.run('player.coins'),25);
+ assert.equal(lethal.run('player.totalXp'),0);
+});
+
+test('Shaman recurrence uses miniboss cycle; common Butcher advances seven-kill return window',()=>{
+ const e=fresh();e.run('startBattle(2,MAPS[2].miniBoss,false);ui.monster.shamanRitual=false;handleVictory(ui.monster);confirmPendingVictory()');
+ assert.equal(e.run('player.trenchesProgress.miniBossKills'),1);
+ assert.equal(e.run('canEncounterTrenchesMiniBoss()'),false);
+ for(let i=0;i<6;i++)e.run('startBattle(2,MAPS[2].monsters[3],false);handleVictory(ui.monster);confirmPendingVictory()');
+ assert.equal(e.run('canEncounterTrenchesMiniBoss()'),false);
+ e.run('startBattle(2,MAPS[2].monsters[3],false);handleVictory(ui.monster);confirmPendingVictory()');
+ assert.equal(e.run('canEncounterTrenchesMiniBoss()'),true);
 });
 
 test('Scout portraits follow preparation, completion and next normal response without mutating templates',()=>{
@@ -727,7 +801,7 @@ test('Natural portrait layout is opt-in, survives Scout art changes and never ch
  e.run('fleeBattle();startBattle(2,MAPS[2].monsters[1],false)');assert.ok(!enemy().includes('portrait-natural'));
  e.run('ui.monster.portraitLayout="natural"');assert.match(enemy(),/portrait-natural/);
  e.run('delete ui.monster.portraitLayout');assert.ok(!enemy().includes('portrait-natural'));
- assert.equal(e.run('MAPS.flatMap(map=>[...map.monsters,map.boss,map.miniBoss]).filter(m=>m && m.portraitLayout).length'),1);
+ assert.equal(e.run('MAPS.flatMap(map=>[...map.monsters,map.boss,map.miniBoss]).filter(m=>m && m.portraitLayout).length'),2);
  const css=fs.readFileSync(path.join(root,'styles/game.css'),'utf8');
  assert.match(css,/\.portrait-ring\.portrait-natural\{height:auto;max-width:100%;\}/);
  assert.match(css,/\.portrait-ring\.portrait-natural > \.avatar-img-circle\{display:block;width:100%;height:auto;\}/);

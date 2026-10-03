@@ -19,10 +19,15 @@ const COMBAT_PRESENTATION = {
   defaultPlayer:{ x:0.28, ground:0, w:0.34, h:0.62, ax:-0.5, ay:0 },
   defaultEnemy:{ x:0.72, ground:0, w:0.34, h:0.62, ax:-0.5, ay:0 },
   classes:{
-    mago:{ x:0.285, ground:0, w:0.62, h:0.96, ax:-0.5, ay:0 },
+    mago:{ x:0.25, ground:0, w:0.62, h:0.96, ax:-0.5, ay:0 },
   },
   enemies:{
     orc_batedor:{ x:0.75, ground:0, w:0.58, h:0.76, ax:-0.5, ay:0 },
+    orc_xama:{ x:0.72, ground:0, w:0.44, h:0.70, ax:-0.5, ay:0 },
+  },
+  ritualTargets:{
+    totem_sangue:{ x:0.55, ground:0.02, w:0.34, h:0.72, ax:-0.5, ay:0 },
+    totem_sifao:{ x:0.89, ground:0.02, w:0.34, h:0.72, ax:-0.5, ay:0 },
   },
 };
 
@@ -188,11 +193,11 @@ const MAPS = [
     monsters:[
       { id:'orc_batedor',  name:'Orc Batedor', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_batedor_combat.png', portraitLayout:'natural', hp:190, atk:30, def:14, xp:95,  coinMin:30, coinMax:45, tier:0 },
       { id:'orc_guerreiro',name:'Orc Guerreiro', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_guerreiro.jpg', hp:220, atk:35, def:16, xp:110, coinMin:35, coinMax:50, tier:1 },
-      { id:'orc_xama',     name:'Orc Xamã', emoji:'💀', portrait:'assets/images/enemies/trenches/orc_xama.jpg', hp:200, atk:40, def:13, xp:120, coinMin:38, coinMax:55, tier:2 },
-      { id:'orc_capitao',  name:'Orc Capitão', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_capitao.jpg', hp:260, atk:44, def:19, xp:135, coinMin:44, coinMax:64, tier:3 },
+      { id:'orc_capitao',  name:'Orc Capitão', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_capitao.jpg', hp:260, atk:44, def:19, xp:135, coinMin:44, coinMax:64, tier:2 },
+      { id:'acougueiro_trincheira', name:'Açougueiro da Trincheira', emoji:'👺', portrait:'assets/images/enemies/trenches/acougueiro_trincheira.jpg', hp:460, atk:68, def:30, xp:240, coinMin:75, coinMax:105, tier:3 },
     ],
     boss:{ id:'warlord_gorthak', name:'Warlord Gorthak', emoji:'👺', portrait:'assets/images/enemies/trenches/warlord_gorthak.jpg', hp:625, atk:67, def:29, xp:300, coinMin:150, coinMax:220, isBoss:true },
-    miniBoss:{ id:'acougueiro_trincheira', name:'Açougueiro da Trincheira', emoji:'👺', portrait:'assets/images/enemies/trenches/acougueiro_trincheira.jpg', hp:460, atk:68, def:30, xp:240, coinMin:75, coinMax:105, isMiniBoss:true },
+    miniBoss:{ id:'orc_xama', name:'Orc Xamã', emoji:'💀', portrait:'assets/images/enemies/trenches/orc_xama_transe.png', portraitLayout:'natural', hp:360, atk:48, def:20, xp:240, coinMin:75, coinMax:105, isMiniBoss:true },
   },
   {
     name:'Cripta Sangrenta', sub:'Trono dos vampiros ancestrais', theme:'🧛', fam:'fam-vampiro',
@@ -289,7 +294,7 @@ function buyBaseGear(idx){
 let player = null;
 // T3: estado apenas desta página. Reload descarta alerta e combate (Schema 5 inalterado).
 const trenchesSession = { warAlert:false };
-const WAR_ALERT_ORCS = ['orc_batedor','orc_guerreiro','orc_xama','orc_capitao'];
+const WAR_ALERT_ORCS = ['orc_batedor','orc_guerreiro','orc_capitao','acougueiro_trincheira'];
 let ui = {
   tab:'mapa', mapIndex:null, monster:null, inBattle:false, itemSeq:1, locked:false,
   skillCooldowns:{}, buffs:{}, gameStart: Date.now(),
@@ -373,6 +378,7 @@ function newPlayer(classKey){
     defeatedBosses:[],
     forestProgress:{ commonKills:0, miniBossDefeated:false, miniBossKills:0, discoveries:0 },
     swampProgress:{ commonKills:0, miniBossDefeated:false, miniBossKills:0 },
+    trenchesProgress:{ commonKills:0, miniBossDefeated:false, miniBossKills:0 },
     inventory:[],
     consumables:{ hp:1, hp_medium:0, hp_major:0, mp:1, mp_medium:0, mp_major:0, xpbuff:0 },
     xpBuffUntil:0,
@@ -474,11 +480,18 @@ function monsterAvatarHtml(monster, cssClass){
   if(monster.portrait) return `<img src="${monster.portrait}" class="${cssClass}" alt="${monster.name}"${imageSize}>`;
   return monster.emoji;
 }
+function combatPresentationVars(p){
+  return `style="--actor-x:${p.x*100}%;--actor-ground:${p.ground*100}%;--actor-w:${p.w*100}%;--actor-h:${p.h*100}%;--actor-anchor-x:${p.ax*100}%;--actor-anchor-y:${p.ay*100}%;"`;
+}
 function combatPresentationStyle(side, key){
   const defaults = side==='player' ? COMBAT_PRESENTATION.defaultPlayer : COMBAT_PRESENTATION.defaultEnemy;
   const table = side==='player' ? COMBAT_PRESENTATION.classes : COMBAT_PRESENTATION.enemies;
   const p = Object.assign({}, defaults, (table && table[key]) || {});
-  return `style="--actor-x:${p.x*100}%;--actor-ground:${p.ground*100}%;--actor-w:${p.w*100}%;--actor-h:${p.h*100}%;--actor-anchor-x:${p.ax*100}%;--actor-anchor-y:${p.ay*100}%;"`;
+  return combatPresentationVars(p);
+}
+function ritualTargetPresentationStyle(key){
+  const p = Object.assign({}, COMBAT_PRESENTATION.defaultEnemy, (COMBAT_PRESENTATION.ritualTargets && COMBAT_PRESENTATION.ritualTargets[key]) || {});
+  return combatPresentationVars(p);
 }
 function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
 
@@ -809,6 +822,19 @@ function desafiarMiniBossPantano(){
     return;
   }
   startBattle(1, MAPS[1].miniBoss, false);
+}
+function getTrenchesProgress(){
+  if(!player.trenchesProgress) player.trenchesProgress = { commonKills:0, miniBossDefeated:false, miniBossKills:0 };
+  if(typeof player.trenchesProgress.miniBossKills !== 'number') player.trenchesProgress.miniBossKills = player.trenchesProgress.miniBossDefeated ? 1 : 0;
+  ensureMiniBossKillCheckpoint(player.trenchesProgress);
+  return player.trenchesProgress;
+}
+function getTrenchesMiniBossTarget(){
+  const tp = getTrenchesProgress();
+  return tp.miniBossKills > 0 ? tp.commonKillsAtLastMiniBossVictory + 7 : 0;
+}
+function canEncounterTrenchesMiniBoss(){
+  return getTrenchesProgress().commonKills >= getTrenchesMiniBossTarget();
 }
 function desafiarBossTerritorio(mapIndex){
   if(mapIndex===0 && !getForestProgress().miniBossDefeated && !player.defeatedBosses.includes(0)){
@@ -1244,7 +1270,8 @@ function explorarMapa(mapIndex){
     startBattle(mapIndex, pickForestMonster(map), false);
     return;
   }
-  if(map.miniBoss && Math.random() < MINI_BOSS_CHANCE){
+  const miniBossEligible = mapIndex===2 ? canEncounterTrenchesMiniBoss() : true;
+  if(map.miniBoss && miniBossEligible && Math.random() < MINI_BOSS_CHANCE){
     startBattle(mapIndex, map.miniBoss, false);
     return;
   }
@@ -1282,6 +1309,7 @@ function startBattle(mapIndex, monsterTemplate, isBoss){
   }
   ui.monster = Object.assign({}, monsterTemplate, { hp, atk, def, hpMax: hp, isBoss: !!isBoss, eventBuffed: eventOn, battleBaseAtk: atk, battleBaseDef: def, bossPhase: 0, desperationTriggered:false, aiTurns:0, frenzyTriggered:false, heavyPrepared:false });
   if(mapIndex===2 && monsterTemplate.id==='orc_batedor')Object.assign(ui.monster,{scoutNormals:0,scoutAlertPrepared:false,scoutAlertAttempted:false,scoutHornVisual:false});
+  if(mapIndex===2 && monsterTemplate.id==='orc_xama')initShamanRitual(ui.monster);
   if(trenchesSession.warAlert){
     if(mapIndex!==2)trenchesSession.warAlert=false;
     else if(WAR_ALERT_ORCS.includes(monsterTemplate.id)){
@@ -1497,8 +1525,20 @@ function rollDamage(atkStat, defStat){
 
 function logPush(html){ battleLog.push(html); if(battleLog.length>40) battleLog.shift(); }
 
+function combatEffectId(side){
+  if(side==='player')return 'effects-player';
+  if(side==='target-blood')return 'effects-target-blood';
+  if(side==='target-siphon')return 'effects-target-siphon';
+  return 'effects-enemy';
+}
+function combatPortraitId(side){
+  if(side==='player')return 'portrait-player';
+  if(side==='target-blood')return 'portrait-target-blood';
+  if(side==='target-siphon')return 'portrait-target-siphon';
+  return 'portrait-enemy';
+}
 function floatNumber(side, text, cls){
-  const el = document.getElementById(side==='player' ? 'effects-player' : 'effects-enemy');
+  const el = document.getElementById(combatEffectId(side));
   if(!el) return;
   const span = document.createElement('span');
   span.className = 'float-num ' + cls;
@@ -1508,7 +1548,7 @@ function floatNumber(side, text, cls){
 }
 
 function shakeSide(side){
-  const el = document.getElementById(side==='player' ? 'portrait-player' : 'portrait-enemy');
+  const el = document.getElementById(combatPortraitId(side));
   if(!el) return;
   el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
 }
@@ -1521,9 +1561,16 @@ function updateArenaBarsOnly(){
   const eText = document.getElementById('arena-hp-enemy-text');
   const mpFill = document.getElementById('arena-mp-player');
   const mpText = document.getElementById('arena-mp-player-text');
-  if(pFill){ pFill.style.width = Math.max(0,(player.hp/player.hpMax)*100)+'%'; pText.textContent = `${player.hp}/${player.hpMax} HP`; }
-  if(mpFill){ mpFill.style.width = Math.max(0,(player.mp/player.mpMax)*100)+'%'; mpText.textContent = `${player.mp}/${player.mpMax} MP`; }
-  if(eFill && m){ eFill.style.width = Math.max(0,(m.hp/m.hpMax)*100)+'%'; eText.textContent = `${m.hp}/${m.hpMax} HP`; }
+  if(pFill){ pFill.style.width = Math.max(0,Math.min(100,(player.hp/player.hpMax)*100))+'%'; pText.textContent = `${player.hp}/${player.hpMax} HP`; }
+  if(mpFill){ mpFill.style.width = Math.max(0,Math.min(100,(player.mp/player.mpMax)*100))+'%'; mpText.textContent = `${player.mp}/${player.mpMax} MP`; }
+  if(eFill && m){ eFill.style.width = Math.max(0,Math.min(100,(m.hp/m.hpMax)*100))+'%'; eText.textContent = `${m.hp}/${m.hpMax} HP`; }
+  if(m && m.shamanTargets){
+    for(const [key,t] of Object.entries(m.shamanTargets)){
+      const fill=document.getElementById('arena-hp-target-'+key), txt=document.getElementById('arena-hp-target-'+key+'-text');
+      if(fill)fill.style.width=Math.max(0,Math.min(100,(t.hp/t.hpMax)*100))+'%';
+      if(txt)txt.textContent=`${t.hp}/${t.hpMax}`;
+    }
+  }
 }
 
 function setActionsLocked(locked){
@@ -1575,6 +1622,134 @@ function tryInterruptPreparedAttack(damage){
     if(m[key]){ m[key]=false; interrupted=true; logPush(`<span class="log-good"><b>${message}</b></span>`); }
   });
   return interrupted;
+}
+
+/* Ritual do Orc Xamã: Totens são alvos temporários presos ao clone da batalha. */
+const SHAMAN_TOTEM_DEFS = {
+  blood:{ id:'totem_sangue', name:'Totem de Sangue', portrait:'assets/images/enemies/trenches/totem_sangue.png', hp:150, hpMax:150, def:10, active:true },
+  siphon:{ id:'totem_sifao', name:'Totem da Essência', portrait:'assets/images/enemies/trenches/totem_sifao.png', hp:150, hpMax:150, def:10, active:true },
+};
+function initShamanRitual(m){
+  Object.assign(m,{shamanRitual:true,shamanAwake:false,shamanSiphoned:0,shamanSiphonMax:54,selectedRitualTarget:'blood',portrait:'assets/images/enemies/trenches/orc_xama_transe.png',portraitLayout:'natural'});
+  m.shamanTargets = { blood:Object.assign({},SHAMAN_TOTEM_DEFS.blood), siphon:Object.assign({},SHAMAN_TOTEM_DEFS.siphon) };
+}
+function isShamanRitual(){return ui.inBattle && ui.mapIndex===2 && ui.monster && ui.monster.id==='orc_xama' && ui.monster.shamanRitual;}
+function activeShamanTargets(){
+  const m=ui.monster;
+  return m&&m.shamanTargets ? Object.entries(m.shamanTargets).filter(([,t])=>t.active&&t.hp>0) : [];
+}
+function getSelectedShamanTarget(){
+  if(!isShamanRitual())return null;
+  const m=ui.monster;
+  let target=m.shamanTargets[m.selectedRitualTarget];
+  if(!target || !target.active || target.hp<=0){
+    const next=activeShamanTargets()[0];
+    if(!next)return null;
+    m.selectedRitualTarget=next[0];
+    target=next[1];
+  }
+  return target;
+}
+function selectShamanTarget(id){
+  if(!isShamanRitual() || ui.locked)return;
+  const target=ui.monster.shamanTargets[id];
+  if(!target || !target.active || target.hp<=0)return;
+  ui.monster.selectedRitualTarget=id;
+  render();
+}
+function shamanRitualTargetKey(target){return target && target.id==='totem_sangue' ? 'blood' : 'siphon';}
+function wakeShaman(){
+  const m=ui.monster;
+  if(!isShamanRitual() || activeShamanTargets().length)return false;
+  m.shamanRitual=false;
+  m.shamanAwake=true;
+  m.selectedRitualTarget=null;
+  const bonus=Math.min(m.shamanSiphonMax,m.shamanSiphoned||0);
+  m.hp += bonus;
+  m.portrait='assets/images/enemies/trenches/orc_xama_combat.png';
+  logPush('<b>O RITUAL FOI ROMPIDO</b> Os Totens se calam. O Xamã desperta.');
+  if(bonus>0)logPush(`<span class="log-bad">Energia sifonada envolve o Xamã: +${bonus} HP temporário.</span>`);
+  return true;
+}
+function resolveShamanRitualHit(dmg,isCrit,impacts=[dmg]){
+  const m=ui.monster, target=getSelectedShamanTarget();
+  if(!target || player.hp<=0)return;
+  setActionsLocked(true);
+  const before=target.hp;
+  const removed=Math.max(0,Math.min(before,dmg));
+  target.hp=Math.max(0,before-dmg);
+  const targetKey=shamanRitualTargetKey(target);
+  logPush(isCrit
+    ? `<span class="log-drop"><b>CRÍTICO!</b> Você atinge ${target.name} e causa ${removed} de dano efetivo.</span>`
+    : `<span class="log-good">Você atinge ${target.name} e causa ${removed} de dano efetivo.</span>`);
+  floatNumber('target-'+targetKey,(isCrit?'CRÍTICO -':'-')+removed,isCrit?'crit':'dmg');
+  shakeSide('target-'+targetKey);
+
+  const steal=equippedAffixTotal('lifesteal');
+  if(steal>0 && removed>0){
+    const heal=Math.max(1,Math.round(removed*steal));
+    const beforeHp=player.hp;
+    player.hp=Math.min(player.hpMax,player.hp+heal);
+    if(player.hp>beforeHp)logPush(`<span class="log-good">🩸 Equipamento drena ${player.hp-beforeHp} HP.</span>`);
+  }
+  const bloodTotem=m.shamanTargets.blood;
+  if(removed>0 && targetKey==='siphon' && bloodTotem && bloodTotem.active && bloodTotem.hp>0){
+    const reflected=Math.max(1,Math.floor(removed*0.20));
+    player.hp=Math.max(0,player.hp-reflected);
+    floatNumber('player','RETALIAÇÃO\n-'+reflected,'dmg retaliation');
+    shakeSide('player');
+    logPush(`<span class="log-bad"><b>RETALIAÇÃO DO SANGUE</b> ${reflected} de dano retorna para você.</span>`);
+  }
+  if(removed>0 && targetKey==='blood' && m.shamanTargets.siphon.active){
+    const siphoned=Math.floor(removed*0.20);
+    const beforeEnergy=m.shamanSiphoned||0;
+    m.shamanSiphoned=Math.min(m.shamanSiphonMax,beforeEnergy+siphoned);
+    const gained=m.shamanSiphoned-beforeEnergy;
+    if(gained>0)logPush(`<span class="log-bad"><b>SIFÃO DO RITUAL</b> O Xamã armazena ${gained} de energia.</span>`);
+  }
+  if(target.hp<=0 && target.active){
+    target.active=false;
+    logPush(`<span class="log-good"><b>${target.name} foi destruído.</b> Seu efeito se cala.</span>`);
+    const next=activeShamanTargets()[0];
+    if(next)m.selectedRitualTarget=next[0];
+  }
+  wakeShaman();
+  updateArenaBarsOnly();
+  tickCooldowns();
+  setTimeout(()=>{
+    if(!ui.inBattle || ui.monster!==m)return;
+    if(player.hp<=0){
+      logPush('<b>Você caiu em combate...</b> Você desperta enfraquecido, mas vivo.');
+      handleDefeat();
+    } else ui.locked=false;
+    render();
+  },360);
+}
+function shamanRitualCounterTurn(){
+  if(!isShamanRitual())return false;
+  logPush('O Xamã permanece em transe. Os Totens sustentam o ritual.');
+  tickCooldowns();
+  render();
+  return true;
+}
+function renderShamanRitualActors(m){
+  if(!m || !m.shamanRitual || !m.shamanTargets)return '';
+  return Object.entries(m.shamanTargets).map(([key,t])=>{
+    if(!t.active || t.hp<=0)return '';
+    const pct=Math.max(0,Math.min(100,(t.hp/t.hpMax)*100));
+    const selected=m.selectedRitualTarget===key?' selected':'';
+    return `<div class="arena-ritual-target ritual-${key}${selected}" ${ritualTargetPresentationStyle(t.id)}>
+      <div class="combatant-artwork portrait-ring portrait-natural" id="portrait-target-${key}"><img src="${t.portrait}" class="avatar-img-circle" alt="${t.name}"></div>
+      <div class="combatant-effects" id="effects-target-${key}" aria-hidden="true"></div>
+    </div>`;
+  }).join('');
+}
+function renderShamanTargetButtons(m){
+  if(!m || !m.shamanRitual || !m.shamanTargets)return '';
+  return `<div class="ritual-target-actions">${Object.entries(m.shamanTargets).map(([key,t])=>{
+    const live=t.active&&t.hp>0, selected=m.selectedRitualTarget===key;
+    return `<button class="action-btn secondary ${selected?'selected':''}" ${(!live||ui.locked)?'disabled':''} onclick="selectShamanTarget('${key}')">${key==='blood'?'🩸':'🌀'} ${t.name} · ${live?`${t.hp}/${t.hpMax} HP`:'DESTRUÍDO'}</button>`;
+  }).join('')}</div>`;
 }
 
 /* Comportamentos e avisos da Floresta Uivante. */
@@ -1635,6 +1810,10 @@ function enemyBehaviorChip(m){
   if(!m) return '';
   if(m.scoutAlertPrepared)return '<span class="arena-enemy-chip warning">ALERTA DE GUERRA PREPARADO · elimine o Batedor antes do chamado</span>';
   if(m.warStanceActions>0)return '<span class="arena-enemy-chip danger">POSTURA DE GUERRA · ATQ +15%</span>';
+  if(m.id==='orc_xama' && ui.mapIndex===2){
+    if(m.shamanRitual)return `<span class="arena-enemy-chip warning">RITUAL · Xamã intocável · ESSÊNCIA ABSORVIDA ${m.shamanSiphoned||0}/${m.shamanSiphonMax||54}</span>`;
+    if(m.shamanAwake)return '<span class="arena-enemy-chip danger">RITUAL ROMPIDO · combate direto</span>';
+  }
   if(m.id==='senhor_pantano' && ui.mapIndex===1){
     if(m.submerged)return '<span class="arena-enemy-chip warning">SUBMERSO · INALVEJÁVEL · EMBOSCADA PREPARADA</span>';
     if(m.swampPrepared)return '<span class="arena-enemy-chip warning">'+(m.swampPrepared==='domain'?'DOMÍNIO DO CHARCO PREPARADO':'DRENAGEM DO CHARCO PREPARADA')+'</span>';
@@ -1834,7 +2013,7 @@ function resolvePlayerHit(dmg, isCrit, impacts=[dmg]){
     const moonAnnounced=updateAlfaBossPhase();
     // Mini-chefes entram em desespero quando muito feridos: um pico curto de perigo que
     // recompensa guardar cura/defesa para o fim, sem simplesmente multiplicar o HP.
-    if(m.isMiniBoss && !m.desperationTriggered && m.hp/m.hpMax <= 0.40){
+    if(m.isMiniBoss && m.id!=='orc_xama' && !m.desperationTriggered && m.hp/m.hpMax <= 0.40){
       m.desperationTriggered = true;
       m.atk = Math.round(m.atk * 1.20);
       logPush(`<span class="log-bad"><b>⚠️ Fúria Desesperada!</b> ${m.name} fica mais agressivo ao sentir a morte próxima.</span>`);
@@ -1861,19 +2040,24 @@ function playerAttack(){
   if(!ui.inBattle || ui.locked) return;
   if(swampTargetBlocked())return;
   const m = ui.monster;
-  const { dmg, isCrit } = rollDamage(getEffectiveAtk(), m.def);
+  const ritualTarget = isShamanRitual() ? getSelectedShamanTarget() : null;
+  if(isShamanRitual() && !ritualTarget)return;
+  const targetDef = ritualTarget ? ritualTarget.def : m.def;
+  const targetName = ritualTarget ? ritualTarget.name : m.name;
+  const { dmg, isCrit } = rollDamage(getEffectiveAtk(), targetDef);
   logPush(isCrit
-    ? `<span class="log-drop"><b>CRÍTICO!</b> Você ataca ${m.name} e causa ${dmg} de dano.</span>`
-    : `<span class="log-good">Você ataca ${m.name} e causa ${dmg} de dano.</span>`);
+    ? `<span class="log-drop"><b>CRÍTICO!</b> Você ataca ${targetName} e causa ${dmg} de dano.</span>`
+    : `<span class="log-good">Você ataca ${targetName} e causa ${dmg} de dano.</span>`);
   let totalDmg = dmg;
   const impacts = [dmg];
-  if(m.hp - totalDmg > 0 && Math.random() < getExtraAttackChance()){
-    const extra = rollDamage(getEffectiveAtk(), m.def);
+  if((ritualTarget ? ritualTarget.hp : m.hp) - totalDmg > 0 && Math.random() < getExtraAttackChance()){
+    const extra = rollDamage(getEffectiveAtk(), targetDef);
     totalDmg += extra.dmg;
     impacts.push(extra.dmg);
     logPush(`<span class="log-drop">⚡ Ataque extra! +${extra.dmg}${extra.isCrit?' (crítico!)':''} de dano adicional.</span>`);
   }
-  resolvePlayerHit(totalDmg, isCrit, impacts);
+  if(ritualTarget) resolveShamanRitualHit(totalDmg, isCrit, impacts);
+  else resolvePlayerHit(totalDmg, isCrit, impacts);
 }
 
 function getMagInvested(){ return (player.allocated && player.allocated.magia) || 0; }
@@ -1946,16 +2130,19 @@ function usarSkill(skillId){
   }
 
   const m = ui.monster;
+  const ritualTarget = isShamanRitual() ? getSelectedShamanTarget() : null;
+  if(isShamanRitual() && !ritualTarget)return;
   let pierce=skill.defPierce||0;
   if(player.classKey==='mago' && hasMagMilestone(75) && skill.mpCost>=14) pierce=Math.max(pierce,0.20);
-  const effDef=m.def*(1-pierce);
+  const effDef=(ritualTarget ? ritualTarget.def : m.def)*(1-pierce);
   const baseStat = player.classKey==='mago' ? player.magia : getEffectiveAtk();
   let buildMult = player.classKey==='mago' ? getMagicBuildMultiplier() : 1;
   if(overcharged) buildMult*=1.35;
   const { dmg, isCrit } = rollDamage(Math.round(baseStat*skill.mult*buildMult), effDef);
+  const targetName = ritualTarget ? ritualTarget.name : m.name;
   logPush(isCrit
-    ? `<span class="log-drop"><b>CRÍTICO!</b> Você usa ${skill.icon} ${skill.name} e causa ${dmg} de dano.</span>`
-    : `<span class="log-mp">Você usa ${skill.icon} ${skill.name} e causa ${dmg} de dano.</span>`);
+    ? `<span class="log-drop"><b>CRÍTICO!</b> Você usa ${skill.icon} ${skill.name} em ${targetName} e causa ${dmg} de dano.</span>`
+    : `<span class="log-mp">Você usa ${skill.icon} ${skill.name} em ${targetName} e causa ${dmg} de dano.</span>`);
   let totalDmg = dmg;
   const impacts = [dmg];
   if(player.classKey==='mago' && hasMagMilestone(50) && isCrit){
@@ -1963,7 +2150,7 @@ function usarSkill(skillId){
     player.mp=Math.min(player.mpMax,player.mp+refund);
     logPush(`<span class="log-mp">✦ Eco Arcano recupera ${refund} MP.</span>`);
   }
-  if(m.hp - totalDmg > 0 && Math.random() < getExtraAttackChance()){
+  if((ritualTarget ? ritualTarget.hp : m.hp) - totalDmg > 0 && Math.random() < getExtraAttackChance()){
     const extra = rollDamage(Math.round(baseStat*skill.mult*buildMult), effDef);
     totalDmg += extra.dmg;
     impacts.push(extra.dmg);
@@ -1975,13 +2162,15 @@ function usarSkill(skillId){
     floatNumber('player', '+'+heal, 'heal');
     logPush(`<span class="log-good">Você absorve ${heal} de HP.</span>`);
   }
-  resolvePlayerHit(totalDmg, isCrit, impacts);
+  if(ritualTarget) resolveShamanRitualHit(totalDmg, isCrit, impacts);
+  else resolvePlayerHit(totalDmg, isCrit, impacts);
 }
 
 /* Contra-ataque do monstro para ações que não atingem o inimigo diretamente (cura, poções) */
 function monsterCounterTurn(nonOffensive=true,romarAction='support'){
   if(!ui.inBattle || ui.locked || !ui.monster || ui.monster.hp<=0 || player.hp<=0) return;
   if(ui.monster.id==='romar'){ resolveRomarAction(romarAction); return; }
+  if(shamanRitualCounterTurn()) return;
   updateArenaBarsOnly();
   setActionsLocked(true);
   const m = ui.monster;
@@ -2144,6 +2333,25 @@ function handleVictory(m){
         popNotif({ eyebrow:'RASTRO COMPLETO', title:'Devorador do Charco localizado', sub:'Depois de 14 criaturas abatidas, o mini-chefe do Pântano Podre agora pode ser desafiado.' });
       } else if((sp.miniBossKills||0)>0 && sp.commonKills===target){
         popNotif({ eyebrow:'O DEVORADOR RETORNOU', title:'O rastro surgiu novamente', sub:'Sete novas criaturas foram abatidas. O Devorador do Charco pode ser caçado outra vez.' });
+      }
+    }
+  }
+
+  if(ui.mapIndex===2){
+    const tp = getTrenchesProgress();
+    if(m.isMiniBoss){
+      tp.miniBossKills = (tp.miniBossKills||0) + 1;
+      tp.commonKillsAtLastMiniBossVictory = tp.commonKills;
+      if(!tp.miniBossDefeated){
+        tp.miniBossDefeated = true;
+        popNotif({ eyebrow:'RITUAL ROMPIDO', title:'Orc Xamã derrotado', sub:'O eco do ritual se cala nas Trincheiras. Derrote mais 7 Orcs comuns para encontrá-lo novamente.' });
+      } else {
+        popNotif({ eyebrow:'RITUAL ROMPIDO', title:'Orc Xamã derrotado novamente', sub:'As Trincheiras abafam os cânticos. Mais 7 Orcs comuns podem revelar outro ritual.' });
+      }
+    } else if(!m.isBoss){
+      tp.commonKills++;
+      if((tp.miniBossKills||0)>0 && tp.commonKills===getTrenchesMiniBossTarget()){
+        popNotif({ eyebrow:'CÂNTICOS NAS TRINCHEIRAS', title:'O Xamã pode ser encontrado novamente', sub:'Sete Orcs comuns foram abatidos desde o último ritual.' });
       }
     }
   }
@@ -2557,7 +2765,7 @@ function renderBatalhaTab(){
   const map = MAPS[ui.mapIndex];
   const pPct = Math.max(0,(player.hp/player.hpMax)*100);
   const mpPct = Math.max(0,(player.mp/player.mpMax)*100);
-  const ePct = Math.max(0,(m.hp/m.hpMax)*100);
+  const ePct = Math.max(0,Math.min(100,(m.hp/m.hpMax)*100));
 
   const skills = (SKILLS[player.classKey]||[]).map(s=>{
     const locked = player.level < s.unlockLevel;
@@ -2596,6 +2804,7 @@ function renderBatalhaTab(){
           <div class="combatant-artwork portrait-ring player" id="portrait-player">${classCombatAvatarHtml(player.classKey)}</div>
           <div class="combatant-effects" id="effects-player" aria-hidden="true"></div>
         </div>
+        ${renderShamanRitualActors(m)}
         <div class="arena-actor actor-enemy ${m.portraitLayout==='natural'?'art-natural':'art-legacy'}" ${combatPresentationStyle('enemy',m.id)}>
           <div class="combatant-artwork portrait-ring ${m.portraitLayout==='natural'?'portrait-natural':''} ${map.fam} ${(m.isBoss||m.isMiniBoss)?'fam-boss':''}" id="portrait-enemy">${monsterAvatarHtml(m,'avatar-img-circle')}</div>
           <div class="combatant-effects" id="effects-enemy" aria-hidden="true"></div>
@@ -2623,6 +2832,7 @@ function renderBatalhaTab(){
         </div>
       </div>
     </div>
+    ${renderShamanTargetButtons(m)}
     <div class="battle-actions">
       <button class="action-btn" ${ui.locked?'disabled':''} onclick="playerAttack()">Atacar</button>
       ${isSwampLord() && m.submerged ? `<button class="action-btn" ${ui.locked?'disabled':''} onclick="waitForSwampLord()">AGUARDAR</button>` : ''}

@@ -90,7 +90,7 @@ test('temporary tools removed; organic flow matches approved pacing over 300 exp
   assert.ok(!/resetRomarPlaytest|DIAGNÓSTICO ROMAR|TESTE — ENCONTRO COM ROMAR|traceRomar/.test(source));
   const old=execFileSync('git',['show','640c8d4:src/game.js'],{cwd:root,encoding:'utf8'});
   const a=game(old,1),b=game(source,1);
-  // A única diferença aprovada neste snapshot é o slot vazio Bracelete → Pernas.
+  // Diferenças aprovadas neste snapshot: slot vazio Bracelete → Pernas e progresso futuro de T3.
   a('player.equipment=Object.fromEntries(Object.entries(player.equipment).map(([key,value])=>[key==="bracelet"?"legs":key,value]))');
   for(const run of [a,b])run('player.defeatedBosses=[0];var seed=12345,calls=0;Math.random=()=>{calls++;seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}');
   for(let i=0;i<300;i++){
@@ -101,7 +101,7 @@ test('temporary tools removed; organic flow matches approved pacing over 300 exp
       if(i%40===39)run('player.romarDiscoveries={seen:[],pending:null,cooldown:0,clueAttempts:0,encounterAttempts:0}');
     }
     assert.equal(b('calls'),a('calls'));
-    assert.equal(b('JSON.stringify([player,forestEventCooldown,pendingForestEvent])'),a('JSON.stringify([player,forestEventCooldown,pendingForestEvent])'));
+    assert.equal(b('delete player.trenchesProgress;JSON.stringify([player,forestEventCooldown,pendingForestEvent])'),a('delete player.trenchesProgress;JSON.stringify([player,forestEventCooldown,pendingForestEvent])'));
   }
 });
 

@@ -333,6 +333,7 @@
     text-shadow:0 2px 6px rgba(0,0,0,.6);
   }
   .float-num.dmg{color:var(--blood-bright);}
+  .float-num.retaliation{white-space:pre-line;font-size:14px;line-height:1.05;text-align:center;text-shadow:0 0 10px rgba(200,66,90,.65),0 2px 6px rgba(0,0,0,.75);}
   .float-num.heal{color:var(--good);}
   .float-num.crit{color:var(--gold);font-size:25px;text-shadow:0 0 10px rgba(199,164,92,.7),0 2px 6px rgba(0,0,0,.6);}
   @keyframes floatUp{
@@ -706,6 +707,21 @@
   position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:4;
 }
 .arena-global-effects{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:5;}
+.arena-ritual-target{
+  position:absolute;left:var(--actor-x);bottom:var(--actor-ground);
+  width:var(--actor-w);height:var(--actor-h);
+  transform:translate(var(--actor-anchor-x), var(--actor-anchor-y));
+  transform-origin:center bottom;overflow:visible;z-index:2;
+}
+.arena-ritual-target > .combatant-artwork{
+  width:100%;height:100%;border:0;border-radius:0;background:none;box-shadow:none;
+  overflow:visible;display:flex;align-items:flex-end;justify-content:center;margin:0;
+}
+.arena-ritual-target .avatar-img-circle{display:block;width:100%;height:100%;object-fit:contain;object-position:center bottom;border-radius:0;}
+.arena-ritual-target > .combatant-effects{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:4;}
+.ritual-target-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;}
+.ritual-target-actions .action-btn{font-size:12px;line-height:1.25;white-space:normal;min-height:48px;}
+.ritual-target-actions .action-btn.selected{border-color:var(--gold);box-shadow:0 0 0 1px rgba(200,168,92,.38);}
 .arena-hud-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 12px;margin-top:8px;}
 .arena-hud-grid .combatant-ui{text-align:center;min-width:0;}
 .arena-battlefield .combatant-heading h4{font-size:14px;line-height:1.25;margin:0;overflow-wrap:anywhere;}
