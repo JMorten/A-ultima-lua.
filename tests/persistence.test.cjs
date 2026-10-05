@@ -953,3 +953,137 @@ test('Arena V2.4 assets have approved formats and dimensions; stage and effects 
  assert.match(css,/\.arena-actor > \.combatant-effects\{\s*position:absolute;inset:0;pointer-events:none;overflow:visible/);
  assert.doesNotMatch(css,/combatant-enemy \.art-natural > \.combatant-artwork\{width:(?:190|258)%/);
 });
+
+function winTrenches(e,template='MAPS[2].monsters[0]'){
+ e.run('startBattle(2,'+template+','+(template==='MAPS[2].boss')+');handleVictory(ui.monster);confirmPendingVictory()');
+}
+test('T3 seven common victories unlock Shaman direct challenge without exploration RNG',()=>{
+ const e=fresh();
+ assert.equal(e.run('canEncounterTrenchesMiniBoss()'),false);
+ e.run('desafiarBossTerritorio(2)');assert.equal(e.run('ui.inBattle'),false);
+ for(let i=1;i<=7;i++){
+  winTrenches(e,'MAPS[2].monsters['+((i-1)%4)+']');
+  assert.equal(e.run('getTrenchesProgress().commonKills'),i);
+  assert.equal(e.run('canEncounterTrenchesMiniBoss()'),i===7);
+  assert.equal(e.run('isGorthakUnlocked()'),false);
+ }
+ e.run('ui.mapIndex=2');
+ assert.match(e.run('renderMapaTab()'),/UM RITUAL ECOA NAS TRINCHEIRAS/);
+ assert.match(e.run('renderMapaTab()'),/disabled[^>]*onclick="desafiarBossTerritorio/);
+ e.run('desafiarBossTerritorio(2)');assert.equal(e.run('ui.inBattle'),false);
+ e.run('Math.random=()=>{throw new Error("Unexpected RNG")};desafiarMiniBossTrincheiras()');
+ assert.equal(e.run('ui.monster.id'),'orc_xama');
+});
+test('T3 Shaman unlock is permanent and recurrence requires seven fresh victories',()=>{
+ const e=fresh();
+ for(let i=0;i<9;i++)winTrenches(e);
+ winTrenches(e,'MAPS[2].miniBoss');
+ assert.equal(e.run('isGorthakUnlocked()'),true);
+ assert.equal(e.run('getTrenchesMiniBossTarget()'),16);
+ for(let i=1;i<=7;i++){
+  winTrenches(e);
+  assert.equal(e.run('canEncounterTrenchesMiniBoss()'),i===7);
+  assert.equal(e.run('isGorthakUnlocked()'),true);
+ }
+ winTrenches(e,'MAPS[2].miniBoss');
+ assert.equal(e.run('getTrenchesMiniBossTarget()'),23);
+ assert.equal(e.run('isGorthakUnlocked()'),true);
+ e.run('desafiarBossTerritorio(2)');assert.equal(e.run('ui.monster.id'),'warlord_gorthak');
+});
+test('T3 only four common IDs count; fleeing, defeat, traps and entry do not',()=>{
+ const e=fresh();
+ e.run('startBattle(2,MAPS[2].monsters[0],false);fleeBattle()');
+ assert.equal(e.run('getTrenchesProgress().commonKills'),0);
+ e.run('startBattle(2,MAPS[2].monsters[0],false);handleDefeat()');
+ assert.equal(e.run('getTrenchesProgress().commonKills'),0);e.close();
+ e.run('player.hp=player.hpMax;Math.random=()=>0;explorarMapa(2)');
+ assert.equal(e.run('getTrenchesProgress().commonKills'),0);e.close();
+ winTrenches(e,'MAPS[0].monsters[0]');
+ winTrenches(e,'MAPS[2].boss');
+ winTrenches(e,'MAPS[2].miniBoss');
+ assert.equal(e.run('getTrenchesProgress().commonKills'),0);
+ for(let i=0;i<4;i++)winTrenches(e,'MAPS[2].monsters['+i+']');
+ assert.equal(e.run('getTrenchesProgress().commonKills'),4);
+});
+test('T3 pending victory and reload persist progression once while discarding combat',()=>{
+ const e=fresh();for(let i=0;i<6;i++)winTrenches(e);
+ e.run('startBattle(2,MAPS[2].monsters[0],false);handleVictory(ui.monster)');
+ const r=boot(e.storage);r.run('continueSavedGame()');
+ assert.equal(r.run('canEncounterTrenchesMiniBoss()'),true);
+ assert.equal(r.run('ui.inBattle'),false);assert.ok(r.run('ui.pendingVictory'));
+ r.run('confirmPendingVictory();confirmPendingVictory()');
+ assert.equal(r.run('getTrenchesProgress().commonKills'),7);
+ winTrenches(r,'MAPS[2].miniBoss');
+ const s=boot(r.storage);s.run('continueSavedGame()');
+ assert.equal(s.run('isGorthakUnlocked()'),true);
+ assert.equal(s.run('canEncounterTrenchesMiniBoss()'),false);
+ s.run('startBattle(2,MAPS[2].miniBoss,false)');
+ const t=boot(s.storage);t.run('continueSavedGame()');
+ assert.equal(t.run('ui.monster'),null);
+ assert.equal(t.run('getTrenchesProgress().miniBossKills'),1);
+ assert.equal(t.run('readCheckpoint().schemaVersion'),5);
+});
+test('T3 legacy saves preserve conquest and cycles without inventing Shaman victories',()=>{
+ for(const conquered of [false,true]){
+  const e=fresh();e.run('delete player.trenchesProgress;player.defeatedBosses='+(conquered?'[0,1,2]':'[]')+';requestCheckpoint()');
+  const r=boot(e.storage);r.run('continueSavedGame()');
+  assert.equal(r.run('getTrenchesProgress().commonKills'),0);
+  assert.equal(r.run('canEncounterTrenchesMiniBoss()'),false);
+  assert.equal(r.run('isGorthakUnlocked()'),conquered);
+  assert.equal(r.run('getTrenchesProgress().miniBossKills'),0);
+  assert.equal(r.run('getTrenchesProgress().miniBossDefeated'),false);
+ }
+ const e=fresh();e.run('player.trenchesProgress={commonKills:21,miniBossKills:2,miniBossDefeated:true,commonKillsAtLastMiniBossVictory:18};requestCheckpoint()');
+ const r=boot(e.storage);r.run('continueSavedGame()');
+ assert.equal(r.run('getTrenchesMiniBossTarget()'),25);
+ assert.equal(r.run('getTrenchesProgress().commonKills'),21);
+ assert.equal(r.run('isGorthakUnlocked()'),true);
+ r.run('delete player.trenchesProgress.commonKillsAtLastMiniBossVictory');
+ assert.equal(r.run('getTrenchesMiniBossTarget()'),28);
+ const old=fresh();old.run('player.trenchesProgress={commonKills:6,miniBossDefeated:false,miniBossKills:0};requestCheckpoint()');
+ const loaded=boot(old.storage);loaded.run('continueSavedGame()');
+ assert.equal(loaded.run('getTrenchesProgress().commonKills'),6);
+ winTrenches(loaded);assert.equal(loaded.run('canEncounterTrenchesMiniBoss()'),true);
+});
+
+test('T3 direct challenge button follows each seven-win cycle, survives reload and preserves War Alert',()=>{
+ const e=fresh();e.run('ui.mapIndex=2');
+ const button=env=>env.run('renderMapaTab()').match(/<button[^>]*onclick="desafiarMiniBossTrincheiras\(\)"[^>]*>/)[0];
+ for(let i=0;i<7;i++){
+  assert.match(button(e),/disabled/);
+  e.run('desafiarMiniBossTrincheiras()');assert.equal(e.run('ui.inBattle'),false);
+  winTrenches(e);
+ }
+ assert.doesNotMatch(button(e),/disabled/);
+ const r=boot(e.storage);r.run('continueSavedGame();ui.mapIndex=2');
+ assert.doesNotMatch(button(r),/disabled/);
+ r.run('trenchesSession.warAlert=true;desafiarMiniBossTrincheiras()');
+ assert.equal(r.run('ui.monster.id'),'orc_xama');
+ assert.equal(r.run('trenchesSession.warAlert'),true);
+ assert.equal(r.run('ui.monster.warStanceActions'),undefined);
+ r.run('handleVictory(ui.monster);confirmPendingVictory()');
+ assert.match(button(r),/disabled/);
+ assert.equal(r.run('isGorthakUnlocked()'),true);
+ for(let i=0;i<7;i++)winTrenches(r);
+ assert.doesNotMatch(button(r),/disabled/);
+ assert.equal(r.run('isGorthakUnlocked()'),true);
+ r.run('desafiarMiniBossTrincheiras()');
+ assert.equal(r.run('ui.monster.id'),'orc_xama');
+});
+
+test('T3 exploration never randomly starts Shaman before or after availability; other maps retain miniboss routes',()=>{
+ for(const kills of [0,6,7,14]){
+  const e=fresh();
+  e.run('player.trenchesProgress.commonKills='+kills+';var rolls=[.99,0];Math.random=()=>rolls.length?rolls.shift():.99;explorarMapa(2)');
+  assert.ok(e.run('MAPS[2].monsters.some(m=>m.id===ui.monster.id)'));
+ }
+ for(const [map,handler,progress] of [[0,'desafiarMiniBossFloresta','forestProgress'],[1,'desafiarMiniBossPantano','swampProgress']]){
+  const e=fresh();
+  e.run('player.'+progress+'.commonKills=14;'+handler+'()');
+  assert.equal(e.run('ui.monster.id'),e.run('MAPS['+map+'].miniBoss.id'));
+ }
+ for(const map of [1,3]){
+  const e=fresh();e.run('var rolls=[.99,0];Math.random=()=>rolls.length?rolls.shift():.99;explorarMapa('+map+')');
+  assert.equal(e.run('ui.monster.id'),e.run('MAPS['+map+'].miniBoss.id'));
+ }
+});

@@ -832,12 +832,28 @@ function getTrenchesProgress(){
 }
 function getTrenchesMiniBossTarget(){
   const tp = getTrenchesProgress();
-  return tp.miniBossKills > 0 ? tp.commonKillsAtLastMiniBossVictory + 7 : 0;
+  return tp.miniBossKills > 0 ? tp.commonKillsAtLastMiniBossVictory + 7 : 7;
 }
 function canEncounterTrenchesMiniBoss(){
   return getTrenchesProgress().commonKills >= getTrenchesMiniBossTarget();
 }
+function desafiarMiniBossTrincheiras(){
+  if(!canEncounterTrenchesMiniBoss()){
+    popNotif({ eyebrow:'AS TRINCHEIRAS SE FECHAM', title:'O ritual ainda está protegido', sub:'As patrulhas Orc ainda protegem os caminhos mais profundos.' });
+    return;
+  }
+  startBattle(2, MAPS[2].miniBoss, false);
+}
+// Conquistas antigas permanecem válidas, sem inventar vitórias contra o Xamã.
+function isGorthakUnlocked(){
+  const tp=getTrenchesProgress();
+  return player.defeatedBosses.includes(2) || tp.miniBossDefeated || tp.miniBossKills>0;
+}
 function desafiarBossTerritorio(mapIndex){
+  if(mapIndex===2 && !isGorthakUnlocked()){
+    popNotif({ eyebrow:'O COMANDANTE ESTÁ PROTEGIDO', title:'O caminho para Gorthak está selado', sub:'O ritual do Xamã ainda sustenta as defesas do comandante.' });
+    return;
+  }
   if(mapIndex===0 && !getForestProgress().miniBossDefeated && !player.defeatedBosses.includes(0)){
     popNotif({ eyebrow:'DOMÍNIO SELADO', title:'O Alfa ainda não se revela', sub:'Encontre e derrote o Uivante das Sombras primeiro.' });
     return;
@@ -1271,8 +1287,8 @@ function explorarMapa(mapIndex){
     startBattle(mapIndex, pickForestMonster(map), false);
     return;
   }
-  const miniBossEligible = mapIndex===2 ? canEncounterTrenchesMiniBoss() : true;
-  if(map.miniBoss && miniBossEligible && Math.random() < MINI_BOSS_CHANCE){
+  // T3 usa desafio direto, sem encontro aleatório duplicado na exploração.
+  if(mapIndex!==2 && map.miniBoss && Math.random() < MINI_BOSS_CHANCE){
     startBattle(mapIndex, map.miniBoss, false);
     return;
   }
@@ -2409,19 +2425,19 @@ function handleVictory(m){
 
   if(ui.mapIndex===2){
     const tp = getTrenchesProgress();
-    if(m.isMiniBoss){
+    if(m.isMiniBoss && m.id==='orc_xama'){
       tp.miniBossKills = (tp.miniBossKills||0) + 1;
       tp.commonKillsAtLastMiniBossVictory = tp.commonKills;
       if(!tp.miniBossDefeated){
         tp.miniBossDefeated = true;
-        popNotif({ eyebrow:'RITUAL ROMPIDO', title:'Orc Xamã derrotado', sub:'O eco do ritual se cala nas Trincheiras. Derrote mais 7 Orcs comuns para encontrá-lo novamente.' });
+        popNotif({ eyebrow:'O CAMINHO PARA GORTHAK ESTÁ ABERTO', title:'Orc Xamã derrotado', sub:'O ritual se cala. Novas patrulhas precisam ser rompidas antes que outro ritual se revele.' });
       } else {
         popNotif({ eyebrow:'RITUAL ROMPIDO', title:'Orc Xamã derrotado novamente', sub:'As Trincheiras abafam os cânticos. Mais 7 Orcs comuns podem revelar outro ritual.' });
       }
-    } else if(!m.isBoss){
+    } else if(!m.isBoss && !m.isMiniBoss && ['orc_batedor','orc_guerreiro','orc_capitao','acougueiro_trincheira'].includes(m.id)){
       tp.commonKills++;
-      if((tp.miniBossKills||0)>0 && tp.commonKills===getTrenchesMiniBossTarget()){
-        popNotif({ eyebrow:'CÂNTICOS NAS TRINCHEIRAS', title:'O Xamã pode ser encontrado novamente', sub:'Sete Orcs comuns foram abatidos desde o último ritual.' });
+      if(tp.commonKills===getTrenchesMiniBossTarget()){
+        popNotif({ eyebrow:'UM RITUAL ECOA NAS TRINCHEIRAS', title:tp.miniBossKills>0?'O Xamã pode ser encontrado novamente':'O caminho até o ritual foi revelado', sub:'Após romper as patrulhas Orc, o Xamã pode ser desafiado na tela do território.' });
       }
     }
   }
@@ -2749,7 +2765,7 @@ function renderMapaTab(){
         <h4>${boss.name} <span class="boss-tag">${bossDefeated?'DERROTADO ✓':'CHEFE'}</span></h4>
         <div class="stats">HP ${boss.hp} · ATQ ${boss.atk} · DEF ${boss.def} · ${boss.xp} XP</div>
       </div>
-      <button class="fight-btn" ${((ui.mapIndex===0 && !getForestProgress().miniBossDefeated)||(ui.mapIndex===1 && !getSwampProgress().miniBossDefeated)) && !bossDefeated?'disabled':''} onclick="desafiarBossTerritorio(${ui.mapIndex})">${bossDefeated?'Desafiar de novo':(((ui.mapIndex===0 && !getForestProgress().miniBossDefeated)||(ui.mapIndex===1 && !getSwampProgress().miniBossDefeated))?'Selado':'Desafiar')}</button>
+      <button class="fight-btn" ${((ui.mapIndex===0 && !getForestProgress().miniBossDefeated)||(ui.mapIndex===1 && !getSwampProgress().miniBossDefeated)||(ui.mapIndex===2 && !isGorthakUnlocked())) && !bossDefeated?'disabled':''} onclick="desafiarBossTerritorio(${ui.mapIndex})">${bossDefeated?'Desafiar de novo':(((ui.mapIndex===0 && !getForestProgress().miniBossDefeated)||(ui.mapIndex===1 && !getSwampProgress().miniBossDefeated)||(ui.mapIndex===2 && !isGorthakUnlocked()))?'Selado':'Desafiar')}</button>
     </div>
   `;
 
@@ -2795,6 +2811,19 @@ function renderMapaTab(){
       </div>`;
   })() : '';
 
+  const trenchesProgressBox = ui.mapIndex===2 ? (()=>{
+    const tp=getTrenchesProgress();
+    const cycleKills=Math.max(0,Math.min(7,tp.commonKills-(getTrenchesMiniBossTarget()-7)));
+    const ready=canEncounterTrenchesMiniBoss();
+    return `<div class="explore-box" style="margin-bottom:14px;">
+      <div><b>${ready?'UM RITUAL ECOA NAS TRINCHEIRAS':'AS TRINCHEIRAS SE FECHAM'}</b></div>
+      <div>Patrulhas rompidas: <b>${cycleKills}/7</b> · Xamã: <b>${ready?'DISPONÍVEL':'BLOQUEADO'}</b></div>
+      <p>${ready?'O caminho até o ritual foi revelado. Desafie o Xamã quando estiver preparado.':'As patrulhas Orc ainda protegem os caminhos mais profundos.'}</p>
+      <button class="fight-btn" style="width:100%;" ${ready?'':'disabled'} onclick="desafiarMiniBossTrincheiras()">${ready?'⚠️ Desafiar Orc Xamã':'🔒 Romper patrulhas ('+cycleKills+'/7)'}</button>
+      <div>${isGorthakUnlocked()?'O CAMINHO PARA GORTHAK ESTÁ ABERTO':'O COMANDANTE ESTÁ PROTEGIDO — rompa o ritual do Xamã para alcançar Gorthak.'}</div>
+    </div>`;
+  })() : '';
+
   const ownedFieldPotions = [
     ['hp','🧪 Menor +50',"usarConsumivelFora('hp')"],
     ['hp_medium','🧪 Rubra +120',"usarConsumivelFora('hp_medium')"],
@@ -2816,6 +2845,7 @@ function renderMapaTab(){
     ${potionRow}
     ${forestProgressBox}
     ${swampProgressBox}
+    ${trenchesProgressBox}
     ${ui.mapIndex===1 && player.forgeProgress && player.forgeProgress.lucas && player.forgeProgress.lucas.forgeUnlocked ? '<div class="explore-box"><h3>FORJA</h3><p>Lucas, o Ferreiro Marcado</p><button class="enter-map-btn" onclick="visitForge()">VISITAR A OFICINA</button></div>' : ''}
     <div class="explore-box">
       <p style="color:var(--bone-dim);font-size:13.5px;margin:0 0 14px;">Os monstros da região aparecem aleatoriamente ao explorar — e nem tudo que se encontra na escuridão é uma criatura viva.</p>
