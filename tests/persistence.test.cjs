@@ -1087,3 +1087,71 @@ test('T3 exploration never randomly starts Shaman before or after availability; 
   assert.equal(e.run('ui.monster.id'),e.run('MAPS['+map+'].miniBoss.id'));
  }
 });
+
+function ritualSaveFixture(hp=100){
+ const e=fresh();
+ e.run('player.hp=player.hpMax='+hp+';requestCheckpoint();startBattle(2,MAPS[2].miniBoss,false);ui.monster.selectedRitualTarget="siphon";rollDamage=()=>({dmg:40,isCrit:false});getExtraAttackChance=()=>0;var saves=0,writes=0;var originalPersist=persistCombatResources;persistCombatResources=function(){saves++;return originalPersist()};var originalWrite=localStorage.setItem;localStorage.setItem=function(k,v){writes++;return originalWrite(k,v)}');
+ return e;
+}
+test('Ritual persistence: basic retaliation saves 100 to 92 once before callback and survives reload',()=>{
+ const e=ritualSaveFixture();
+ assert.equal(e.run('readCheckpoint().player.hp'),100);
+ assert.equal(e.run('ui.monster.shamanTargets.blood.active'),true);
+ e.run('playerAttack()');
+ assert.equal(e.run('player.hp'),92);
+ assert.equal(e.run('readCheckpoint().player.hp'),92);
+ assert.equal(e.run('ui.monster.shamanTargets.siphon.hp'),110);
+ assert.equal(e.run('battleLog.filter(x=>x.includes("RETALIAÇÃO DO SANGUE")).length'),1);
+ assert.equal(e.run('battleLog.filter(x=>x.includes("40 de dano efetivo")).length'),1);
+ assert.equal(e.run('saves'),1);assert.equal(e.run('writes'),1);
+ e.tick();e.tick();
+ assert.equal(e.run('player.hp'),92);assert.equal(e.run('ui.monster.shamanTargets.siphon.hp'),110);
+ assert.equal(e.run('saves'),1);assert.equal(e.run('writes'),1);
+ assert.equal(e.run('battleLog.filter(x=>x.includes("RETALIAÇÃO DO SANGUE")).length'),1);
+ const r=boot(e.storage);r.run('continueSavedGame()');
+ assert.equal(r.run('player.hp'),92);assert.equal(r.run('ui.inBattle'),false);assert.equal(r.run('ui.monster'),null);
+ assert.equal(r.run('ui.pendingVictory==null'),true);
+});
+test('Ritual persistence: blocked basic attacks neither resolve nor save',()=>{
+ const e=ritualSaveFixture();e.run('ui.locked=true;playerAttack()');
+ assert.equal(e.run('player.hp'),100);assert.equal(e.run('ui.monster.shamanTargets.siphon.hp'),150);
+ assert.equal(e.run('saves'),0);assert.equal(e.run('writes'),0);
+ e.tick();assert.equal(e.run('ui.locked'),true);
+});
+test('Ritual persistence: skill retains one resource hook and normal basic retains existing hook',()=>{
+ const e=ritualSaveFixture();e.run('usarSkill("golpe_da_fe")');
+ assert.equal(e.run('player.hp'),92);assert.equal(e.run('readCheckpoint().player.hp'),92);
+ assert.equal(e.run('readCheckpoint().player.mp'),e.run('player.mp'));
+ assert.equal(e.run('ui.monster.shamanTargets.siphon.hp'),110);
+ assert.equal(e.run('saves'),1);assert.equal(e.run('writes'),1);
+ const n=ritualSaveFixture();n.run('fleeBattle();startBattle(2,MAPS[2].monsters[0],false);saves=0;writes=0;var initialEnemyHp=ui.monster.hp;playerAttack()');
+ assert.equal(n.run('ui.monster.hp'),n.run('initialEnemyHp-40'));
+ assert.equal(n.run('saves'),1);
+ n.tick();assert.equal(n.run('saves'),2);
+ assert.equal(n.run('readCheckpoint().player.hp'),n.run('player.hp'));
+});
+test('Ritual persistence: second totem awakening still saves final immediate resources without counterattack',()=>{
+ const e=ritualSaveFixture();
+ e.run('ui.monster.shamanTargets.blood.active=false;ui.monster.shamanTargets.blood.hp=0;ui.monster.shamanTargets.siphon.hp=10;player.hp=80;equippedAffixTotal=key=>key==="lifesteal"?.1:0;playerAttack()');
+ assert.equal(e.run('ui.monster.shamanRitual'),false);
+ assert.equal(e.run('player.hp'),81);assert.equal(e.run('readCheckpoint().player.hp'),81);
+ assert.equal(e.run('saves'),1);e.tick();
+ assert.equal(e.run('player.hp'),81);assert.equal(e.run('ui.monster.aiTurns'),0);
+ assert.equal(e.run('ui.pendingVictory==null'),true);
+});
+test('Ritual persistence: lethal retaliation saves zero before defeat; ordinary pending victory stays idempotent',()=>{
+ const e=ritualSaveFixture(8);
+ e.run('var originalCoins=player.coins,originalXp=player.totalXp;playerAttack()');
+ assert.equal(e.run('player.hp'),0);assert.equal(e.run('readCheckpoint().player.hp'),0);
+ assert.equal(e.run('saves'),1);assert.equal(e.run('ui.pendingVictory==null'),true);
+ const r=boot(e.storage);r.run('continueSavedGame()');assert.equal(r.run('player.hp'),0);assert.equal(r.run('ui.inBattle'),false);
+ e.tick();assert.equal(e.run('ui.inBattle'),false);
+ assert.equal(e.run('ui.pendingVictory==null'),true);
+ assert.equal(e.run('player.totalXp'),e.run('originalXp'));
+ assert.ok(e.run('player.coins<=originalCoins'));
+ const v=ritualSaveFixture();v.run('fleeBattle();startBattle(2,MAPS[2].monsters[0],false);ui.monster.hp=1;playerAttack()');v.tick();
+ assert.ok(v.run('ui.pendingVictory'));
+ v.run('var awarded=player.totalXp;confirmPendingVictory();confirmPendingVictory()');
+ assert.equal(v.run('player.totalXp'),v.run('awarded'));
+ assert.equal(v.run('getTrenchesProgress().commonKills'),1);
+});

@@ -267,6 +267,14 @@ buyBaseGear=checkpointAction(buyBaseGear);
 
 // Hooks cobrem ações síncronas e ataques executados pelos callbacks existentes.
 // Gravação imediata: não depende de unload/pagehide, que Safari pode omitir.
+const playerAttackWithoutRitualSave=playerAttack;
+const playerRitualAttackWithSave=combatResourceAction(playerAttackWithoutRitualSave);
+playerAttack=function(...args){
+  // Capturar antes: destruir o segundo Totem encerra o ritual nesta mesma ação.
+  // Skills e ataques normais conservam seus próprios hooks, sem envolvimento duplo.
+  const validRitualAttack=isShamanRitual() && !ui.locked && player.hp>0 && !!getSelectedShamanTarget();
+  return (validRitualAttack ? playerRitualAttackWithSave : playerAttackWithoutRitualSave).apply(this,args);
+};
 usarConsumivelFora=combatResourceAction(usarConsumivelFora);
 usarTonicoFuria=combatResourceAction(usarTonicoFuria);
 usarSkill=combatResourceAction(usarSkill);
