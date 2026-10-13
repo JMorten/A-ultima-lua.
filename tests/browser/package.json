@@ -1,0 +1,14 @@
+{
+  "name": "a-ultima-lua-browser-qa",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Isolated browser QA proof of concept for A Última Lua",
+  "scripts": {
+    "test": "node run.cjs all",
+    "test:chromium": "node run.cjs chromium",
+    "test:webkit": "node run.cjs webkit"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
+  }
+}
