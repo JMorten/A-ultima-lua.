@@ -1,4 +1,4 @@
-# Playwright QA V1 — A Última Lua
+# Playwright QA V2 — Ritual do Xamã
 
 PoC isolada de testes de navegador. Os testes não acessam domínio de produção e criam um contexto novo do navegador por teste. O personagem QA e seu `localStorage` existem somente para a origem local descartável.
 
@@ -44,15 +44,19 @@ O runner copia somente `index.html`, `src`, `styles`, `assets` e `_qa` para uma 
 
 Cada teste recebe um `BrowserContext` novo, sem estado persistente. Nenhum save real é carregado. A rota externa de fontes Google é atendida localmente por CSS vazio para evitar dependência de rede.
 
-## Escopo atual
+## Cobertura V1 + V2
 
 - Inicialização e erros JavaScript.
 - Seleção de classes.
 - Criação QA e persistência após reload no contexto descartável.
-- Combate real pelo QA Debug (Xamã em Trincheiras Orc) e presença dos assets da Arena V2.4 e totens.
+- Combate real do Xamã pelo QA Debug, seleção/ataque de Totens, inatingibilidade durante o ritual, retaliação de 20% do dano efetivo, sifão de energia, despertar e aplicação do bônus.
+- Ação de cura não elegível para retaliação, e recarga durante ritual conforme o schema 5 sem restaurar combate nem duplicar a perda de HP.
+- Arena V2.4 e assets dos Totens, sem falhas de carregamento ou erros JavaScript.
 - Erros de carregamento de assets e overflow horizontal em 320, 375 e 390 px.
 
-Automação completa do ritual do Xamã e das fases de Gorthak fica fora da V1.
+Os cenários usam o QA Debug visível e a interface real de combate. Os atributos de QA são aplicados por seus controles próprios, gravados apenas no `localStorage` do contexto descartável. Nenhum resultado é forçado por alteração direta de estado interno. As fases de Gorthak continuam fora do escopo.
+
+Execução: 11 testes Playwright em Chromium, além da suíte Node existente. WebKit só roda se o binário já estiver instalado; o runner não baixa browsers.
 
 ## Artefatos
 
