@@ -42,7 +42,7 @@ async function createCharacter(page, classKey = 'mago') {
   await ensureQaOpen(page);
 }
 
-async function setQaStats(page, { level, forca = 0, magia = 0, espirito = 0 }) {
+async function setQaStats(page, { level, forca = 0, magia = 0, espirito = 0, vitalidade = 0 }) {
   await ensureQaOpen(page);
   await expect(page.locator('#qa-state')).toContainText('Mago · nível 1');
   // QA Debug observes the continued character on its 500 ms timer; let that
@@ -54,10 +54,11 @@ async function setQaStats(page, { level, forca = 0, magia = 0, espirito = 0 }) {
   await page.locator('#qa-agilidade').fill('0');
   await page.locator('#qa-magia').fill(String(magia));
   await page.locator('#qa-espirito').fill(String(espirito));
-  await page.locator('#qa-vitalidade').fill('0');
+  await page.locator('#qa-vitalidade').fill(String(vitalidade));
   await page.locator('#qa-defesa').fill('0');
   await expect(page.locator('#qa-level')).toHaveValue(String(level));
   await expect(page.locator('#qa-forca')).toHaveValue(String(forca));
+  await expect(page.locator('#qa-vitalidade')).toHaveValue(String(vitalidade));
   await page.locator('#qa-apply').click();
   await expect(page.locator('#qa-apply-message')).toContainText('Checkpoint gravado');
   await expect(page.locator('#qa-apply-message')).toContainText(`Nível ${level}`);
@@ -308,3 +309,188 @@ for (const width of [320, 375, 390]) {
     await assertNoClientErrors(errors);
   });
 }
+
+async function startGorthak(page, errors, stats = { level: 1, forca: 500, vitalidade: 10000 }) {
+  await openQa(page, errors);
+  await createCharacter(page, 'mago');
+  await setQaStats(page, stats);
+  await page.locator('#qa-restore').click();
+  await page.locator('#qa-map').selectOption('2');
+  const gorthakOption = page.locator('#qa-enemy option').filter({ hasText: 'Warlord Gorthak' });
+  await expect(gorthakOption).toHaveCount(1);
+  await page.locator('#qa-enemy').selectOption(await gorthakOption.getAttribute('value'));
+  await page.locator('#qa-battle').click();
+  await expect(page.locator('.battle-arena.arena-battlefield')).toBeVisible();
+  await expect(page.locator('.combatant-enemy h4')).toContainText('Warlord Gorthak');
+  await expect(page.locator('.arena-enemy-chip')).toContainText('COMANDANTE');
+  await page.waitForFunction(() => {
+    const image = document.querySelector('#portrait-enemy img');
+    return image && image.complete && image.naturalWidth > 0;
+  }, null, { timeout: 20_000 });
+}
+
+async function gorthakAttack(page) {
+  await (await attackButton(page)).click();
+  await expect(await attackButton(page)).toBeEnabled({ timeout: 10_000 });
+}
+
+async function hpRatio(page) {
+  const hp = currentHp(await page.locator('#arena-hp-enemy-text').innerText());
+  return { ...hp, ratio: hp.current / hp.max };
+}
+
+test('Gorthak percorre Comandante, Fúria de Guerra e Último Avanço sem estados acumulados', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = [];
+  await startGorthak(page, errors);
+  await page.locator('#game-screen').screenshot({ path: `${process.env.AUL_PW_ARTIFACTS}/gorthak-comandante.png` });
+  expect((await hpRatio(page)).ratio).toBeGreaterThan(0.65);
+
+  // Fase I: dois contra-ataques normais, preparação inofensiva, depois resolução.
+  for (let turn = 0; turn < 2; turn++) {
+    await gorthakAttack(page);
+    await expect(page.locator('.arena-enemy-chip')).toContainText('COMANDANTE');
+    expect(await page.locator('.status-card[role="status"] h3').allInnerTexts()).not.toContain('GOLPE DEMOLIDOR');
+  }
+  const hpBeforeTelegraph = currentHp(await page.locator('#arena-hp-player-text').innerText()).current;
+  await gorthakAttack(page);
+  await expect(page.locator('.arena-enemy-chip')).toContainText('GOLPE DEMOLIDOR · PREPARANDO');
+  await expect(page.locator('.status-card[role="status"] h3')).toContainText('GOLPE DEMOLIDOR');
+  expect(currentHp(await page.locator('#arena-hp-player-text').innerText()).current).toBe(hpBeforeTelegraph);
+  await gorthakAttack(page);
+  const commanderResolution = await page.locator('#battle-log').innerText();
+  expect(commanderResolution).toMatch(/GOLPE DEMOLIDOR! Warlord Gorthak causa \d+ de dano em você\.|Você esquiva do ataque de Warlord Gorthak/);
+  await expect(page.locator('.arena-enemy-chip')).not.toContainText('PREPARANDO');
+
+  // Thresholds are checked against current HP rendered by the game, not assumed HP.
+  let phase = await page.locator('.arena-enemy-chip').innerText();
+  for (let turn = 0; !phase.includes('FÚRIA DE GUERRA') && turn < 30; turn++) {
+    await gorthakAttack(page);
+    phase = await page.locator('.arena-enemy-chip').innerText();
+    if (phase.includes('ÚLTIMO AVANÇO')) break;
+  }
+  await expect(page.locator('.arena-enemy-chip')).toContainText('FÚRIA DE GUERRA');
+  const phaseTwoHp = await hpRatio(page);
+  expect(phaseTwoHp.ratio).toBeLessThanOrEqual(0.65);
+  expect(phaseTwoHp.ratio).toBeGreaterThan(0.30);
+  await page.locator('#game-screen').screenshot({ path: `${process.env.AUL_PW_ARTIFACTS}/gorthak-furia-de-guerra.png` });
+  const phaseTwoLog = await page.locator('#battle-log').innerText();
+  expect(phaseTwoLog.match(/FÚRIA DE GUERRA/g) || []).toHaveLength(1);
+
+  // Fase II: o golpe pesado é anunciado no registro; o Demolidor também telegrapha
+  // uma ação sem dano antes da resolução, como descrito pela implementação real.
+  let log = await page.locator('#battle-log').innerText();
+  for (let turn = 0; !log.includes('GOLPE PESADO!') && turn < 4; turn++) {
+    await gorthakAttack(page);
+    log = await page.locator('#battle-log').innerText();
+    if ((await page.locator('.arena-enemy-chip').innerText()).includes('ÚLTIMO AVANÇO')) break;
+  }
+  expect(log).toMatch(/GOLPE PESADO! Warlord Gorthak causa \d+ de dano em você\.|Você esquiva do ataque de Warlord Gorthak/);
+  const hpBeforePhaseTwoTelegraph = currentHp(await page.locator('#arena-hp-player-text').innerText()).current;
+  let prepared = (await page.locator('.arena-enemy-chip').innerText()).includes('PREPARANDO');
+  for (let turn = 0; !prepared && turn < 4; turn++) {
+    await gorthakAttack(page);
+    prepared = (await page.locator('.arena-enemy-chip').innerText()).includes('PREPARANDO');
+    if ((await page.locator('.arena-enemy-chip').innerText()).includes('ÚLTIMO AVANÇO')) break;
+  }
+  expect(prepared, await page.locator('#battle-log').innerText()).toBe(true);
+  expect(currentHp(await page.locator('#arena-hp-player-text').innerText()).current).toBe(hpBeforePhaseTwoTelegraph);
+  await gorthakAttack(page);
+  log = await page.locator('#battle-log').innerText();
+  expect(log).toMatch(/GOLPE DEMOLIDOR! Warlord Gorthak causa \d+ de dano em você\.|Você esquiva do ataque de Warlord Gorthak/);
+
+  phase = await page.locator('.arena-enemy-chip').innerText();
+  for (let turn = 0; !phase.includes('ÚLTIMO AVANÇO') && turn < 30; turn++) {
+    await gorthakAttack(page);
+    phase = await page.locator('.arena-enemy-chip').innerText();
+  }
+  await expect(page.locator('.arena-enemy-chip')).toContainText('ÚLTIMO AVANÇO · ATQ +25% · DEF −30%');
+  const phaseThreeHp = await hpRatio(page);
+  expect(phaseThreeHp.ratio).toBeLessThanOrEqual(0.30);
+  await page.locator('#game-screen').screenshot({ path: `${process.env.AUL_PW_ARTIFACTS}/gorthak-ultimo-avanco.png` });
+  const finalLog = await page.locator('#battle-log').innerText();
+  expect(finalLog.match(/ÚLTIMO AVANÇO Ferido e encurralado/g) || []).toHaveLength(1);
+  expect(finalLog.match(/FÚRIA DE GUERRA Gorthak abandona a disciplina/g) || []).toHaveLength(1);
+  await expect(page.locator('.status-card[role="status"] h3')).toHaveCount(0);
+  await expect(page.locator('.arena-enemy-chip')).not.toContainText('PREPARANDO');
+
+  await gorthakAttack(page);
+  log = await page.locator('#battle-log').innerText();
+  expect(log).toMatch(/Último Avanço! Warlord Gorthak causa \d+ de dano em você\.|Você esquiva do ataque de Warlord Gorthak/);
+  await assertNoClientErrors(errors);
+});
+
+test('reload durante Gorthak preserva apenas os recursos do checkpoint, sem restaurar combate', async ({ page }) => {
+  const errors = [];
+  await startGorthak(page, errors, { level: 1, forca: 0, vitalidade: 100 });
+  await gorthakAttack(page);
+  const checkpointDuringFight = await page.evaluate(() => JSON.parse(localStorage.getItem('a-ultima-lua.checkpoint')));
+  expect(checkpointDuringFight.schemaVersion).toBe(5);
+  const savedHp = checkpointDuringFight.player.hp;
+  await page.reload();
+  await expect(page.locator('#title-screen')).toBeVisible();
+  await page.locator('#class-select button', { hasText: 'CONTINUAR' }).click();
+  await expect(page.locator('#game-screen')).toBeVisible();
+  await expect(page.locator('.battle-arena')).toHaveCount(0);
+  expect(currentHp(await page.locator('#hud-hp-text').innerText()).current).toBe(savedHp);
+  const resumed = await page.evaluate(() => JSON.parse(localStorage.getItem('a-ultima-lua.checkpoint')));
+  expect(resumed.player.hp).toBe(savedHp);
+  expect(resumed).not.toHaveProperty('pendingVictory');
+  await assertNoClientErrors(errors);
+});
+
+test('vitória pendente de Gorthak sobrevive ao reload e confirma recompensas uma única vez', async ({ page }) => {
+  const errors = [];
+  await startGorthak(page, errors, { level: 100, forca: 10000, vitalidade: 10000 });
+  const before = await page.evaluate(() => JSON.parse(localStorage.getItem('a-ultima-lua.checkpoint')));
+  const savedXpBefore = before.player.totalXp;
+  const savedCoinsBefore = before.player.coins;
+
+  // A vitória é obtida por ataques reais do jogador no combate, não por mutação
+  // de estado: os atributos elevados são aplicados pelo painel QA descartável.
+  for (let turn = 0; turn < 3; turn++) {
+    const action = page.locator('.battle-actions button.action-btn').filter({ hasText: /^Atacar$/ });
+    if (!await action.count()) break;
+    await expect(action).toBeEnabled({ timeout: 10_000 });
+    await action.click();
+    await page.waitForFunction(() => {
+      const checkpoint = JSON.parse(localStorage.getItem('a-ultima-lua.checkpoint') || 'null');
+      const attack = [...document.querySelectorAll('.battle-actions button.action-btn')].find(button => button.textContent.trim() === 'Atacar');
+      return Boolean(checkpoint?.pendingVictory) || Boolean(attack && !attack.disabled);
+    }, null, { timeout: 10_000 });
+    const afterTurn = await page.evaluate(() => JSON.parse(localStorage.getItem('a-ultima-lua.checkpoint')));
+    if (afterTurn.pendingVictory) break;
+  }
+  const pending = await page.evaluate(() => JSON.parse(localStorage.getItem('a-ultima-lua.checkpoint')));
+  expect(pending).toHaveProperty('pendingVictory');
+  expect(pending.schemaVersion).toBe(5);
+  expect(pending.player.totalXp).toBeGreaterThan(savedXpBefore);
+  expect(pending.player.coins).toBeGreaterThan(savedCoinsBefore);
+  const rewardedXp = pending.player.totalXp;
+  const rewardedCoins = pending.player.coins;
+
+  await page.reload();
+  await expect(page.locator('#title-screen')).toBeVisible();
+  await page.locator('#class-select button', { hasText: 'CONTINUAR' }).click();
+  await expect(page.locator('.notif-card.interactive-card .notif-continue')).toBeVisible();
+  const reloadedPending = await page.evaluate(() => JSON.parse(localStorage.getItem('a-ultima-lua.checkpoint')));
+  expect(reloadedPending.pendingVictory).toEqual(pending.pendingVictory);
+  expect(reloadedPending.player.totalXp).toBe(rewardedXp);
+  expect(reloadedPending.player.coins).toBe(rewardedCoins);
+
+  await page.locator('.notif-card.interactive-card .notif-continue').click();
+  await expect(page.locator('.notif-card.interactive-card')).toHaveCount(0);
+  const settled = await page.evaluate(() => JSON.parse(localStorage.getItem('a-ultima-lua.checkpoint')));
+  expect(settled).not.toHaveProperty('pendingVictory');
+  expect(settled.player.totalXp).toBe(rewardedXp);
+  expect(settled.player.coins).toBe(rewardedCoins);
+  await page.reload();
+  await expect(page.locator('#title-screen')).toBeVisible();
+  await page.locator('#class-select button', { hasText: 'CONTINUAR' }).click();
+  await expect(page.locator('.notif-card.interactive-card')).toHaveCount(0);
+  const afterSecondReload = await page.evaluate(() => JSON.parse(localStorage.getItem('a-ultima-lua.checkpoint')));
+  expect(afterSecondReload.player.totalXp).toBe(rewardedXp);
+  expect(afterSecondReload.player.coins).toBe(rewardedCoins);
+  expect(afterSecondReload).not.toHaveProperty('pendingVictory');
+  await assertNoClientErrors(errors);
+});

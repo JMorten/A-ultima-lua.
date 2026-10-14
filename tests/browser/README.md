@@ -1,4 +1,4 @@
-# Playwright QA V2 — Ritual do Xamã
+# Playwright QA V3 — Gorthak (sobre V1 + V2)
 
 PoC isolada de testes de navegador. Os testes não acessam domínio de produção e criam um contexto novo do navegador por teste. O personagem QA e seu `localStorage` existem somente para a origem local descartável.
 
@@ -44,7 +44,7 @@ O runner copia somente `index.html`, `src`, `styles`, `assets` e `_qa` para uma 
 
 Cada teste recebe um `BrowserContext` novo, sem estado persistente. Nenhum save real é carregado. A rota externa de fontes Google é atendida localmente por CSS vazio para evitar dependência de rede.
 
-## Cobertura V1 + V2
+## Cobertura V1 + V2 + V3
 
 - Inicialização e erros JavaScript.
 - Seleção de classes.
@@ -52,11 +52,13 @@ Cada teste recebe um `BrowserContext` novo, sem estado persistente. Nenhum save 
 - Combate real do Xamã pelo QA Debug, seleção/ataque de Totens, inatingibilidade durante o ritual, retaliação de 20% do dano efetivo, sifão de energia, despertar e aplicação do bônus.
 - Ação de cura não elegível para retaliação, e recarga durante ritual conforme o schema 5 sem restaurar combate nem duplicar a perda de HP.
 - Arena V2.4 e assets dos Totens, sem falhas de carregamento ou erros JavaScript.
+- Gorthak: três fases nos limiares reais (65% e 30% de HP), telegraph/resolução do Golpe Demolidor, Golpe Pesado e ausência de estado preparado acumulado na fase final.
+- Reload em combate e vitória pendente com verificação de HP, XP/moedas e ausência de recompensa duplicada.
 - Erros de carregamento de assets e overflow horizontal em 320, 375 e 390 px.
 
-Os cenários usam o QA Debug visível e a interface real de combate. Os atributos de QA são aplicados por seus controles próprios, gravados apenas no `localStorage` do contexto descartável. Nenhum resultado é forçado por alteração direta de estado interno. As fases de Gorthak continuam fora do escopo.
+Os cenários usam o QA Debug visível e a interface real de combate. Os atributos de QA são aplicados por seus controles próprios, gravados apenas no `localStorage` do contexto descartável. Nenhum resultado é forçado por alteração direta de estado interno. A cobertura de Gorthak usa os limiares reais do código (65% e 30% do HP atual/max) e não injeta estado de combate. Valores de atributos de QA são definidos pelos controles visíveis do QA Debug em contexto descartável.
 
-Execução: 11 testes Playwright em Chromium, além da suíte Node existente. WebKit só roda se o binário já estiver instalado; o runner não baixa browsers.
+Execução: 14 testes Playwright em Chromium, além da suíte Node existente. WebKit só roda se o binário já estiver instalado; o runner não baixa browsers.
 
 ## Artefatos
 
