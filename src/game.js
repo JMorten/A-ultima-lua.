@@ -19,12 +19,12 @@ const COMBAT_PRESENTATION = {
   defaultPlayer:{ x:0.28, ground:0, w:0.34, h:0.62, ax:-0.5, ay:0 },
   defaultEnemy:{ x:0.72, ground:0, w:0.34, h:0.62, ax:-0.5, ay:0 },
   classes:{
-    mago:{ x:0.25, ground:0, w:0.62, h:0.96, ax:-0.5, ay:0 },
+    mago:{ x:0.25, ground:0, w:0.44, h:0.72, ax:-0.5, ay:0 },
   },
   enemies:{
     orc_batedor:{ x:0.75, ground:0, w:0.58, h:0.76, ax:-0.5, ay:0 },
     orc_xama:{ x:0.72, ground:0, w:0.44, h:0.70, ax:-0.5, ay:0 },
-    warlord_gorthak:{ x:0.76, ground:0, w:0.50, h:0.94, ax:-0.5, ay:0 },
+    warlord_gorthak:{ x:0.72, ground:0, w:0.44, h:0.88, ax:-0.5, ay:0 },
   },
   ritualTargets:{
     totem_sangue:{ x:0.55, ground:0.02, w:0.34, h:0.72, ax:-0.5, ay:0 },
@@ -1565,7 +1565,8 @@ function floatNumber(side, text, cls){
   setTimeout(()=>span.remove(), 1000);
 }
 
-function shakeSide(side){
+function shakeSide(side, isCrit=false){
+  if(side==='enemy' && isGorthak() && typeof GorthakVisual!=='undefined' && GorthakVisual.hit(ui.monster,isCrit))return;
   const el = document.getElementById(combatPortraitId(side));
   if(!el) return;
   el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
@@ -2065,7 +2066,7 @@ function resolvePlayerHit(dmg, isCrit, impacts=[dmg]){
     if(player.hp>before) logPush(`<span class="log-good">🩸 Equipamento drena ${player.hp-before} HP.</span>`);
   }
   floatNumber('enemy', (isCrit?'CRÍTICO -':'-')+dmg, isCrit?'crit':'dmg');
-  shakeSide('enemy');
+  shakeSide('enemy', isCrit);
   updateArenaBarsOnly();
 
   // A retaliação substitui o contra-ataque desta rodada; golpe letal não a dispara.
@@ -2321,6 +2322,7 @@ function fleeBattle(){
 }
 
 function handleDefeat(){
+  if(typeof GorthakVisual!=='undefined')GorthakVisual.destroy();
   if(ui.monster && ui.monster.id==='romar'){ romarNonlethalDefeat(); return; }
   ui.inBattle = false;
   const oldLevel = player.level;
@@ -2337,6 +2339,7 @@ function handleDefeat(){
 }
 
 function handleVictory(m){
+  if(typeof GorthakVisual!=='undefined')GorthakVisual.destroy();
   if(m.id==='romar'){ romarFinalChoice(m); return; }
   ui.inBattle = false;
   ui.locked = false;
@@ -2911,12 +2914,12 @@ function renderBatalhaTab(){
     <div class="battle-arena arena-battlefield">
       <div class="arena-stage">
         <div class="battlefield-background" aria-hidden="true"${map.arenaBackground ? ` style="background-image:url('${map.arenaBackground}')"` : ''}></div>
-        <div class="arena-actor actor-player ${CLASSES[player.classKey].combatPortrait?'art-natural':'art-legacy'}" ${combatPresentationStyle('player',player.classKey)}>
+        <div data-actor="${player.classKey}" class="arena-actor actor-player ${CLASSES[player.classKey].combatPortrait?'art-natural':'art-legacy'}" ${combatPresentationStyle('player',player.classKey)}>
           <div class="combatant-artwork portrait-ring player" id="portrait-player">${classCombatAvatarHtml(player.classKey)}</div>
           <div class="combatant-effects" id="effects-player" aria-hidden="true"></div>
         </div>
         ${renderShamanRitualActors(m)}
-        <div class="arena-actor actor-enemy ${m.portraitLayout==='natural'?'art-natural':'art-legacy'}" ${combatPresentationStyle('enemy',m.id)}>
+        <div data-actor="${m.id}" class="arena-actor actor-enemy ${m.portraitLayout==='natural'?'art-natural':'art-legacy'}" ${combatPresentationStyle('enemy',m.id)}>
           <div class="combatant-artwork portrait-ring ${m.portraitLayout==='natural'?'portrait-natural':''} ${map.fam} ${(m.isBoss||m.isMiniBoss)?'fam-boss':''}" id="portrait-enemy">${monsterAvatarHtml(m,'avatar-img-circle')}</div>
           <div class="combatant-effects" id="effects-enemy" aria-hidden="true"></div>
         </div>
@@ -3242,6 +3245,7 @@ function renderStatusTab(){
 }
 
 function render(){
+  if(typeof GorthakVisual!=='undefined')GorthakVisual.destroy();
   renderHUD();
   const content = document.getElementById('content');
   if(ui.tab==='mapa') content.innerHTML = renderMapaTab();
@@ -3250,6 +3254,7 @@ function render(){
   else if(ui.tab==='loja') content.innerHTML = renderLojaTab();
   else if(ui.tab==='status') content.innerHTML = renderStatusTab();
   if(ui.inBattle && ui.locked) setActionsLocked(true);
+  if(typeof GorthakVisual!=='undefined' && ui.inBattle && ui.tab==='batalha' && isGorthak())GorthakVisual.mount(ui.monster);
 }
 
 document.querySelectorAll('.tab-btn').forEach(b=>{
