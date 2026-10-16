@@ -1566,7 +1566,7 @@ function floatNumber(side, text, cls){
 }
 
 function shakeSide(side, isCrit=false){
-  if(side==='enemy' && isGorthak() && typeof GorthakVisual!=='undefined' && GorthakVisual.hit(ui.monster,isCrit))return;
+  if(side==='enemy' && (isGorthak() || (ui.mapIndex===2 && ui.monster?.id==='orc_batedor')) && typeof EnemyCombatVisual!=='undefined' && EnemyCombatVisual.hit(ui.monster,isCrit))return;
   const el = document.getElementById(combatPortraitId(side));
   if(!el) return;
   el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
@@ -2322,7 +2322,7 @@ function fleeBattle(){
 }
 
 function handleDefeat(){
-  if(typeof GorthakVisual!=='undefined')GorthakVisual.destroy();
+  if(typeof EnemyCombatVisual!=='undefined')EnemyCombatVisual.destroy();
   if(ui.monster && ui.monster.id==='romar'){ romarNonlethalDefeat(); return; }
   ui.inBattle = false;
   const oldLevel = player.level;
@@ -2339,7 +2339,7 @@ function handleDefeat(){
 }
 
 function handleVictory(m){
-  if(typeof GorthakVisual!=='undefined')GorthakVisual.destroy();
+  if(typeof EnemyCombatVisual!=='undefined')EnemyCombatVisual.destroy();
   if(m.id==='romar'){ romarFinalChoice(m); return; }
   ui.inBattle = false;
   ui.locked = false;
@@ -3245,7 +3245,7 @@ function renderStatusTab(){
 }
 
 function render(){
-  if(typeof GorthakVisual!=='undefined')GorthakVisual.destroy();
+  if(typeof EnemyCombatVisual!=='undefined')EnemyCombatVisual.destroy();
   renderHUD();
   const content = document.getElementById('content');
   if(ui.tab==='mapa') content.innerHTML = renderMapaTab();
@@ -3254,7 +3254,7 @@ function render(){
   else if(ui.tab==='loja') content.innerHTML = renderLojaTab();
   else if(ui.tab==='status') content.innerHTML = renderStatusTab();
   if(ui.inBattle && ui.locked) setActionsLocked(true);
-  if(typeof GorthakVisual!=='undefined' && ui.inBattle && ui.tab==='batalha' && isGorthak())GorthakVisual.mount(ui.monster);
+  if(typeof EnemyCombatVisual!=='undefined' && ui.inBattle && ui.tab==='batalha' && (isGorthak() || (ui.mapIndex===2 && ui.monster?.id==='orc_batedor')))EnemyCombatVisual.mount(ui.monster);
 }
 
 document.querySelectorAll('.tab-btn').forEach(b=>{

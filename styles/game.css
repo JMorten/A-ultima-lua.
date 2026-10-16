@@ -736,15 +736,15 @@
 }
 @media(min-width:701px){.battle-arena.arena-battlefield{max-width:640px;margin-left:auto;margin-right:auto;}}
 
-/* Gorthak only: no idle animation and no transforms on the positioning layer. */
-.gorthak-reaction-surface{transform-origin:50% 97%;}
-.gorthak-reaction-surface[data-reaction]{will-change:transform;}
-.gorthak-impact-glow,.gorthak-impact-flash{position:absolute;inset:0;opacity:0;pointer-events:none;}
-.gorthak-impact-glow{background:radial-gradient(ellipse,rgba(255,194,132,.5),rgba(165,48,30,.18) 44%,transparent 72%);}
-.gorthak-impact-flash{background:rgba(230,167,105,.16);}
-.gorthak-reaction-surface[data-reaction-static]{will-change:auto;outline:2px solid var(--gold);outline-offset:-2px;}
+/* Gorthak and Scout only: no idle animation and no transforms on the positioning layer. */
+.gorthak-reaction-surface,.scout-reaction-surface{transform-origin:50% 97%;}
+.gorthak-reaction-surface[data-reaction],.scout-reaction-surface[data-reaction]{will-change:transform;}
+.gorthak-impact-glow,.scout-impact-glow,.gorthak-impact-flash,.scout-impact-flash{position:absolute;inset:0;opacity:0;pointer-events:none;}
+.gorthak-impact-glow,.scout-impact-glow{background:radial-gradient(ellipse,rgba(255,194,132,.5),rgba(165,48,30,.18) 44%,transparent 72%);}
+.gorthak-impact-flash,.scout-impact-flash{background:rgba(230,167,105,.16);}
+.gorthak-reaction-surface[data-reaction-static],.scout-reaction-surface[data-reaction-static]{will-change:auto;outline:2px solid var(--gold);outline-offset:-2px;}
 @media(prefers-reduced-motion:reduce){
-  .gorthak-reaction-surface[data-reaction]{will-change:auto;outline:2px solid var(--gold);outline-offset:-2px;}
+  .gorthak-reaction-surface[data-reaction],.scout-reaction-surface[data-reaction]{will-change:auto;outline:2px solid var(--gold);outline-offset:-2px;}
 }
 
 /* Full-art fit for the reviewed actors. Override legacy natural-portrait auto height.

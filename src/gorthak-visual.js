@@ -1,32 +1,42 @@
 (function(scope){
   'use strict';
   let current=null;
-  const profile={
+  // Historical filename retained for compatibility; one shared lifecycle for both actors.
+  const profiles={
+    warlord_gorthak:{prefix:"gorthak",motion:{
     damage:{duration:140,x:4,rotation:.6,glow:.22},
     retreat:{duration:260,x:7,rotation:.2,glow:0},
     critical:{duration:430,x:10.5,rotation:1.5,glow:.58}
+    }},
+    orc_batedor:{prefix:"scout",motion:{
+      damage:{duration:100,x:3,rotation:.45,glow:.18},
+      retreat:{duration:180,x:4,rotation:.15,glow:0},
+      critical:{duration:280,x:7.5,rotation:1.1,glow:.42}
+    }}
   };
   function destroy(){
     if(!current)return;
     const old=current;current=null;
     old.observer?.disconnect();old.animator.destroy();
-    old.surface.classList.remove('gorthak-reaction-surface');
+    old.surface.classList.remove(old.prefix+'-reaction-surface');
     old.glow.remove();old.flash.remove();
   }
   function mount(monster){
     destroy();
-    if(!monster||monster.id!=='warlord_gorthak'||typeof scope.CombatReactionAnimator!=='function')return;
+    const selected=monster&&profiles[monster.id];
+    if(!selected||typeof scope.CombatReactionAnimator!=='function')return;
+    const prefix=selected.prefix,profile=selected.motion;
     const surface=document.getElementById('portrait-enemy');
     const effects=document.getElementById('effects-enemy');
     const stage=document.querySelector('.arena-global-effects');
     if(!surface||!effects||!stage)return;
     const glow=document.createElement('div'),flash=document.createElement('div');
-    glow.className='gorthak-impact-glow';flash.className='gorthak-impact-flash';
+    glow.className=prefix+'-impact-glow';flash.className=prefix+'-impact-flash';
     glow.setAttribute('aria-hidden','true');flash.setAttribute('aria-hidden','true');
     effects.appendChild(glow);stage.appendChild(flash);
-    surface.classList.add('gorthak-reaction-surface');
+    surface.classList.add(prefix+'-reaction-surface');
     const animator=new scope.CombatReactionAnimator({root:surface,surface,glow,flash,profile});
-    const view={monster,surface,glow,flash,animator,observer:null};current=view;
+    const view={monster,prefix,surface,glow,flash,animator,observer:null};current=view;
     if(typeof MutationObserver!=='undefined'){
       view.observer=new MutationObserver(()=>{if(current===view&&!surface.isConnected)destroy();});
       view.observer.observe(document.getElementById('content'),{childList:true,subtree:true});
@@ -43,6 +53,7 @@
     });
     return true;
   }
-  scope.GorthakVisual=Object.freeze({mount,destroy,hit});
+  scope.EnemyCombatVisual=Object.freeze({mount,destroy,hit});
+  scope.GorthakVisual=scope.EnemyCombatVisual; // Legacy API, not a second animator.
   if(scope.addEventListener)scope.addEventListener('pagehide',destroy);
 })(typeof globalThis!=='undefined'?globalThis:this);
