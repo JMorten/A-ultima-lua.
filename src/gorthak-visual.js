@@ -9,9 +9,9 @@
     critical:{duration:430,x:10.5,rotation:1.5,glow:.58}
     }},
     orc_batedor:{prefix:"scout",motion:{
-      damage:{duration:100,x:3,rotation:.45,glow:.18},
+      damage:{duration:250,x:8,y:-2,rotation:.8,glow:.22,directional:true,followRetreat:false},
       retreat:{duration:180,x:4,rotation:.15,glow:0},
-      critical:{duration:280,x:7.5,rotation:1.1,glow:.42}
+      critical:{duration:360,x:16,y:-6,rotation:2.2,glow:.55,directional:true}
     }}
   };
   function destroy(){
@@ -36,7 +36,7 @@
     effects.appendChild(glow);stage.appendChild(flash);
     surface.classList.add(prefix+'-reaction-surface');
     const animator=new scope.CombatReactionAnimator({root:surface,surface,glow,flash,profile});
-    const view={monster,prefix,surface,glow,flash,animator,observer:null};current=view;
+    const view={monster,prefix,surface,glow,flash,animator,followRetreat:profile.damage.followRetreat!==false,observer:null};current=view;
     if(typeof MutationObserver!=='undefined'){
       view.observer=new MutationObserver(()=>{if(current===view&&!surface.isConnected)destroy();});
       view.observer.observe(document.getElementById('content'),{childList:true,subtree:true});
@@ -48,7 +48,7 @@
     // Latest hit wins; never queue stale reactions or delay the combat timers.
     const sequence=(view.sequence||0)+1;view.sequence=sequence;
     void view.animator.play(isCrit?'critical':'damage').then(result=>{
-      if(!isCrit&&!result.interrupted&&current===view&&view.sequence===sequence&&!view.animator.media.matches)
+      if(!isCrit&&view.followRetreat&&!result.interrupted&&current===view&&view.sequence===sequence&&!view.animator.media.matches)
         void view.animator.play('retreat');
     });
     return true;

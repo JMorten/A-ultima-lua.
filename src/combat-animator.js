@@ -36,7 +36,12 @@
         this.timer=setTimeout(finish,180);
       }else{
         // The same bottom-anchored reaction and cancellation model as laboratory V2.
-        const frames=action==='retreat' ? [
+        const frames=r.directional ? [
+          {transform:REST,offset:0,easing:'cubic-bezier(.12,.7,.2,1)'},
+          {transform:'translate3d('+r.x+'px,'+(r.y||0)+'px,0) rotate('+r.rotation+'deg)',offset:.24,easing:'linear'},
+          {transform:'translate3d('+r.x+'px,'+(r.y||0)+'px,0) rotate('+r.rotation+'deg)',offset:.36,easing:'cubic-bezier(.25,0,.25,1)'},
+          {transform:REST,offset:1}
+        ] : action==='retreat' ? [
           {transform:REST,offset:0},
           {transform:'translate3d('+r.x+'px,1px,0) rotate('+r.rotation+'deg)',offset:.30},
           {transform:'translate3d('+r.x*.86+'px,0,0) rotate(0deg)',offset:.56},
@@ -47,7 +52,7 @@
           {transform:'translate3d('+-r.x*.24+'px,0,0) rotate('+-r.rotation*.22+'deg)',offset:.60},
           {transform:REST,offset:1}
         ];
-        const main=this.surface.animate(frames,{duration:r.duration,easing:'cubic-bezier(.2,.65,.3,1)',fill:'none'});
+        const main=this.surface.animate(frames,{duration:r.duration,easing:r.directional?'linear':'cubic-bezier(.2,.65,.3,1)',fill:'none'});
         this.effects.push(main);
         if(r.glow&&this.glow)this.effects.push(this.glow.animate(
           [{opacity:0},{opacity:r.glow,offset:.16},{opacity:0,offset:.74},{opacity:0}],

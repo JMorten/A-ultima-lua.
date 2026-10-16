@@ -59,22 +59,21 @@ test('hooks de produção se limitam a Gorthak e passam isCrit real',()=>{
   assert.match(source,/shakeSide\('enemy', isCrit\)/);
 });
 
-test('Batedor reutiliza o mesmo motor, com reações mais rápidas que Gorthak',async()=>{
-  const f=boot();const scout={id:'orc_batedor'};f.api.mount(scout);
-  assert.equal(f.context.EnemyCombatVisual,f.context.GorthakVisual);
-  assert.equal(f.nodes['portrait-enemy'].history.length,0);
-  assert.ok(f.nodes['portrait-enemy'].classes.has('scout-reaction-surface'));
-  f.api.hit(scout,false);const first=f.nodes['portrait-enemy'].history[0];
-  assert.equal(first.options.duration,100);first.finish();await flush();
-  const retreat=f.nodes['portrait-enemy'].history[1];assert.equal(retreat.options.duration,180);
-  assert.match(retreat.frames[1].transform,/4px/);assert.equal(retreat.frames[0].transform,retreat.frames.at(-1).transform);
-  retreat.finish();await flush();assert.equal(f.nodes['portrait-enemy'].dataset.reaction,undefined);f.api.destroy();
+test('Batedor: impacto direcional único sem inversão ou segundo tranco',async()=>{
+ const f=boot(),scout={id:'orc_batedor'};f.api.mount(scout);assert.equal(f.context.EnemyCombatVisual,f.context.GorthakVisual);
+ assert.equal(f.nodes['portrait-enemy'].history.length,0);f.api.hit(scout,false);
+ const hit=f.nodes['portrait-enemy'].history[0];assert.equal(hit.options.duration,250);
+ assert.match(hit.frames[1].transform,/8px/);assert.equal(hit.frames[1].transform,hit.frames[2].transform);
+ assert.equal(hit.frames[0].transform,hit.frames.at(-1).transform);
+ for(const k of hit.frames)assert.doesNotMatch(k.transform,/translate3d\(-/);
+ hit.finish();await flush();assert.equal(f.nodes['portrait-enemy'].history.length,1);
+ assert.equal(f.nodes['portrait-enemy'].dataset.reaction,undefined);f.api.destroy();
 });
 test('Batedor crítico, ataque consecutivo, interrupção e troca para Gorthak não deixam resíduos',async()=>{
   const f=boot(),scout={id:'orc_batedor'};f.api.mount(scout);f.api.hit(scout,false);
   const first=f.nodes['portrait-enemy'].history[0],late=first.onfinish;
   f.api.hit(scout,true);late();await flush();const crit=f.nodes['portrait-enemy'].history.at(-1);
-  assert.equal(crit.options.duration,280);assert.match(crit.frames[1].transform,/7.5px/);
+  assert.equal(crit.options.duration,360);assert.match(crit.frames[1].transform,/16px/);
   assert.equal(first.cancelled,true);f.api.destroy();await flush();assert.equal(f.media.listeners.size,0);
   assert.ok(f.created.every(e=>!e.isConnected));assert.ok(!f.nodes['portrait-enemy'].classes.has('scout-reaction-surface'));
   f.api.mount(f.monster);assert.equal(f.api.hit(scout,false),false);assert.equal(f.api.hit(f.monster,true),true);

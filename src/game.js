@@ -22,7 +22,7 @@ const COMBAT_PRESENTATION = {
     mago:{ x:0.25, ground:0, w:0.44, h:0.72, ax:-0.5, ay:0 },
   },
   enemies:{
-    orc_batedor:{ x:0.75, ground:0, w:0.58, h:0.76, ax:-0.5, ay:0 },
+    orc_batedor:{ x:0.68, ground:0, w:0.46, h:0.76, ax:-0.5, ay:0 },
     orc_xama:{ x:0.72, ground:0, w:0.44, h:0.70, ax:-0.5, ay:0 },
     warlord_gorthak:{ x:0.72, ground:0, w:0.44, h:0.88, ax:-0.5, ay:0 },
   },

@@ -14,9 +14,9 @@ test('Batedor: dano, crítico, recuo e chifre por ações reais; cancelamento e 
     await page.getByRole('button',{name:'Atacar',exact:true}).click();
     await expect(page.getByRole('button',{name:'Atacar',exact:true})).toBeEnabled({timeout:10000});
     seen=await page.evaluate(()=>window.__gorthakReactions);
-    if(n>=6&&['damage','retreat','critical'].every(x=>seen.includes(x))&&sources.size===2)break;
+    if(n>=6&&['damage','critical'].every(x=>seen.includes(x))&&sources.size===2)break;
   }
-  for(const action of ['damage','retreat','critical'])expect(seen).toContain(action);
+  for(const action of ['damage','critical'])expect(seen).toContain(action);
   expect([...sources]).toContain('assets/images/enemies/trenches/orc_batedor_alerta_combat.png');
   await expect(page.locator('#portrait-enemy')).not.toHaveAttribute('data-reaction',/./);
   expect(await page.locator('#portrait-enemy').evaluate(e=>getComputedStyle(e).transform)).toBe('none');
@@ -42,4 +42,26 @@ test('Batedor: movimento reduzido sem animações residuais',async({page})=>{
   expect(await page.evaluate(()=>window.__gorthakReactions)).not.toContain('retreat');
   expect(await page.locator('#portrait-enemy').evaluate(e=>e.getAnimations().length)).toBe(0);
   await expect(page.locator('#portrait-enemy')).not.toHaveAttribute('data-reaction-static',/./);expect(errors).toEqual([]);
+});
+
+for(const width of [320,375,390,1366])test('V2 comparação visual e trajetória em '+width+'px',async({page})=>{
+ await page.setViewportSize({width,height:width>1000?768:844});const errors=await encounter(page,'Orc Batedor','.scout-reaction-surface');
+ const results=[];
+ for(const critical of [false,true]){
+   await page.evaluate(c=>EnemyCombatVisual.hit(ui.monster,c),critical);
+   const sampled=await page.evaluate(()=>{
+     const surface=document.getElementById('portrait-enemy'),stage=document.querySelector('.arena-stage').getBoundingClientRect();
+     const a=surface.getAnimations()[0];a.pause();const duration=a.effect.getTiming().duration;
+     const values=[0,.12,.24,.36,.55,.8,.999].map(t=>{a.currentTime=t*duration;const r=surface.getBoundingClientRect(),m=new DOMMatrix(getComputedStyle(surface).transform);return {t,x:m.m41,y:m.m42,left:r.left-stage.left,right:stage.right-r.right,top:r.top-stage.top,bottom:stage.bottom-r.bottom};});
+     return {values,cssAnimation:getComputedStyle(surface).animationName,legacyShake:surface.classList.contains('shake'),keyframes:a.effect.getKeyframes()};
+   });
+   expect(sampled.legacyShake).toBe(false);expect(sampled.cssAnimation).toBe('none');
+   for(const v of sampled.values){expect(v.x).toBeGreaterThanOrEqual(-.01);expect(v.left).toBeGreaterThanOrEqual(-1);expect(v.right).toBeGreaterThanOrEqual(-1);expect(v.top).toBeGreaterThanOrEqual(-1);expect(v.bottom).toBeGreaterThanOrEqual(-1);}
+   expect(sampled.values[2].x).toBeCloseTo(critical?16:8,1);expect(sampled.values.at(-1).x).toBeCloseTo(0,1);
+   await page.evaluate(()=>{const a=document.getElementById('portrait-enemy').getAnimations()[0];a.currentTime=a.effect.getTiming().duration*.24;});
+   await page.locator('.battle-arena').screenshot({path:process.env.AUL_PW_ARTIFACTS+'/batedor-v2-'+width+'-'+(critical?'critico':'dano')+'.png',animations:'allow'});
+   results.push({critical,...sampled});await page.evaluate(()=>{EnemyCombatVisual.destroy();EnemyCombatVisual.mount(ui.monster);});
+ }
+ require('fs').writeFileSync(process.env.AUL_PW_ARTIFACTS+'/batedor-v2-'+width+'.json',JSON.stringify(results,null,2));
+ expect(errors).toEqual([]);
 });
