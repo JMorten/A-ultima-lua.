@@ -1569,7 +1569,7 @@ function floatNumber(side, text, cls){
 }
 
 function shakeSide(side, isCrit=false){
-  if(side==='enemy' && (isGorthak() || (ui.mapIndex===2 && ['orc_batedor','orc_guerreiro','orc_capitao','acougueiro_trincheira'].includes(ui.monster?.id))) && typeof EnemyCombatVisual!=='undefined' && EnemyCombatVisual.hit(ui.monster,isCrit))return;
+  if(side==='enemy' && (isGorthak() || (ui.mapIndex===2 && ['orc_batedor','orc_guerreiro','orc_capitao','acougueiro_trincheira'].includes(ui.monster?.id)) || (ui.mapIndex===2 && ui.monster?.id==='orc_xama' && ui.monster.shamanAwake)) && typeof EnemyCombatVisual!=='undefined' && EnemyCombatVisual.hit(ui.monster,isCrit))return;
   const el = document.getElementById(combatPortraitId(side));
   if(!el) return;
   el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
@@ -3257,7 +3257,7 @@ function render(){
   else if(ui.tab==='loja') content.innerHTML = renderLojaTab();
   else if(ui.tab==='status') content.innerHTML = renderStatusTab();
   if(ui.inBattle && ui.locked) setActionsLocked(true);
-  if(typeof EnemyCombatVisual!=='undefined' && ui.inBattle && ui.tab==='batalha' && (isGorthak() || (ui.mapIndex===2 && ['orc_batedor','orc_guerreiro','orc_capitao','acougueiro_trincheira'].includes(ui.monster?.id))))EnemyCombatVisual.mount(ui.monster);
+  if(typeof EnemyCombatVisual!=='undefined' && ui.inBattle && ui.tab==='batalha' && (isGorthak() || (ui.mapIndex===2 && ['orc_batedor','orc_guerreiro','orc_capitao','acougueiro_trincheira'].includes(ui.monster?.id)) || (ui.mapIndex===2 && ui.monster?.id==='orc_xama' && ui.monster.shamanAwake)))EnemyCombatVisual.mount(ui.monster);
 }
 
 document.querySelectorAll('.tab-btn').forEach(b=>{

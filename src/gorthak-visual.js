@@ -24,6 +24,10 @@
     acougueiro_trincheira:{prefix:"butcher",motion:{
       damage:{duration:280,x:9,y:-2,rotation:1,glow:.28,directional:true,followRetreat:false},
       critical:{duration:430,x:18,y:-8,rotation:2.4,glow:.62,directional:true}
+    }},
+    orc_xama:{prefix:"shaman",motion:{
+      damage:{duration:270,x:8,y:-2,rotation:1,glow:.25,directional:true,followRetreat:false},
+      critical:{duration:410,x:16,y:-7,rotation:2.2,glow:.58,directional:true}
     }}
   };
   function destroy(){

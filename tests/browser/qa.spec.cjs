@@ -494,3 +494,53 @@ test('vitória pendente de Gorthak sobrevive ao reload e confirma recompensas um
   expect(afterSecondReload).not.toHaveProperty('pendingVictory');
   await assertNoClientErrors(errors);
 });
+
+
+test('Xamã V2: orientação, corpo inteiro e pé ancorado antes/depois do despertar em larguras mobile e desktop', async ({ page }) => {
+  const errors=[];
+  await page.addInitScript(()=>{window.__shamanReactions=[];document.addEventListener('DOMContentLoaded',()=>new MutationObserver(records=>{for(const r of records)if(r.target.id==='portrait-enemy'&&r.target.dataset.reaction)window.__shamanReactions.push(r.target.dataset.reaction);}).observe(document.body,{subtree:true,attributes:true,attributeFilter:['data-reaction']}));});
+  await startShaman(page,errors,{level:100,forca:10000,vitalidade:10000});
+  await expect(page.locator('#portrait-enemy')).not.toHaveClass(/shaman-reaction-surface/);
+  await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src',/orc_xama_transe\.png/);
+  await page.locator('#game-screen').screenshot({path:process.env.AUL_PW_ARTIFACTS+'/orc-xama-v2-antes-despertar-390.png'});
+  await destroySelectedTotem(page,'Totem de Sangue');
+  await destroySelectedTotem(page,'Totem da Essência');
+  await expect(page.locator('.ritual-target-actions')).toHaveCount(0);
+  await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src',/orc_xama_combat\.png/);
+  await expect(page.locator('#portrait-enemy')).toHaveClass(/shaman-reaction-surface/);
+  await page.waitForFunction(()=>{const i=document.querySelector('#portrait-enemy img');return i?.complete&&i.naturalWidth===1024&&i.naturalHeight===1536;});
+  for(const width of [320,375,390,1366]){
+    await page.setViewportSize({width,height:width>1000?768:844});
+    const frame=await page.locator('.arena-actor[data-actor="orc_xama"]').evaluate(actor=>{const stage=actor.closest('.arena-stage').getBoundingClientRect(),r=actor.getBoundingClientRect(),img=actor.querySelector('img'),style=getComputedStyle(img),matrix=new DOMMatrix(style.transform);return{width:innerWidth,naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,fit:style.objectFit,position:style.objectPosition,scaleX:matrix.a,scaleY:matrix.d,boxWidthRatio:r.width/stage.width,boxHeightRatio:r.height/stage.height,centerError:r.x+r.width/2-stage.x-stage.width*.72,groundError:r.bottom-stage.bottom,overflow:document.documentElement.scrollWidth-innerWidth};});
+    expect(frame.naturalWidth).toBe(1024);expect(frame.naturalHeight).toBe(1536);expect(frame.fit).toBe('contain');expect(frame.position).toBe('50% 100%');expect(frame.scaleX).toBe(-1);expect(frame.scaleY).toBe(1);expect(frame.boxWidthRatio).toBeCloseTo(.44,3);expect(frame.boxHeightRatio).toBeCloseTo(.70,3);expect(Math.abs(frame.centerError)).toBeLessThan(1);expect(Math.abs(frame.groundError)).toBeLessThan(1);expect(frame.overflow).toBeLessThanOrEqual(1);
+    await page.locator('#game-screen').screenshot({path:process.env.AUL_PW_ARTIFACTS+'/orc-xama-v2-desperto-'+width+'.png'});
+  }
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.evaluate(()=>EnemyCombatVisual.hit(ui.monster,true));
+  expect(await page.locator('#portrait-enemy').getAttribute('data-reaction-static')).toBe('true');
+  expect(await page.locator('#portrait-enemy').evaluate(e=>e.getAnimations().length)).toBe(0);
+  expect(errors).toEqual([]);
+});
+
+test('Xamã V2: ataques reais acionam dano e crítico após o despertar, sem resíduos ao sair',async({page})=>{
+  test.setTimeout(120000);const errors=[];
+  await page.addInitScript(()=>{window.__shamanReactions=[];document.addEventListener('DOMContentLoaded',()=>new MutationObserver(records=>{for(const r of records)if(r.target.id==='portrait-enemy'&&r.target.dataset.reaction)window.__shamanReactions.push(r.target.dataset.reaction);}).observe(document.body,{subtree:true,attributes:true,attributeFilter:['data-reaction']}));});
+  await startShaman(page,errors,{level:3,forca:10,vitalidade:10000});
+  await destroySelectedTotem(page,'Totem de Sangue');await destroySelectedTotem(page,'Totem da Essência');
+  await expect(page.locator('.shaman-reaction-surface')).toBeVisible();
+  for(let n=0;n<60;n++){
+    await attackButton(page).then(b=>b.click());
+    await page.waitForFunction(()=>{const b=[...document.querySelectorAll('.battle-actions button.action-btn')].find(x=>x.textContent.trim()==='Atacar');return !b||!b.disabled||document.querySelector('.notif-card.interactive-card');},null,{timeout:10000});
+    const seen=await page.evaluate(()=>window.__shamanReactions||[]);
+    if(seen.includes('damage')&&seen.includes('critical'))break;
+    if(await page.locator('.battle-arena').count()===0)break;
+  }
+  const seen=await page.evaluate(()=>window.__shamanReactions||[]);expect(seen).toContain('damage');expect(seen).toContain('critical');
+  await expect(page.locator('#portrait-enemy')).not.toHaveAttribute('data-reaction',/./);
+  expect(await page.locator('#portrait-enemy').evaluate(e=>getComputedStyle(e).transform)).toBe('none');
+  await page.evaluate(()=>{EnemyCombatVisual.hit(ui.monster,true);window.__oldShaman=document.getElementById('portrait-enemy');});
+  await page.locator('.tab-btn[data-tab="mapa"]').click();
+  expect(await page.evaluate(()=>window.__oldShaman.getAnimations().length)).toBe(0);
+  await expect(page.locator('.shaman-impact-glow')).toHaveCount(0);
+  expect(errors).toEqual([]);
+});

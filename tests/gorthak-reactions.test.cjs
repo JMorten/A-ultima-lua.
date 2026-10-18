@@ -18,7 +18,25 @@ function boot(reduced=false){
 }
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 test('mount: Gorthak começa imóvel, sem respiração ou loops',()=>{const f=boot();f.api.mount(f.monster);assert.equal(f.nodes['portrait-enemy'].history.length,0);assert.equal(f.created.length,2);f.api.destroy();});
-test('outros inimigos não recebem adaptador nem novas animações',()=>{const f=boot();f.api.mount({id:'orc_xama'});assert.equal(f.created.length,0);assert.equal(f.api.hit(f.monster,false),false);});
+test('IDs sem perfil continuam sem adaptador nem novas animações',()=>{const f=boot();f.api.mount({id:'inimigo_sem_perfil'});assert.equal(f.created.length,0);assert.equal(f.api.hit(f.monster,false),false);});
+test('Xamã tem reações direcionais, críticas e encerramento seguro no motor compartilhado',async()=>{
+ const f=boot(),m={id:'orc_xama'};f.api.mount(m);assert.ok(f.nodes['portrait-enemy'].classes.has('shaman-reaction-surface'));
+ assert.equal(f.api.hit(m,false),true);let a=f.nodes['portrait-enemy'].history[0];assert.equal(a.options.duration,270);assert.match(a.frames[1].transform,/8px/);assert.equal(a.frames[0].transform,a.frames.at(-1).transform);
+ a.finish();await flush();assert.equal(f.nodes['portrait-enemy'].history.length,1);
+ assert.equal(f.api.hit(m,true),true);a=f.nodes['portrait-enemy'].history.at(-1);assert.equal(a.options.duration,410);assert.match(a.frames[1].transform,/16px/);
+ f.api.destroy();assert.equal(f.media.listeners.size,0);assert.ok(f.created.every(e=>!e.isConnected));assert.ok(!f.nodes['portrait-enemy'].classes.has('shaman-reaction-surface'));
+});
+test('Xamã: reduced-motion, hits consecutivos e remount limpam estado',async()=>{
+ const f=boot(true),m={id:'orc_xama'};f.api.mount(m);assert.equal(f.api.hit(m,true),true);assert.equal(f.nodes['portrait-enemy'].history.length,0);assert.equal(f.nodes['portrait-enemy'].dataset.reactionStatic,'true');f.api.destroy();await flush();assert.equal(f.timers.size,0);
+ const n=boot(),old={id:'orc_xama'},next={id:'orc_xama'};n.api.mount(old);n.api.hit(old,false);const first=n.nodes['portrait-enemy'].history[0],late=first.onfinish;n.api.hit(old,true);late();await flush();assert.ok(first.cancelled);assert.equal(n.nodes['portrait-enemy'].dataset.reaction,'critical');n.api.destroy();n.api.mount(next);assert.equal(n.api.hit(old,false),false);assert.equal(n.api.hit(next,false),true);n.api.destroy();
+});
+test('gancho real encaminha golpes apenas após o Xamã despertar',()=>{
+ const source=fs.readFileSync(path.join(root,'src/game.js'),'utf8');
+ const start=source.indexOf('function shakeSide('),end=source.indexOf('\nfunction updateArenaBarsOnly',start);
+ const run=awake=>{const events=[];const ctx=vm.createContext({ui:{monster:{id:'orc_xama',shamanAwake:awake},mapIndex:2},combatPortraitId:()=> 'portrait-enemy',isGorthak:()=>false,EnemyCombatVisual:{hit:(m,crit)=>{events.push([m.id,crit]);return true;}},document:{getElementById:()=>({classList:{remove(){},add(){}},offsetWidth:1})}});vm.runInContext(source.slice(start,end),ctx);vm.runInContext("shakeSide('enemy',true);shakeSide('enemy',false)",ctx);return events;};
+ assert.deepEqual(run(false),[]);assert.deepEqual(run(true),[['orc_xama',true],['orc_xama',false]]);
+ assert.match(source,/ui\.monster\?\.id==='orc_xama' && ui\.monster\.shamanAwake/);
+});
 test('dano normal → recuo → retorno antes dos 480 ms existentes',async()=>{
   const f=boot();f.api.mount(f.monster);assert.equal(f.api.hit(f.monster,false),true);
   const surface=f.nodes['portrait-enemy'];assert.equal(surface.dataset.reaction,'damage');const hit=surface.history[0];hit.finish();await flush();
