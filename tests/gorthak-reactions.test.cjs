@@ -86,3 +86,18 @@ test('Batedor respeita movimento reduzido, remoção e reinício de combate',()=
   f.nodes['portrait-enemy'].isConnected=true;const next={id:'orc_batedor'};f.api.mount(next);
   assert.equal(f.api.hit(scout,false),false);assert.equal(f.api.hit(next,false),true);f.api.destroy();
 });
+
+test('Guerreiro pesado reutiliza motor; impacto direcional e recuperação mais rápida que Gorthak',async()=>{
+ const f=boot(),m={id:'orc_guerreiro'};f.api.mount(m);assert.ok(f.nodes['portrait-enemy'].classes.has('warrior-reaction-surface'));
+ assert.equal(f.nodes['portrait-enemy'].history.length,0);f.api.hit(m,false);let a=f.nodes['portrait-enemy'].history[0];
+ assert.equal(a.options.duration,280);assert.match(a.frames[1].transform,/7px/);assert.equal(a.frames.at(-1).transform,a.frames[0].transform);
+ a.finish();await flush();assert.equal(f.nodes['portrait-enemy'].history.length,1);f.api.hit(m,true);a=f.nodes['portrait-enemy'].history.at(-1);
+ assert.equal(a.options.duration,390);assert.match(a.frames[1].transform,/14px/);f.api.destroy();assert.equal(f.media.listeners.size,0);
+});
+test('Guerreiro: interrupção, callbacks antigos, remoção, novo combate e reduced-motion',async()=>{
+ const f=boot(),m={id:'orc_guerreiro'};f.api.mount(m);f.api.hit(m,false);const old=f.nodes['portrait-enemy'].history[0],late=old.onfinish;
+ f.api.hit(m,true);late();await flush();assert.ok(old.cancelled);assert.equal(f.nodes['portrait-enemy'].dataset.reaction,'critical');
+ f.nodes['portrait-enemy'].isConnected=false;f.observers[0].fn();assert.equal(f.media.listeners.size,0);
+ f.nodes['portrait-enemy'].isConnected=true;const next={id:'orc_guerreiro'};f.api.mount(next);assert.equal(f.api.hit(m,false),false);f.api.destroy();
+ const r=boot(true);r.api.mount(m);r.api.hit(m,true);assert.equal(r.nodes['portrait-enemy'].history.length,0);r.api.destroy();assert.equal(r.timers.size,0);
+});

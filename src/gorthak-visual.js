@@ -8,6 +8,10 @@
     retreat:{duration:260,x:7,rotation:.2,glow:0},
     critical:{duration:430,x:10.5,rotation:1.5,glow:.58}
     }},
+    orc_guerreiro:{prefix:"warrior",motion:{
+      damage:{duration:280,x:7,y:-2,rotation:.7,glow:.24,directional:true,followRetreat:false},
+      critical:{duration:390,x:14,y:-6,rotation:2,glow:.52,directional:true}
+    }},
     orc_batedor:{prefix:"scout",motion:{
       damage:{duration:250,x:8,y:-2,rotation:.8,glow:.22,directional:true,followRetreat:false},
       retreat:{duration:180,x:4,rotation:.15,glow:0},
