@@ -123,3 +123,24 @@ test('gancho real da Arena encaminha dano e crítico do Capitão ao adaptador',(
  vm.runInContext(source.slice(start,end),ctx);vm.runInContext("shakeSide('enemy',true);shakeSide('enemy',false)",ctx);
  assert.deepEqual(events,[['orc_capitao',true],['orc_capitao',false]]);assert.equal(legacy,0);
 });
+
+test('Açougueiro reutiliza o motor: reações direcionais e limpeza ao desmontar',async()=>{
+ const f=boot(),m={id:'acougueiro_trincheira'};f.api.mount(m);
+ assert.ok(f.nodes['portrait-enemy'].classes.has('butcher-reaction-surface'));
+ assert.equal(f.api.hit(m,false),true);let a=f.nodes['portrait-enemy'].history[0];
+ assert.equal(a.options.duration,280);assert.match(a.frames[1].transform,/9px/);assert.equal(a.frames[0].transform,a.frames.at(-1).transform);
+ a.finish();await flush();assert.equal(f.nodes['portrait-enemy'].dataset.reaction,undefined);
+ assert.equal(f.api.hit(m,true),true);a=f.nodes['portrait-enemy'].history.at(-1);
+ assert.equal(a.options.duration,430);assert.match(a.frames[1].transform,/18px/);
+ f.api.destroy();assert.equal(f.media.listeners.size,0);assert.ok(f.created.every(e=>!e.isConnected));
+ assert.ok(!f.nodes['portrait-enemy'].classes.has('butcher-reaction-surface'));
+});
+
+test('gancho da Arena encaminha dano e crítico reais do Açougueiro ao adaptador',()=>{
+ const source=fs.readFileSync(path.join(root,'src/game.js'),'utf8');
+ const start=source.indexOf('function shakeSide('),end=source.indexOf('\nfunction updateArenaBarsOnly',start);
+ const events=[];let legacy=0;
+ const ctx=vm.createContext({ui:{monster:{id:'acougueiro_trincheira'},mapIndex:2},isGorthak:()=>false,EnemyCombatVisual:{hit:(m,crit)=>{events.push([m.id,crit]);return true;}},document:{getElementById:()=>({classList:{remove(){},add(){legacy++;}},offsetWidth:1})}});
+ vm.runInContext(source.slice(start,end),ctx);vm.runInContext("shakeSide('enemy',true);shakeSide('enemy',false)",ctx);
+ assert.deepEqual(events,[['acougueiro_trincheira',true],['acougueiro_trincheira',false]]);assert.equal(legacy,0);
+});

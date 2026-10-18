@@ -20,6 +20,10 @@
     orc_capitao:{prefix:"captain",motion:{
       damage:{duration:260,x:8,y:-2,rotation:.8,glow:.24,directional:true,followRetreat:false},
       critical:{duration:410,x:16,y:-7,rotation:2.1,glow:.56,directional:true}
+    }},
+    acougueiro_trincheira:{prefix:"butcher",motion:{
+      damage:{duration:280,x:9,y:-2,rotation:1,glow:.28,directional:true,followRetreat:false},
+      critical:{duration:430,x:18,y:-8,rotation:2.4,glow:.62,directional:true}
     }}
   };
   function destroy(){

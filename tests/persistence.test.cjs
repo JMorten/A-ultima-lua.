@@ -942,7 +942,7 @@ test('Arena V2.4 Mage and Scout natural art keeps stable HUD, mechanics and intr
 });
 
 test('Arena V2.4 assets have approved formats and dimensions; stage and effects remain independent of HUD',()=>{
- for(const [file,w,h] of [['characters/combat/mago.png',1323,1189],['enemies/trenches/orc_capitao_combat_v2.png',1145,1337],['enemies/trenches/orc_batedor_combat.png',1427,1102],['enemies/trenches/warlord_gorthak_combat.png',1088,1445],['backgrounds/trincheiras_orc_arena.png',762,1024]]){
+ for(const [file,w,h] of [['characters/combat/mago.png',1323,1189],['enemies/trenches/orc_capitao_combat_v2.png',1145,1337],['enemies/trenches/orc_acougueiro_combat_v2.png',1312,1199],['enemies/trenches/orc_batedor_combat.png',1427,1102],['enemies/trenches/warlord_gorthak_combat.png',1088,1445],['backgrounds/trincheiras_orc_arena.png',762,1024]]){
   const b=fs.readFileSync(path.join(root,'assets/images',file));assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(b.readUInt32BE(16),w);assert.equal(b.readUInt32BE(20),h);
  }
  const css=fs.readFileSync(path.join(root,'styles/game.css'),'utf8');
