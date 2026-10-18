@@ -876,10 +876,10 @@ test('Natural portrait layout is opt-in, survives Scout art changes and never ch
   scoutResponse(e);
  }
  assert.equal(e.run('JSON.stringify(MAPS)'),template);
- e.run('fleeBattle();startBattle(2,MAPS[2].monsters[2],false)');assert.ok(!enemy().includes('portrait-natural'));
+ e.run('fleeBattle();startBattle(2,MAPS[2].monsters[3],false)');assert.ok(!enemy().includes('portrait-natural'));
  e.run('ui.monster.portraitLayout="natural"');assert.match(enemy(),/portrait-natural/);
  e.run('delete ui.monster.portraitLayout');assert.ok(!enemy().includes('portrait-natural'));
- assert.equal(e.run('MAPS.flatMap(map=>[...map.monsters,map.boss,map.miniBoss]).filter(m=>m && m.portraitLayout).length'),4);
+ assert.equal(e.run('MAPS.flatMap(map=>[...map.monsters,map.boss,map.miniBoss]).filter(m=>m && m.portraitLayout).length'),5);
  const css=fs.readFileSync(path.join(root,'styles/game.css'),'utf8');
  assert.match(css,/\.portrait-ring\.portrait-natural\{height:auto;max-width:100%;\}/);
  assert.match(css,/\.portrait-ring\.portrait-natural > \.avatar-img-circle\{display:block;width:100%;height:auto;\}/);
@@ -891,7 +891,7 @@ test('Arena foundation separates stage actors, effects, HUD and states with lega
  assert.equal((html.match(/class="arena-actor actor-/g)||[]).length,2);
  assert.match(html,/arena-actor actor-player art-legacy/);assert.match(html,/arena-actor actor-enemy art-natural/);
  assert.match(html,/id="portrait-enemy">[\s\S]*?<\/div>\s*<div class="combatant-effects" id="effects-enemy"/);
- e.run('fleeBattle();startBattle(2,MAPS[2].monsters[2],false)');html=e.run('renderBatalhaTab()');
+ e.run('fleeBattle();startBattle(2,MAPS[2].monsters[3],false)');html=e.run('renderBatalhaTab()');
  assert.equal((html.match(/arena-actor actor-(?:player|enemy) art-legacy/g)||[]).length,2);assert.ok(!html.includes('art-natural'));
 });
 
@@ -942,7 +942,7 @@ test('Arena V2.4 Mage and Scout natural art keeps stable HUD, mechanics and intr
 });
 
 test('Arena V2.4 assets have approved formats and dimensions; stage and effects remain independent of HUD',()=>{
- for(const [file,w,h] of [['characters/combat/mago.png',1323,1189],['enemies/trenches/orc_batedor_combat.png',1427,1102],['enemies/trenches/warlord_gorthak_combat.png',1088,1445],['backgrounds/trincheiras_orc_arena.png',762,1024]]){
+ for(const [file,w,h] of [['characters/combat/mago.png',1323,1189],['enemies/trenches/orc_capitao_combat_v2.png',1145,1337],['enemies/trenches/orc_batedor_combat.png',1427,1102],['enemies/trenches/warlord_gorthak_combat.png',1088,1445],['backgrounds/trincheiras_orc_arena.png',762,1024]]){
   const b=fs.readFileSync(path.join(root,'assets/images',file));assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(b.readUInt32BE(16),w);assert.equal(b.readUInt32BE(20),h);
  }
  const css=fs.readFileSync(path.join(root,'styles/game.css'),'utf8');

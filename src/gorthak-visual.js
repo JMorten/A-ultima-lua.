@@ -16,6 +16,10 @@
       damage:{duration:250,x:8,y:-2,rotation:.8,glow:.22,directional:true,followRetreat:false},
       retreat:{duration:180,x:4,rotation:.15,glow:0},
       critical:{duration:360,x:16,y:-6,rotation:2.2,glow:.55,directional:true}
+    }},
+    orc_capitao:{prefix:"captain",motion:{
+      damage:{duration:260,x:8,y:-2,rotation:.8,glow:.24,directional:true,followRetreat:false},
+      critical:{duration:410,x:16,y:-7,rotation:2.1,glow:.56,directional:true}
     }}
   };
   function destroy(){

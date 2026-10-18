@@ -101,3 +101,25 @@ test('Guerreiro: interrupção, callbacks antigos, remoção, novo combate e red
  f.nodes['portrait-enemy'].isConnected=true;const next={id:'orc_guerreiro'};f.api.mount(next);assert.equal(f.api.hit(m,false),false);f.api.destroy();
  const r=boot(true);r.api.mount(m);r.api.hit(m,true);assert.equal(r.nodes['portrait-enemy'].history.length,0);r.api.destroy();assert.equal(r.timers.size,0);
 });
+
+test('Capitão reutiliza o motor: dano e crítico são direcionais e liberam os recursos',async()=>{
+ const f=boot(),m={id:'orc_capitao'};f.api.mount(m);
+ assert.ok(f.nodes['portrait-enemy'].classes.has('captain-reaction-surface'));
+ assert.equal(f.api.hit(m,false),true);let a=f.nodes['portrait-enemy'].history[0];
+ assert.equal(a.options.duration,260);assert.match(a.frames[1].transform,/8px/);assert.equal(a.frames[0].transform,a.frames.at(-1).transform);
+ a.finish();await flush();assert.equal(f.nodes['portrait-enemy'].history.length,1);
+ assert.equal(f.nodes['portrait-enemy'].dataset.reaction,undefined);
+ assert.equal(f.api.hit(m,true),true);a=f.nodes['portrait-enemy'].history.at(-1);
+ assert.equal(a.options.duration,410);assert.match(a.frames[1].transform,/16px/);
+ f.api.destroy();assert.equal(f.media.listeners.size,0);assert.ok(f.created.every(e=>!e.isConnected));
+ assert.ok(!f.nodes['portrait-enemy'].classes.has('captain-reaction-surface'));
+});
+
+test('gancho real da Arena encaminha dano e crítico do Capitão ao adaptador',()=>{
+ const source=fs.readFileSync(path.join(root,'src/game.js'),'utf8');
+ const start=source.indexOf('function shakeSide('),end=source.indexOf('\nfunction updateArenaBarsOnly',start);
+ const events=[];let legacy=0;
+ const ctx=vm.createContext({ui:{monster:{id:'orc_capitao'},mapIndex:2},isGorthak:()=>false,EnemyCombatVisual:{hit:(m,crit)=>{events.push([m.id,crit]);return true;}},document:{getElementById:()=>({classList:{remove(){},add(){legacy++;}},offsetWidth:1})}});
+ vm.runInContext(source.slice(start,end),ctx);vm.runInContext("shakeSide('enemy',true);shakeSide('enemy',false)",ctx);
+ assert.deepEqual(events,[['orc_capitao',true],['orc_capitao',false]]);assert.equal(legacy,0);
+});

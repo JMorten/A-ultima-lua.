@@ -24,6 +24,7 @@ const COMBAT_PRESENTATION = {
   enemies:{
     orc_batedor:{ x:0.68, ground:0, w:0.46, h:0.76, ax:-0.5, ay:0 },
     orc_guerreiro:{ x:0.69, ground:0, w:0.378, h:0.702, ax:-0.5, ay:0 },
+    orc_capitao:{ x:0.69, ground:0, w:0.42, h:0.78, ax:-0.5, ay:0 },
     orc_xama:{ x:0.72, ground:0, w:0.44, h:0.70, ax:-0.5, ay:0 },
     warlord_gorthak:{ x:0.72, ground:0, w:0.44, h:0.88, ax:-0.5, ay:0 },
   },
@@ -195,7 +196,7 @@ const MAPS = [
     monsters:[
       { id:'orc_batedor',  name:'Orc Batedor', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_batedor_combat.png', portraitLayout:'natural', hp:190, atk:30, def:14, xp:95,  coinMin:30, coinMax:45, tier:0 },
       { id:'orc_guerreiro',name:'Orc Guerreiro', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_guerreiro_combat_v2.png', portraitLayout:'natural', hp:220, atk:35, def:16, xp:110, coinMin:35, coinMax:50, tier:1 },
-      { id:'orc_capitao',  name:'Orc Capitão', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_capitao.jpg', hp:260, atk:44, def:19, xp:135, coinMin:44, coinMax:64, tier:2 },
+      { id:'orc_capitao',  name:'Orc Capitão', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_capitao_combat_v2.png', portraitLayout:'natural', hp:260, atk:44, def:19, xp:135, coinMin:44, coinMax:64, tier:2 },
       { id:'acougueiro_trincheira', name:'Açougueiro da Trincheira', emoji:'👺', portrait:'assets/images/enemies/trenches/acougueiro_trincheira.jpg', hp:460, atk:68, def:30, xp:240, coinMin:75, coinMax:105, tier:3 },
     ],
     boss:{ id:'warlord_gorthak', name:'Warlord Gorthak', emoji:'👺', portrait:'assets/images/enemies/trenches/warlord_gorthak_combat.png', portraitLayout:'natural', hp:740, atk:72, def:30, xp:300, coinMin:150, coinMax:220, isBoss:true },
@@ -1567,7 +1568,7 @@ function floatNumber(side, text, cls){
 }
 
 function shakeSide(side, isCrit=false){
-  if(side==='enemy' && (isGorthak() || (ui.mapIndex===2 && ['orc_batedor','orc_guerreiro'].includes(ui.monster?.id))) && typeof EnemyCombatVisual!=='undefined' && EnemyCombatVisual.hit(ui.monster,isCrit))return;
+  if(side==='enemy' && (isGorthak() || (ui.mapIndex===2 && ['orc_batedor','orc_guerreiro','orc_capitao'].includes(ui.monster?.id))) && typeof EnemyCombatVisual!=='undefined' && EnemyCombatVisual.hit(ui.monster,isCrit))return;
   const el = document.getElementById(combatPortraitId(side));
   if(!el) return;
   el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
@@ -3255,7 +3256,7 @@ function render(){
   else if(ui.tab==='loja') content.innerHTML = renderLojaTab();
   else if(ui.tab==='status') content.innerHTML = renderStatusTab();
   if(ui.inBattle && ui.locked) setActionsLocked(true);
-  if(typeof EnemyCombatVisual!=='undefined' && ui.inBattle && ui.tab==='batalha' && (isGorthak() || (ui.mapIndex===2 && ['orc_batedor','orc_guerreiro'].includes(ui.monster?.id))))EnemyCombatVisual.mount(ui.monster);
+  if(typeof EnemyCombatVisual!=='undefined' && ui.inBattle && ui.tab==='batalha' && (isGorthak() || (ui.mapIndex===2 && ['orc_batedor','orc_guerreiro','orc_capitao'].includes(ui.monster?.id))))EnemyCombatVisual.mount(ui.monster);
 }
 
 document.querySelectorAll('.tab-btn').forEach(b=>{
