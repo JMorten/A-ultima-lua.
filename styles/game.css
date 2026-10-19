@@ -759,6 +759,7 @@
 }
 
 /* Face the opponent by mirroring only the image, never the reaction surface. */
+.arena-actor[data-actor="orc_guerreiro"] > .combatant-artwork > .avatar-img-circle,
 .arena-actor[data-actor="orc_xama"] > .combatant-artwork > .avatar-img-circle{
   transform:scaleX(-1);
 }
