@@ -86,19 +86,19 @@ test('surviving Rupture opens vulnerability; nonlethal ending and both choices r
   assert.equal(r('player.hp'),r('Math.max(1,Math.round(player.hpMax*.2))'));
   assert.equal(r('player.romar_first_choice'),undefined);
 });
-test('temporary tools removed; organic flow matches approved pacing over 300 explorations',()=>{
+test('temporary tools removed; later clue flow matches approved pacing over 300 explorations',()=>{
   assert.ok(!/resetRomarPlaytest|DIAGNÓSTICO ROMAR|TESTE — ENCONTRO COM ROMAR|traceRomar/.test(source));
   const old=execFileSync('git',['show','640c8d4:src/game.js'],{cwd:root,encoding:'utf8'});
   const a=game(old,1),b=game(source,1);
   // Diferenças aprovadas neste snapshot: slot vazio Bracelete → Pernas e progresso futuro de T3.
   a('player.equipment=Object.fromEntries(Object.entries(player.equipment).map(([key,value])=>[key==="bracelet"?"legs":key,value]))');
-  for(const run of [a,b])run('player.defeatedBosses=[0];var seed=12345,calls=0;Math.random=()=>{calls++;seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}');
+  for(const run of [a,b])run('player.defeatedBosses=[0];getRomarDiscoveries().seen=["massacre"];var seed=12345,calls=0;Math.random=()=>{calls++;seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296}');
   for(let i=0;i<300;i++){
     for(const run of [a,b]){
       run('explorarMapa(0)');
       if(run('hasPendingRomarDiscovery()'))run('finishRomarDiscovery()');
       if(run('ui.inBattle'))run('fleeBattle()');
-      if(i%40===39)run('player.romarDiscoveries={seen:[],pending:null,cooldown:0,clueAttempts:0,encounterAttempts:0}');
+      if(i%40===39)run('player.romarDiscoveries={seen:["massacre"],pending:null,cooldown:0,clueAttempts:0,encounterAttempts:0}');
     }
     assert.equal(b('calls'),a('calls'));
     assert.equal(b('delete player.trenchesProgress;JSON.stringify([player,forestEventCooldown,pendingForestEvent])'),a('delete player.trenchesProgress;JSON.stringify([player,forestEventCooldown,pendingForestEvent])'));
