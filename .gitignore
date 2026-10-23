@@ -10,3 +10,9 @@
 /tests/browser/test-results/
 /tests/browser/playwright-report/
 /tests/browser/RELATORIO_*.md
+
+# Worktrees de laboratorio: cada branch tem seu proprio checkout aqui dentro.
+# Nunca versionar: um `git add -A` tentaria subir ~800 MB e um `git clean -fdx`
+# destruiria o trabalho das branches. Os arquivos sao rastreados pela branch
+# correspondente, nao por este checkout.
+/laboratorios/
