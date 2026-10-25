@@ -25,7 +25,11 @@ A Última Lua é uma aplicação web estática, sem framework de runtime. `index
 
 ## Arena V2.4
 
-O palco separa cenário, atores, HUD e efeitos. Retratos naturais usam contenção e ancoragem inferior; o motor de reações atua sobre a superfície do ator e restaura o estado após cancelamento. Trincheiras são a implementação visual mais completa. Floresta V2 ainda é preparação, não integração.
+O palco separa cenário, atores, HUD e efeitos. Retratos naturais usam contenção e ancoragem inferior; o motor de reações atua sobre a superfície do ator e restaura o estado após cancelamento. Trincheiras são a implementação visual mais completa. No commit-base `11bff6c`, a Floresta ainda não tinha apresentação V2; a integração local está descrita abaixo, e o QA isolado publicado é um nível distinto de evidência (ver `ESTADO_ATUAL.md` e `DEC-2026-10-25-QLT-011`).
+
+### Floresta Uivante V2 — integração local Etapa 1
+
+Na branch `feature/floresta-uivante-v2-etapa1`, baseada em `11bff6c`, o mapa da Floresta recebe `arenaBackground` próprio e o primeiro lobo mantém o ID e os atributos existentes, trocando somente nome apresentado, asset e layout visual. `COMBAT_PRESENTATION` posiciona o Lobo à direita; o Mago continua usando seu asset original à esquerda. Esta descrição é de implementação local não commitada; o build correspondente foi publicado no QA isolado autorizado por `DEC-2026-10-25-QLT-011` e validado no Safari físico em `DEC-2026-10-25-FLO-010`. Produção não foi alterada. O inventário e os estados de aprovação das oito entidades da Floresta estão em [BESTIARIO_FLORESTA_UIVANTE.md](BESTIARIO_FLORESTA_UIVANTE.md).
 
 ## QA
 

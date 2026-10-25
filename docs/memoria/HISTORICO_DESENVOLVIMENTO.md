@@ -12,6 +12,10 @@
 - **2026-10-20:** candidata pós-playtest `11bff6c` conclui seis correções e passa pelos testes documentados.
 - **2026-10-23:** candidata pós-playtest registrada em `origin/qa-preview`; commit local `081fce4` passa a ignorar/proteger laboratórios no checkout ativo.
 - **2026-10-24 a 2026-10-25:** pacote Floresta Uivante V2 auditado; Mago e arena identificados; Lobo V2 recebe recorte RGBA de teste tecnicamente validado, ainda sem aprovação visual final ou integração.
+- **2026-10-25 — snapshot incremental:** responsável aprova visualmente o recorte; integração local da arena, Mago e Lobo Comum passa em 188/188 Node e 65/65 Chromium, sem commit, push ou deploy. Safari/iPhone permanece pendente.
+- **2026-10-25 — QA isolado da Floresta V2:** comparação mobile aprovada para playtest; 188/188 Node e 65/65 Chromium reconfirmados; Direct Upload publica o deployment `3e8e9679-2441-46a6-a907-928166b5194e` no projeto separado `a-ultima-lua-floresta-v2-qa`. Arquivos essenciais conferidos por SHA-256; sem push, merge ou alteração da produção. Safari/iPhone permanece pendente.
+- **2026-10-25 — validação física e autorização de QA:** o responsável confirma teste funcional e aprovação visual do Lobo Comum V2 no Safari de iPhone físico (`FLO-010`); a autorização do deploy no projeto isolado `a-ultima-lua-floresta-v2-qa` é registrada em `QLT-011`. Produção e linhas Git permanecem inalteradas.
+- **2026-10-25 — reconciliação documental:** estado atual e snapshots históricos são separados; o bestiário da Floresta (oito entidades) e os hashes recalculados entram no Palácio; nenhuma decisão anterior é reescrita (`DOC-012`, `aprovado`). Documentos preparados no worktree documental, aguardando autorização para versionar.
 
 ## Como interpretar
 

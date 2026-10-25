@@ -1,10 +1,108 @@
 # Estado atual
 
+**Snapshot documental:** 2026-10-25 (reconciliação documental).
+**Checkout documental:** `D:\Projetos\A-ultima-lua`.
+**Branch:** `docs/palacio-memoria-v1`, base `b20431f5a58a6e0b5c463359ca104d5ea7b4575b`. Este documento descreve o estado do worktree; o commit correspondente, quando autorizado, será o seguinte a essa base.
+**Natureza:** este arquivo descreve estado. Decisões e aprovações ficam em [DECISOES_APROVADAS.md](DECISOES_APROVADAS.md).
+
+## Como ler
+
+- **Estado atual** reúne o que foi verificado na data e no nível de evidência indicado.
+- **Snapshots anteriores** preserva o texto de inspeções antigas, mesmo quando superado; nada ali descreve o presente.
+- Nome de arquivo, relatório, commit ou deploy não prova, sozinho, aprovação artística ou de game design.
+
+## Linhas de desenvolvimento (inspeção de 2026-10-25)
+
+| Branch | HEAD | Worktree | Situação no snapshot |
+|---|---|---|---|
+| `docs/palacio-memoria-v1` | `b20431f` | raiz `D:\Projetos\A-ultima-lua` | Linha documental canônica. `origin/docs/palacio-memoria-v1` está no mesmo commit; a branch não tem upstream configurado. |
+| `qa-preview` | `081fce4` | — | 1 commit à frente e 1 atrás de `origin/qa-preview` (`11bff6c`). |
+| `feature/floresta-uivante-v2-etapa1` | `11bff6c` | `laboratorios/floresta-uivante-v2-etapa1/checkout` | Integração visual da Floresta V2 em alterações locais não commitadas. |
+| `fix/pos-playtest-v1` | `11bff6c` | `laboratorios/pos-playtest-v1/candidate` | Candidata pós-playtest. |
+| `main` | `f7e25ef` | `laboratorios/protocolo-autonomo-v1/main-integracao` | 8 commits à frente de `origin/main` (`4833b5f`). |
+| `release/trincheiras-rc1` | `e6a965e` | — | 15 commits à frente de `origin/main`. |
+| `docs/protocolo-autonomo-v1` | `990fb38` | `laboratorios/protocolo-autonomo-v1/checkout` | Documentação do protocolo autônomo. |
+
+- A raiz é um **worktree separado**; o código da Floresta V2 não está nela. Evidência de código deve ser lida no worktree da branch `feature/floresta-uivante-v2-etapa1`.
+- Não rastreados preservados no checkout documental: `Imagem do ChatGPT 18 de out. de 2026, 12_30_18.jpg`, `lobo-comum-v2-aprovado.png` e `pacote-floresta-v2.zip`.
+- Esta documentação não sincroniza, não faz merge e não resolve a divergência entre branches.
+
+## Níveis de evidência
+
+Não confundir os seis níveis abaixo; cada registro deve dizer a qual pertence.
+
+1. **Implementação local** — alteração em worktree, não commitada.
+2. **Commit** — conteúdo versionado em um HEAD identificável.
+3. **Build QA** — `_qa-dist` gerado localmente a partir do código.
+4. **Deploy QA isolado** — publicação em projeto Cloudflare separado, autorizada e delimitada.
+5. **Produção** — promoção ao jogo publicado; não autorizada para a Floresta V2.
+6. **Aprovação humana física** — validação em Safari/iPhone; não substituível por Chromium.
+
+## Floresta Uivante — estado atual
+
+- O bestiário completo, com IDs, assets, condições de encontro e estados de aprovação, está em [BESTIARIO_FLORESTA_UIVANTE.md](BESTIARIO_FLORESTA_UIVANTE.md). São **oito entidades**.
+- **Lobo Comum V2** (`lobo_selvagem`): aparência e recorte aprovados; combate validado no Safari físico pelo responsável em 2026-10-25 (`DEC-2026-10-25-FLO-010`). A integração local (arena, asset, `COMBAT_PRESENTATION` e CSS) está **não commitada** na branch `feature/floresta-uivante-v2-etapa1`.
+- **QA isolado**: Direct Upload autorizado pelo responsável e publicado em 2026-10-25 no projeto `a-ultima-lua-floresta-v2-qa`, deployment `3e8e9679-2441-46a6-a907-928166b5194e` (`DEC-2026-10-25-QLT-011`). Não é produção e não alterou `a-ultima-lua-qa` nem GitHub Pages.
+- **Produção**: inalterada. Nenhuma promoção autorizada.
+- **Lobisomem Jovem, Lobisomem Feroz e Alfa da Matilha**: artes atuais preservadas por `DEC-ND-FLO-007`; sem autorização para substituição.
+- **Uivante das Sombras, Lobo Cinzento, Romar e Lobo da Matilha**: sem arte V2 e sem decisão de substituição; escopo pendente em `DEC-2026-10-25-FLO-013` (proposto).
+- **Reações visuais**: o motor compartilhado cobre somente os atores das Trincheiras; nenhum inimigo da Floresta tem perfil de dano/recuo/crítico.
+
+## Cartografia
+
+- T1 — Floresta Uivante: implementada; apresentação V2 do primeiro inimigo aprovada e integrada apenas localmente.
+- T2 — Pântano Podre: implementado, incluindo Senhor do Pântano, materiais e fluxo de vitória pendente documentados.
+- T3 — Trincheiras Orc: progressão determinística, Xamã ritualístico, Gorthak e apresentação Arena V2.4 implementados na linha QA/release.
+- T4 — Cripta Sangrenta: definida no código com inimigos, miniboss e boss; sem evidência de revisão visual V2 equivalente às Trincheiras.
+- T5: não existe no checkpoint auditado.
+
+## Oficina
+
+- Aplicação web estática: `index.html`, `styles/game.css`, `src/game.js` e `src/persistence.js`.
+- Persistência em `localStorage`, chave `a-ultima-lua.checkpoint`, schema 5 no checkout ativo.
+- Arena V2.4 usa cenário, atores, HUD e efeitos em camadas; Trincheiras têm cenário territorial próprio e a Floresta V2 tem cenário próprio apenas na integração local.
+- QA Debug é produzido por `_qa/build.cjs` para `_qa-dist`; a produção normal não referencia o painel de debug.
+- Testes Node e Playwright existem. Os números registrados (171/51, 185/61, 188/65) pertencem a snapshots distintos e **não** equivalem a uma execução atual.
+
+## Divergências abertas
+
+1. `qa-preview` local (`081fce4`) e `origin/qa-preview` (`11bff6c`) continuam divergentes; reconciliação não decidida.
+2. A integração V2 da Floresta não está commitada; autorização de versionamento pendente.
+3. Escopo visual de Uivante, Lobo Cinzento, Romar e Lobo da Matilha sem decisão (`FLO-013`, proposto).
+4. O log de Frenesi na branch `feature` ainda diz “Lobo Selvagem” embora o nome exibido seja “Lobo Comum”; correção textual pendente, sem alteração de mecânica.
+5. `PROJECT-CHECKPOINT.md` continua descrevendo um estado de 2026-10-13 e `main`.
+6. Contagens de teste antigas continuam citadas em documentos históricos e não devem ser somadas.
+7. Laboratórios podem conter propostas ou resultados locais; presença em `laboratorios/` não significa integração ou aprovação.
+
+**Resolvidas nesta reconciliação:** o Palácio mais recente passou a estar versionado na linha documental (D1); `ARQUITETURA` distingue implementação local, deploy QA e produção (D2); o deploy isolado tem autorização registrada em `QLT-011` (D3); estado atual e snapshots históricos estão separados (D4); a branch ativa foi corrigida (D6); o manifesto deixou de tratar o JPEG antigo do lobo como arte em uso na branch feature (D8).
+
+## Snapshots anteriores — preservado, não representa o estado atual
+
+### Snapshot de 2026-10-25, antes da validação física
+
+- **Data:** 2026-10-25.
+- **Worktree:** `laboratorios/floresta-uivante-v2-etapa1/checkout`.
+- **Branch de trabalho:** `feature/floresta-uivante-v2-etapa1`.
+- **Commit-base:** `11bff6c324ad12a8ad5dcca676418a4fedb6bc0a`.
+- A aprovação visual humana do recorte do Lobo Comum V2 foi registrada pelo responsável nesta missão; ela supera somente a pendência visual descrita no snapshot anterior.
+- Integração local: arena aprovada da Floresta, Mago original e novo asset de combate do Lobo Comum. Lobisomem Jovem, Lobisomem Feroz e Alfa da Matilha permanecem inalterados.
+- Validação repetida antes da publicação: 188/188 testes Node e 65/65 testes Chromium; capturas reais em 320, 375 e 390 px, sem cortes, fundos retangulares, overflow horizontal ou falhas de assets observadas.
+- A comparação visual das três larguras foi aprovada pelo responsável para playtest no iPhone.
+- QA isolado publicado por Direct Upload, sem push Git: projeto `a-ultima-lua-floresta-v2-qa`, deployment `3e8e9679-2441-46a6-a907-928166b5194e`, URL estável `https://a-ultima-lua-floresta-v2-qa.pages.dev/` e URL imutável `https://3e8e9679.a-ultima-lua-floresta-v2-qa.pages.dev/`.
+- O deployment é tecnicamente `production` somente dentro do projeto Cloudflare isolado da Floresta; não alterou `a-ultima-lua-qa`, GitHub Pages nem a produção do jogo.
+- Verificação pública: HTTP 200; `index.html`, `src/game.js`, `styles/game.css`, arena e Lobo V2 coincidiram por SHA-256 com `_qa-dist`; Chromium público em 390 x 844 abriu sem erros de console, falhas de requisição ou overflow horizontal.
+- Estado: implementação local não commitada; sem push ou merge. Safari/iPhone físico permanece pendente.
+- As seções seguintes preservam o snapshot original anterior à integração e devem ser interpretadas historicamente.
+
+*Superado por `DEC-2026-10-25-FLO-010` quanto ao Safari e por `DEC-2026-10-25-QLT-011` quanto à autorização do deploy.*
+
+### Snapshot de 2026-10-25, base documental `b20431f`
+
 **Snapshot documental:** 2026-10-25.
 **Checkout inspecionado:** `D:\Projetos\A-ultima-lua`.
 **Branch ativa:** `qa-preview`, HEAD `081fce41b4535bd51d39e067d3207b5e7a449298`.
 
-## Git e linhas de desenvolvimento
+#### Git e linhas de desenvolvimento
 
 - `qa-preview` local está 1 commit à frente e 1 atrás de `origin/qa-preview`. O commit local exclusivo é `081fce4` (proteção de `laboratorios/`); o remoto aponta para a candidata pós-playtest `11bff6c`.
 - `main` local está em `f7e25ef`, oito commits à frente de `origin/main` (`4833b5f`). Ele existe em checkout isolado e contém o protocolo autônomo integrado.
@@ -13,9 +111,9 @@
 - Não rastreados preservados no checkout ativo: `Imagem do ChatGPT 18 de out. de 2026, 12_30_18.jpg`, `lobo-comum-v2-aprovado.png` e `pacote-floresta-v2.zip`.
 - Esta documentação não sincroniza nem resolve a divergência entre branches.
 
-## Estado funcional comprovado
+#### Estado funcional comprovado
 
-### Cartografia
+##### Cartografia
 
 - T1 — Floresta Uivante: implementada na base histórica; reformulação visual V2 em andamento.
 - T2 — Pântano Podre: implementado, incluindo Senhor do Pântano, materiais e fluxo de vitória pendente documentados.
@@ -23,7 +121,7 @@
 - T4 — Cripta Sangrenta: definida no código com inimigos, miniboss e boss. Não há evidência neste snapshot de uma revisão visual V2 equivalente às Trincheiras.
 - T5: não existe no checkpoint auditado.
 
-### Oficina
+##### Oficina
 
 - Aplicação web estática: `index.html`, `styles/game.css`, `src/game.js` e `src/persistence.js`.
 - Persistência em `localStorage`, chave `a-ultima-lua.checkpoint`, schema 5 no checkout ativo.
@@ -31,7 +129,7 @@
 - QA Debug é produzido por `_qa/build.cjs` para `_qa-dist`; a produção normal não referencia o painel de debug.
 - Testes Node e Playwright existem. Resultados de relatórios pertencem aos snapshots indicados e não equivalem a uma execução atual.
 
-### Galeria — Floresta Uivante V2
+##### Galeria — Floresta Uivante V2
 
 - Mago original localizado em `assets/images/characters/combat/mago.png`.
 - Arena aprovada está em `pacote-floresta-v2.zip`, membro `pacote-floresta-v2/arena-aprovada.jpeg`; não está confirmada como integrada ao jogo.
@@ -40,13 +138,13 @@
 - Lobisomem Jovem, Lobisomem Feroz e Alfa da Matilha atuais devem ser preservados. Não há autorização documentada para substituí-los.
 - Integração da arena/lobo no jogo, batalha real e playtest no iPhone ainda estão pendentes.
 
-## Snapshots de QA existentes
+#### Snapshots de QA existentes
 
 - Auditoria final das Trincheiras: 171/171 Node e 51/51 Chromium no snapshot de 2026-10-18; Safari não executado naquela auditoria.
 - Candidata pós-playtest `11bff6c`: 185/185 Node e 61/61 Chromium no relatório de 2026-10-20; WebKit/Safari físico pendentes no relatório.
 - O usuário posteriormente autorizou e recebeu publicação QA da candidata, mas o checkout ativo local diverge de `origin/qa-preview`. Verificar novamente antes de qualquer nova publicação.
 
-## Divergências abertas
+#### Divergências abertas
 
 1. `PROJECT-CHECKPOINT.md` declara um estado de 2026-10-13 e `main`; não descreve toda a sequência visual, a candidata pós-playtest nem a divergência atual de `qa-preview`.
 2. O checkpoint antigo afirma que não havia preview QA publicado; relatórios posteriores e o histórico remoto registram publicação QA. Manter o texto antigo como registro histórico.

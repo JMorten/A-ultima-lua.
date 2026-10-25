@@ -6,7 +6,7 @@ Este diretório é a referência de continuidade do projeto. Ele não substitui 
 
 1. [ESTADO_ATUAL.md](ESTADO_ATUAL.md) — snapshot do checkout e trabalhos em andamento.
 2. [DECISOES_APROVADAS.md](DECISOES_APROVADAS.md) — decisões com ID, estado e evidência.
-3. Documento da área afetada: [ARQUITETURA.md](ARQUITETURA.md), [MANIFESTO_ARTES.json](MANIFESTO_ARTES.json) ou [PROXIMOS_PASSOS.md](PROXIMOS_PASSOS.md).
+3. Documento da área afetada: [ARQUITETURA.md](ARQUITETURA.md), [BESTIARIO_FLORESTA_UIVANTE.md](BESTIARIO_FLORESTA_UIVANTE.md), [MANIFESTO_ARTES.json](MANIFESTO_ARTES.json) ou [PROXIMOS_PASSOS.md](PROXIMOS_PASSOS.md).
 4. [HISTORICO_DESENVOLVIMENTO.md](HISTORICO_DESENVOLVIMENTO.md) — cronologia verificável.
 5. [CHECKPOINT_TEMPLATE.md](CHECKPOINT_TEMPLATE.md) — modelo para encerrar trabalhos importantes.
 

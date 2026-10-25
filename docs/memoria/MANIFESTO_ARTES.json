@@ -1,11 +1,12 @@
 {
   "schema_version": 1,
-  "snapshot": "2026-10-25",
+  "snapshot": "2026-10-25 (reconciliação documental)",
   "escopo": "Artes de combate e cenários diretamente relevantes às Trincheiras aprovadas e à Floresta Uivante V2 em andamento. Não é inventário de todas as imagens do jogo.",
   "regras": [
     "A presença de um arquivo não implica aprovação.",
-    "Hashes e dimensões foram recalculados no snapshot.",
-    "Arquivos pendentes não podem substituir assets ativos sem aprovação explícita."
+    "Hashes e dimensões foram recalculados na reconciliação de 2026-10-25.",
+    "Arquivos pendentes não podem substituir assets ativos sem aprovação explícita.",
+    "Caminhos classificados como integração local são resolvidos no worktree da branch feature, não na branch documental."
   ],
   "classificacao_presenca": {
     "rastreado_no_commit_base": [
@@ -16,6 +17,9 @@
       "ART-FLORESTA-LOBISOMEM-FEROZ",
       "ART-FLORESTA-UIVANTE-SOMBRAS",
       "ART-FLORESTA-ALFA-MATILHA",
+      "ART-FLORESTA-ROMAR-ESTAGIO-1",
+      "ART-FLORESTA-ROMAR-ESTAGIO-2",
+      "ART-FLORESTA-ROMAR-ESTAGIO-3",
       "ART-T3-ARENA",
       "ART-T3-BATEDOR",
       "ART-T3-BATEDOR-ALERTA",
@@ -34,12 +38,19 @@
     ],
     "laboratorio_ignorado_pelo_git": [
       "ART-LOBO-COMUM-V2-RECORTE"
+    ],
+    "integracao_local_nao_commitada": [
+      "ART-FLORESTA-ARENA-V2-COMBATE",
+      "ART-LOBO-COMUM-V2-COMBATE"
     ]
   },
   "classificacao_aprovacao": {
     "aprovacao_humana_registrada_em_missao": [
       "ART-FLORESTA-ARENA-V2",
       "ART-LOBO-COMUM-V2-FONTE",
+      "ART-LOBO-COMUM-V2-RECORTE",
+      "ART-FLORESTA-ARENA-V2-COMBATE",
+      "ART-LOBO-COMUM-V2-COMBATE",
       "ART-T3-ARENA",
       "ART-T3-BATEDOR",
       "ART-T3-BATEDOR-ALERTA",
@@ -56,19 +67,32 @@
       "ART-FLORESTA-LOBISOMEM-FEROZ",
       "ART-FLORESTA-ALFA-MATILHA"
     ],
-    "validacao_tecnica_sem_aprovacao_visual_final": [
-      "ART-LOBO-COMUM-V2-RECORTE"
-    ],
+    "validacao_tecnica_sem_aprovacao_visual_final": [],
     "aprovacao_funcional_no_ritual_sem_aprovacao_artistica_separada": [
       "ART-T3-TOTEM-SANGUE",
       "ART-T3-TOTEM-ESSENCIA"
     ],
+    "substituido_localmente_na_branch_feature": [
+      "ART-FLORESTA-LOBO-SELVAGEM-ATUAL"
+    ],
     "em_uso_sem_aprovacao_v2_documentada": [
-      "ART-FLORESTA-LOBO-SELVAGEM-ATUAL",
       "ART-FLORESTA-LOBO-CINZENTO-ATUAL",
       "ART-FLORESTA-UIVANTE-SOMBRAS"
+    ],
+    "em_uso_sem_avaliacao_documentada": [
+      "ART-FLORESTA-ROMAR-ESTAGIO-1",
+      "ART-FLORESTA-ROMAR-ESTAGIO-2",
+      "ART-FLORESTA-ROMAR-ESTAGIO-3"
     ]
   },
+  "entidades_sem_arte": [
+    {
+      "referencia": "packWolf*",
+      "nome": "Lobo da Matilha",
+      "natureza": "invocação do Alfa da Matilha; campos packWolf*; sem ID próprio e sem arte",
+      "evidencia": "src/game.js:2029-2053, 2957"
+    }
+  ],
   "artes": [
     {
       "id": "ART-MAGO-COMBATE-ORIGINAL",
@@ -94,9 +118,24 @@
       "modo": "RGB",
       "transparencia": { "presente": false },
       "versao": "V2",
-      "estado_aprovacao": "aprovado_em_conversa_pendente_integracao",
+      "estado_aprovacao": "aprovada_fonte_do_asset_integrado_localmente",
       "origem": "pacote Floresta V2 não rastreado",
-      "evidencia": "ESTADO_ATUAL.md; pacote-floresta-v2.zip"
+      "evidencia": "DEC-2026-10-25-FLO-009; DEC-2026-10-25-FLO-010; pacote-floresta-v2.zip"
+    },
+    {
+      "id": "ART-FLORESTA-ARENA-V2-COMBATE",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "assets/images/backgrounds/floresta_uivante_arena_v2.jpeg",
+      "sha256": "6A5407DEE4B227A6832CA996E923508357903F732560ED9E090BC7CE472C5B77",
+      "dimensoes": { "largura": 1536, "altura": 865 },
+      "formato": "JPEG",
+      "modo": "RGB",
+      "transparencia": { "presente": false },
+      "versao": "V2_integracao_local",
+      "estado_aprovacao": "aprovada_integrada_localmente_na_branch_feature",
+      "origem": "cópia byte a byte do membro aprovado no pacote Floresta V2",
+      "localizacao_no_snapshot": "worktree feature/floresta-uivante-v2-etapa1/checkout (não presente na branch documental)",
+      "evidencia": "DEC-2026-10-25-FLO-009; DEC-2026-10-25-FLO-010; DEC-2026-10-25-QLT-011; 188/188 Node e 65/65 Chromium no relatório; integração local não commitada"
     },
     {
       "id": "ART-LOBO-COMUM-V2-FONTE",
@@ -108,9 +147,9 @@
       "modo": "RGBA",
       "transparencia": { "presente": true, "min": 0, "max": 254 },
       "versao": "V2_fonte",
-      "estado_aprovacao": "aparencia_aprovada_recorte_pendente",
+      "estado_aprovacao": "aparencia_aprovada_recorte_aprovado",
       "origem": "arquivo fornecido para a Floresta V2; não rastreado",
-      "evidencia": "DECISOES_APROVADAS.md#dec-2026-10-25-flo-008--recorte-do-lobo-comum-v2"
+      "evidencia": "DEC-2026-10-25-FLO-009; DEC-2026-10-25-FLO-010; DECISOES_APROVADAS.md#dec-2026-10-25-flo-008--recorte-do-lobo-comum-v2"
     },
     {
       "id": "ART-LOBO-COMUM-V2-RECORTE",
@@ -122,9 +161,24 @@
       "modo": "RGBA",
       "transparencia": { "presente": true, "min": 0, "max": 255 },
       "versao": "V2_recorte_teste",
-      "estado_aprovacao": "tecnicamente_validado_visual_pendente",
+      "estado_aprovacao": "aprovado_visualmente_em_2026-10-25",
       "origem": "derivado da fonte V2 sem alteração RGB",
-      "evidencia": "laboratorios/lobo-comum-v2-recorte-teste/RELATORIO_RECORTE.md"
+      "evidencia": "laboratorios/lobo-comum-v2-recorte-teste/RELATORIO_RECORTE.md; DEC-2026-10-25-FLO-009; DEC-2026-10-25-FLO-010"
+    },
+    {
+      "id": "ART-LOBO-COMUM-V2-COMBATE",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "assets/images/enemies/forest/lobo_comum_combat_v2.png",
+      "sha256": "B39E5D1ABC1DFB9A1297F624B7697AC96D5662446950CF7375F709F5DED6090D",
+      "dimensoes": { "largura": 1536, "altura": 1024 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 255 },
+      "versao": "V2_integracao_local",
+      "estado_aprovacao": "aprovado_visual_e_funcional_no_safari_integracao_local_nao_commitada",
+      "origem": "cópia byte a byte do recorte aprovado",
+      "localizacao_no_snapshot": "worktree feature/floresta-uivante-v2-etapa1/checkout (não presente na branch documental)",
+      "evidencia": "DEC-2026-10-25-FLO-009; DEC-2026-10-25-FLO-010; DEC-2026-10-25-QLT-011; 188/188 Node e 65/65 Chromium no relatório; integração local não commitada"
     },
     {
       "id": "ART-FLORESTA-LOBO-SELVAGEM-ATUAL",
@@ -136,9 +190,14 @@
       "modo": "RGB",
       "transparencia": { "presente": false },
       "versao": "atual",
-      "estado_aprovacao": "em_uso_sem_aprovacao_v2",
+      "estado_aprovacao": "em_uso_no_commit_base_11bff6c_substituido_localmente_na_branch_feature",
       "origem": "repositório; src/game.js",
-      "evidencia": "src/game.js"
+      "evidencia": "src/game.js; DEC-2026-10-25-FLO-009",
+      "substituicao_local": {
+        "branch": "feature/floresta-uivante-v2-etapa1",
+        "asset": "ART-LOBO-COMUM-V2-COMBATE",
+        "estado": "não commitado"
+      }
     },
     {
       "id": "ART-FLORESTA-LOBO-CINZENTO-ATUAL",
@@ -209,6 +268,48 @@
       "estado_aprovacao": "preservar",
       "origem": "repositório; src/game.js",
       "evidencia": "DEC-ND-FLO-007"
+    },
+    {
+      "id": "ART-FLORESTA-ROMAR-ESTAGIO-1",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "assets/images/enemies/forest/romar_15.jpg",
+      "sha256": "3A90FFD98B75E2F4E2AD8F17CFBE6DA6964C2E100FCE121FCEC5D1E648783244",
+      "dimensoes": { "largura": 1024, "altura": 1536 },
+      "formato": "JPEG",
+      "modo": "RGB",
+      "transparencia": { "presente": false },
+      "versao": "atual",
+      "estado_aprovacao": "em_uso_sem_avaliacao_documentada",
+      "origem": "repositório; src/game.js",
+      "evidencia": "src/game.js:1379; hash recalculado em 2026-10-25"
+    },
+    {
+      "id": "ART-FLORESTA-ROMAR-ESTAGIO-2",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "assets/images/enemies/forest/romar_30.jpg",
+      "sha256": "721CC6F949DA9F33CCF76B3EA620328C581C676C85796307A79357A631BC23E2",
+      "dimensoes": { "largura": 1254, "altura": 1254 },
+      "formato": "JPEG",
+      "modo": "RGB",
+      "transparencia": { "presente": false },
+      "versao": "atual",
+      "estado_aprovacao": "em_uso_sem_avaliacao_documentada",
+      "origem": "repositório; src/game.js",
+      "evidencia": "src/game.js:1453; hash recalculado em 2026-10-25"
+    },
+    {
+      "id": "ART-FLORESTA-ROMAR-ESTAGIO-3",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "assets/images/enemies/forest/romar_45.jpg",
+      "sha256": "AD2AB7733EBA88C9349E154CFAFDFDA27C447F1859477F5D612DADBA47A9A110",
+      "dimensoes": { "largura": 1254, "altura": 1254 },
+      "formato": "JPEG",
+      "modo": "RGB",
+      "transparencia": { "presente": false },
+      "versao": "atual",
+      "estado_aprovacao": "em_uso_sem_avaliacao_documentada",
+      "origem": "repositório; src/game.js",
+      "evidencia": "src/game.js:1458; hash recalculado em 2026-10-25"
     },
     {
       "id": "ART-T3-ARENA",
