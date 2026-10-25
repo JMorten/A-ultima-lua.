@@ -13,3 +13,12 @@
 - Validar a sintaxe JavaScript após alterações.
 - Fazer mudanças pequenas, rastreáveis e manter a branch `main` jogável.
 - Não alterar mecânicas, balanceamento, atributos, itens ou progressão sem aprovação do responsável pelo projeto.
+
+## Continuidade — Palácio da Memória
+
+- Antes de trabalhar, ler `docs/memoria/README.md` e `docs/memoria/ESTADO_ATUAL.md`.
+- Consultar `docs/memoria/DECISOES_APROVADAS.md` e a documentação da área afetada antes de propor mudanças.
+- Respeitar artes e mecânicas aprovadas; presença de arquivo ou relatório não prova aprovação.
+- Registrar alterações relevantes, evidências e testes no checkpoint da tarefa.
+- Ao encerrar tarefa importante, atualizar o estado, decisões, histórico, próximos passos e manifesto que forem realmente afetados.
+- Nunca marcar como concluído, aprovado, publicado ou validado algo que não foi comprovado no ambiente correspondente.
