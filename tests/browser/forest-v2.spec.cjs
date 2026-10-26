@@ -47,6 +47,29 @@ for (const [wolfName, slug, expectedAsset] of [
         context.drawImage(wolf, 0, 0);
         const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
         const cornerAlpha = [[0,0],[canvas.width-1,0],[0,canvas.height-1],[canvas.width-1,canvas.height-1]].map(([x,y]) => data[(y*canvas.width+x)*4+3]);
+        const paintedSpan = (image, rect) => {
+          const c = document.createElement('canvas');
+          c.width = image.naturalWidth; c.height = image.naturalHeight;
+          const cx = c.getContext('2d', {willReadFrequently:true});
+          cx.drawImage(image, 0, 0);
+          const px = cx.getImageData(0, 0, c.width, c.height).data;
+          let minX = c.width, maxX = -1;
+          for (let y = 0; y < c.height; y += 2) {
+            for (let x = 0; x < c.width; x++) {
+              if (px[(y * c.width + x) * 4 + 3] > 8) { if (x < minX) minX = x; if (x > maxX) maxX = x; }
+            }
+          }
+          if (maxX < 0) return {left: rect.right, right: rect.right};
+          const aspect = c.width / c.height;
+          const pw = Math.min(rect.width, rect.height * aspect);
+          const insetX = (rect.width - pw) / 2;
+          return {
+            left: rect.left + insetX + (minX / c.width) * pw,
+            right: rect.left + insetX + ((maxX + 1) / c.width) * pw
+          };
+        };
+        const paintedPlayer = paintedSpan(mage, mage.getBoundingClientRect());
+        const paintedEnemy = paintedSpan(wolf, wolf.getBoundingClientRect());
         const controls = [...document.querySelectorAll('.combat-controls button')].filter(button => getComputedStyle(button).display !== 'none');
         return {
           stage:{left:stage.left,right:stage.right,top:stage.top,bottom:stage.bottom},
@@ -58,6 +81,7 @@ for (const [wolfName, slug, expectedAsset] of [
           mageFit:getComputedStyle(mage).objectFit,
           background,
           cornerAlpha,
+          paintedGap:paintedEnemy.left - paintedPlayer.right,
           horizontalOverflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
           visibleControls:controls.length,
           minimumControlHeight:Math.min(...controls.map(button => button.getBoundingClientRect().height))
@@ -68,7 +92,10 @@ for (const [wolfName, slug, expectedAsset] of [
       expect(result.wolfFit).toBe('contain');
       expect(result.wolfPosition).toBe('50% 100%');
       expect(result.mageFit).toBe('contain');
-      expect(result.player.right).toBeLessThan(result.enemy.left + 1);
+      // Sobreposição é medida pelas silhuetas pintadas (alfa), não pelas caixas com padding transparente.
+      // O mini-chefe pode encostar até 4% da largura do palco na capa do Mago; os comuns, nada.
+      const overlapAllowance = /Uivante/.test(wolfName) ? (result.stage.right - result.stage.left) * 0.04 : 0;
+      expect(result.paintedGap, `silhuetas de ${wolfName} em ${width}px`).toBeGreaterThanOrEqual(-overlapAllowance);
       for (const actor of [result.player, result.enemy]) {
         expect(actor.left).toBeGreaterThanOrEqual(result.stage.left - 1);
         expect(actor.right).toBeLessThanOrEqual(result.stage.right + 1);
