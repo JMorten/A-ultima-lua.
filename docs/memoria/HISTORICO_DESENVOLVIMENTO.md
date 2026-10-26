@@ -16,6 +16,8 @@
 - **2026-10-25 — QA isolado da Floresta V2:** comparação mobile aprovada para playtest; 188/188 Node e 65/65 Chromium reconfirmados; Direct Upload publica o deployment `3e8e9679-2441-46a6-a907-928166b5194e` no projeto separado `a-ultima-lua-floresta-v2-qa`. Arquivos essenciais conferidos por SHA-256; sem push, merge ou alteração da produção. Safari/iPhone permanece pendente.
 - **2026-10-25 — validação física e autorização de QA:** o responsável confirma teste funcional e aprovação visual do Lobo Comum V2 no Safari de iPhone físico (`FLO-010`); a autorização do deploy no projeto isolado `a-ultima-lua-floresta-v2-qa` é registrada em `QLT-011`. Produção e linhas Git permanecem inalteradas.
 - **2026-10-25 — reconciliação documental:** estado atual e snapshots históricos são separados; o bestiário da Floresta (oito entidades) e os hashes recalculados entram no Palácio; nenhuma decisão anterior é reescrita (`DOC-012`, `aprovado`). Documentos preparados no worktree documental, aguardando autorização para versionar.
+- **2026-10-25 — Lobo Comum V2 versionado:** commits `4236b84` (portabilidade CRLF) e `16f4c9c` (arena e Lobo Comum) são publicados na branch `feature/floresta-uivante-v2-etapa1`; a integração deixa de ser local. Safari permanece registrado em `FLO-010`.
+- **2026-10-25 — Lobo Cinzento V2 aprovado e integrado:** `FLO-014` registra a aprovação da arte e do recorte RGBA derivado da fonte fornecida; commit local `83eb677` na branch feature, com 189/189 Node e 68/68 Chromium. Arte antiga preservada; sem push, deploy ou produção.
 
 ## Como interpretar
 

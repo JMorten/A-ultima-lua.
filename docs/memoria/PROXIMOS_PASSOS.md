@@ -8,22 +8,24 @@
 - Teste funcional e aprovação visual no Safari de iPhone físico — `DEC-2026-10-25-FLO-010`.
 - Autorização e publicação do QA isolado da Floresta V2 — `DEC-2026-10-25-QLT-011`.
 - Reconciliação documental do Palácio e criação do bestiário — `DEC-2026-10-25-DOC-012`, aprovado em 2026-10-25.
-- Validação de Chromium registrada no relatório da integração (188/188 Node e 65/65 Chromium). É um snapshot do relatório, não uma execução desta reconciliação.
+- Lobo Comum V2 versionado: commits `4236b84` e `16f4c9c` publicados na branch feature.
+- Lobo Cinzento V2 aprovado e integrado: `DEC-2026-10-25-FLO-014`; commit local `83eb677`.
+- Revalidação: **189/189 Node** e **68/68 Chromium** (Chromium 151 do Playwright 1.62.1).
 
 ## Pendente — exige decisão humana
 
-1. **Versionamento da integração V2:** autorizar (ou não) commit da branch `feature/floresta-uivante-v2-etapa1`. Hoje a integração é local e não commitada.
-2. **Escopo visual dos demais habitantes da Floresta:** decidir sobre Uivante das Sombras, Lobo Cinzento, Romar e Lobo da Matilha — `DEC-2026-10-25-FLO-013`, `proposto`.
-3. **Reconciliação de linhas Git:** decidir como unir o commit local `081fce4` (`qa-preview`) com `origin/qa-preview` em `11bff6c`; não sincronizar automaticamente.
-4. **Promoção à produção:** não autorizada para a Floresta V2; exige decisão específica.
-5. **Correção textual (D5):** na branch `feature`, o log de Frenesi ainda diz “Lobo Selvagem” embora o nome exibido seja “Lobo Comum”. Não altera mecânica.
-6. **Cobertura documental:** manter o bestiário e o manifesto sincronizados quando qualquer arte ou entidade mudar.
+1. **Push do Lobo Cinzento V2:** o commit `83eb677` está apenas local; publicar exige autorização específica.
+2. **QA e playtest Safari do Cinzento:** gerar build/deploy isolado e validar no iPhone físico.
+3. **Escopo visual restante:** Uivante das Sombras, Romar e Lobo da Matilha — `DEC-2026-10-25-FLO-013` permanece `proposto` como registro histórico.
+4. **Reconciliação de linhas Git:** decidir como unir `081fce4` (`qa-preview`) com `origin/qa-preview` (`11bff6c`).
+5. **Promoção à produção:** não autorizada para a Floresta V2.
+6. **Cobertura documental:** manter bestiário e manifesto sincronizados quando arte ou entidade mudar.
 
 ## Fora de escopo até nova decisão
 
 - Reações visuais de dano/recuo/crítico na Floresta: o motor compartilhado cobre somente as Trincheiras.
 - Substituição de Lobisomem Jovem, Lobisomem Feroz e Alfa da Matilha: preservados por `DEC-ND-FLO-007`.
-- Reutilização automática do asset do Lobo Comum para outra entidade.
+- Reutilização automática dos assets do Lobo Comum ou do Lobo Cinzento para outra entidade.
 - Qualquer mudança de mecânica, balanceamento, atributo, item ou progressão.
 
 ## Registro anterior — plano de 2026-10-25, antes do playtest físico (preservado)

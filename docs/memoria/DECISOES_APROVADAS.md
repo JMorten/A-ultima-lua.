@@ -140,6 +140,18 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Evidência:** `BESTIARIO_FLORESTA_UIVANTE.md`; `MANIFESTO_ARTES.json`; `src/game.js`.
 - **Arquivos conhecidos:** `src/game.js`, assets da Floresta, manifesto.
 - **Relação:** complementa `DEC-ND-FLO-007` e `DEC-2026-10-25-FLO-009`; qualquer arte nova exige decisão específica.
+- **Resolução parcial (2026-10-25):** o escopo do Lobo Cinzento foi resolvido por `DEC-2026-10-25-FLO-014`; Uivante das Sombras, Romar e Lobo da Matilha permanecem pendentes.
+
+## DEC-2026-10-25-FLO-014 — Aprovação do Lobo Cinzento V2
+
+- **Área:** Galeria / Oficina
+- **Estado:** aprovado
+- **Data:** 2026-10-25
+- **Descrição:** aprovar visualmente a arte fornecida do Lobo Cinzento V2, o recorte RGBA derivado dela e a integração experimental na arena Floresta Uivante V2. A integração preserva o ID, os atributos (42/8/3), o Bote, as recompensas e a progressão; altera somente retrato, enquadramento e posição na arena.
+- **Justificativa:** diferenciar visualmente o tier 1 do Lobo Comum sem inflar atributos, sem substituir Lobisomens e Alfa e sem reutilizar a arte do Comum.
+- **Evidência:** aprovação do responsável nesta missão; fonte `lobo-cinzento-v2-aprovado.png` (SHA-256 `292A1E045C437B4425BDCF46D8173AE4AB16746B61C6295338C32045A3A52FA4`); asset `assets/images/enemies/forest/lobo_cinzento_combat_v2.png` (1536×1024, PNG RGBA, SHA-256 `5174F63C343350C87E493A79E853A3297E92F63D0EAE05A17681FCBC982A4D86`); commit `83eb67781e3ce4293238ca6ef43d4067298d96ce`; 189/189 Node e 68/68 Chromium; capturas em `evidencias/lobo-cinzento-v2/`.
+- **Arquivos conhecidos:** `src/game.js`, `styles/game.css`, asset novo, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`, `tests/persistence.test.cjs`.
+- **Relação:** resolve o escopo do Lobo Cinzento em `DEC-2026-10-25-FLO-013`; preserva `DEC-ND-FLO-007`; não autoriza push, deploy ou produção.
 
 ## Rejeitado ou não autorizado
 
@@ -154,5 +166,6 @@ Este índice é navegação; não altera o texto nem o estado original dos regis
 - `DEC-2026-10-25-FLO-009` — o item “Safari/iPhone pendente” foi complementado por `DEC-2026-10-25-FLO-010`; o item “não autoriza deploy” permanece válido e é delimitado por `DEC-2026-10-25-QLT-011`; commit, push e produção continuam não autorizados.
 - `DEC-2026-10-20-FIX-006` — promoção à produção segue pendente.
 - `DEC-ND-FLO-007` — preservação mantida; a integração do Lobo Comum foi executada localmente (`FLO-009`) e validada (`FLO-010`).
-- `DEC-2026-10-25-FLO-013` — permanece `proposto`; não autoriza substituição de arte.
+- `DEC-2026-10-25-FLO-013` — permanece `proposto`; o escopo do Lobo Cinzento foi resolvido por `DEC-2026-10-25-FLO-014`; Uivante das Sombras, Romar e Lobo da Matilha seguem pendentes.
+- `DEC-2026-10-25-FLO-014` — `aprovado` em 2026-10-25; integração commitada na branch feature, sem push; não autoriza produção.
 - `DEC-2026-10-25-DOC-012` — `aprovado` em 2026-10-25; a aprovação cobre a reconciliação documental, não push ou deploy.

@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "snapshot": "2026-10-25 (reconciliação documental)",
+  "snapshot": "2026-10-25 (Lobo Cinzento V2)",
   "escopo": "Artes de combate e cenários diretamente relevantes às Trincheiras aprovadas e à Floresta Uivante V2 em andamento. Não é inventário de todas as imagens do jogo.",
   "regras": [
     "A presença de um arquivo não implica aprovação.",
     "Hashes e dimensões foram recalculados na reconciliação de 2026-10-25.",
     "Arquivos pendentes não podem substituir assets ativos sem aprovação explícita.",
-    "Caminhos classificados como integração local são resolvidos no worktree da branch feature, não na branch documental."
+    "Caminhos classificados como integração na branch feature são resolvidos no commit dessa branch, não na branch documental."
   ],
   "classificacao_presenca": {
     "rastreado_no_commit_base": [
@@ -34,14 +34,16 @@
     ],
     "nao_rastreado_no_checkout": [
       "ART-FLORESTA-ARENA-V2",
-      "ART-LOBO-COMUM-V2-FONTE"
+      "ART-LOBO-COMUM-V2-FONTE",
+      "ART-LOBO-CINZENTO-V2-FONTE"
     ],
     "laboratorio_ignorado_pelo_git": [
       "ART-LOBO-COMUM-V2-RECORTE"
     ],
-    "integracao_local_nao_commitada": [
+    "integracao_commitada_na_branch_feature": [
       "ART-FLORESTA-ARENA-V2-COMBATE",
-      "ART-LOBO-COMUM-V2-COMBATE"
+      "ART-LOBO-COMUM-V2-COMBATE",
+      "ART-FLORESTA-LOBO-CINZENTO-V2"
     ]
   },
   "classificacao_aprovacao": {
@@ -51,6 +53,8 @@
       "ART-LOBO-COMUM-V2-RECORTE",
       "ART-FLORESTA-ARENA-V2-COMBATE",
       "ART-LOBO-COMUM-V2-COMBATE",
+      "ART-LOBO-CINZENTO-V2-FONTE",
+      "ART-FLORESTA-LOBO-CINZENTO-V2",
       "ART-T3-ARENA",
       "ART-T3-BATEDOR",
       "ART-T3-BATEDOR-ALERTA",
@@ -72,11 +76,11 @@
       "ART-T3-TOTEM-SANGUE",
       "ART-T3-TOTEM-ESSENCIA"
     ],
-    "substituido_localmente_na_branch_feature": [
-      "ART-FLORESTA-LOBO-SELVAGEM-ATUAL"
+    "substituido_na_branch_feature": [
+      "ART-FLORESTA-LOBO-SELVAGEM-ATUAL",
+      "ART-FLORESTA-LOBO-CINZENTO-ATUAL"
     ],
     "em_uso_sem_aprovacao_v2_documentada": [
-      "ART-FLORESTA-LOBO-CINZENTO-ATUAL",
       "ART-FLORESTA-UIVANTE-SOMBRAS"
     ],
     "em_uso_sem_avaliacao_documentada": [
@@ -131,11 +135,11 @@
       "formato": "JPEG",
       "modo": "RGB",
       "transparencia": { "presente": false },
-      "versao": "V2_integracao_local",
-      "estado_aprovacao": "aprovada_integrada_localmente_na_branch_feature",
+      "versao": "V2_integracao_commitada",
+      "estado_aprovacao": "aprovada_e_commitada_na_branch_feature",
       "origem": "cópia byte a byte do membro aprovado no pacote Floresta V2",
-      "localizacao_no_snapshot": "worktree feature/floresta-uivante-v2-etapa1/checkout (não presente na branch documental)",
-      "evidencia": "DEC-2026-10-25-FLO-009; DEC-2026-10-25-FLO-010; DEC-2026-10-25-QLT-011; 188/188 Node e 65/65 Chromium no relatório; integração local não commitada"
+      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit 16f4c9cb7889b5f2e4a463b308fd76b5f1fcde9d (não presente na branch documental)",
+      "evidencia": "DEC-2026-10-25-FLO-009; DEC-2026-10-25-FLO-010; DEC-2026-10-25-QLT-011; commits 4236b84 e 16f4c9c; 188/188 Node e 65/65 Chromium no snapshot"
     },
     {
       "id": "ART-LOBO-COMUM-V2-FONTE",
@@ -174,11 +178,40 @@
       "formato": "PNG",
       "modo": "RGBA",
       "transparencia": { "presente": true, "min": 0, "max": 255 },
-      "versao": "V2_integracao_local",
-      "estado_aprovacao": "aprovado_visual_e_funcional_no_safari_integracao_local_nao_commitada",
+      "versao": "V2_integracao_commitada",
+      "estado_aprovacao": "aprovado_visual_e_funcional_no_safari_commitado_na_branch_feature",
       "origem": "cópia byte a byte do recorte aprovado",
-      "localizacao_no_snapshot": "worktree feature/floresta-uivante-v2-etapa1/checkout (não presente na branch documental)",
-      "evidencia": "DEC-2026-10-25-FLO-009; DEC-2026-10-25-FLO-010; DEC-2026-10-25-QLT-011; 188/188 Node e 65/65 Chromium no relatório; integração local não commitada"
+      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit 16f4c9cb7889b5f2e4a463b308fd76b5f1fcde9d (não presente na branch documental)",
+      "evidencia": "DEC-2026-10-25-FLO-009; DEC-2026-10-25-FLO-010; DEC-2026-10-25-QLT-011; commits 4236b84 e 16f4c9c; 189/189 Node e 68/68 Chromium na revalidação de 2026-10-25"
+    },
+    {
+      "id": "ART-LOBO-CINZENTO-V2-FONTE",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "lobo-cinzento-v2-aprovado.png",
+      "sha256": "292A1E045C437B4425BDCF46D8173AE4AB16746B61C6295338C32045A3A52FA4",
+      "dimensoes": { "largura": 1536, "altura": 1024 },
+      "formato": "PNG",
+      "modo": "RGB",
+      "transparencia": { "presente": false },
+      "versao": "V2_fonte",
+      "estado_aprovacao": "aparencia_aprovada_recorte_executado",
+      "origem": "arquivo fornecido para a Floresta V2; não rastreado",
+      "evidencia": "DEC-2026-10-25-FLO-014"
+    },
+    {
+      "id": "ART-FLORESTA-LOBO-CINZENTO-V2",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "assets/images/enemies/forest/lobo_cinzento_combat_v2.png",
+      "sha256": "5174F63C343350C87E493A79E853A3297E92F63D0EAE05A17681FCBC982A4D86",
+      "dimensoes": { "largura": 1536, "altura": 1024 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 255 },
+      "versao": "V2_integracao_commitada",
+      "estado_aprovacao": "aprovado_visual_integrado_e_commitado_na_branch_feature",
+      "origem": "recorte RGBA derivado da fonte aprovada, com remoção do fundo quadriculado",
+      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit 83eb67781e3ce4293238ca6ef43d4067298d96ce (não presente na branch documental)",
+      "evidencia": "DEC-2026-10-25-FLO-014; commit 83eb677; 189/189 Node e 68/68 Chromium; evidencias/lobo-cinzento-v2/"
     },
     {
       "id": "ART-FLORESTA-LOBO-SELVAGEM-ATUAL",
@@ -190,13 +223,14 @@
       "modo": "RGB",
       "transparencia": { "presente": false },
       "versao": "atual",
-      "estado_aprovacao": "em_uso_no_commit_base_11bff6c_substituido_localmente_na_branch_feature",
+      "estado_aprovacao": "em_uso_no_commit_base_11bff6c_substituido_na_branch_feature",
       "origem": "repositório; src/game.js",
       "evidencia": "src/game.js; DEC-2026-10-25-FLO-009",
-      "substituicao_local": {
+      "substituicao": {
         "branch": "feature/floresta-uivante-v2-etapa1",
         "asset": "ART-LOBO-COMUM-V2-COMBATE",
-        "estado": "não commitado"
+        "commit": "16f4c9cb7889b5f2e4a463b308fd76b5f1fcde9d",
+        "estado": "commitado e publicado na branch feature"
       }
     },
     {
@@ -209,9 +243,15 @@
       "modo": "RGB",
       "transparencia": { "presente": false },
       "versao": "atual",
-      "estado_aprovacao": "em_uso_sem_aprovacao_v2",
+      "estado_aprovacao": "em_uso_no_commit_base_11bff6c_substituido_na_branch_feature",
       "origem": "repositório; src/game.js",
-      "evidencia": "src/game.js"
+      "evidencia": "src/game.js; DEC-2026-10-25-FLO-014",
+      "substituicao": {
+        "branch": "feature/floresta-uivante-v2-etapa1",
+        "asset": "ART-FLORESTA-LOBO-CINZENTO-V2",
+        "commit": "83eb67781e3ce4293238ca6ef43d4067298d96ce",
+        "estado": "commitado localmente; não publicado"
+      }
     },
     {
       "id": "ART-FLORESTA-LOBISOMEM-JOVEM",
