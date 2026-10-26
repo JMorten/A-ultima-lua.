@@ -190,6 +190,7 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Limite:** não houve teste em Safari/iPhone; a aprovação cobre a arte, o recorte e a integração, não a validação física. Não há captura ou log de dispositivo.
 - **Arquivos conhecidos:** `src/game.js`, `styles/game.css`, asset novo, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`, `tests/persistence.test.cjs`.
 - **Relação:** resolve o escopo do Uivante das Sombras em `DEC-2026-10-25-FLO-013`; preserva a arte JPEG antiga; não autoriza promoção à produção.
+- **Nota posterior (2026-10-26):** após revisão do responsável, o enquadramento foi ampliado de `w:0.51`/`h:0.80` para `w:0.58`/`h:0.95` (commit `385bdf5`, deployment `f6b00e93-2405-4cd7-b617-c1efcf5723ca`). A checagem de sobreposição com o Mago passou a comparar silhuetas pintadas por alfa, com tolerância de 4% da largura do palco para a fumaça do mini-chefe; os quatro inimigos da Floresta continuam cobertos. Arte, atributos e comportamento não mudaram.
 
 ## Rejeitado ou não autorizado
 

@@ -21,6 +21,7 @@
 - **2026-10-25 — QA isolado do Lobo Cinzento V2:** deployment `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` publicado no projeto `a-ultima-lua-floresta-v2-qa`; hashes conferidos, HTTP 200 e funcionamento confirmado no Safari/iPhone (`QLT-015`). Produção inalterada.
 - **2026-10-26 — Lobisomem Jovem V2 aprovado e publicado:** `FLO-016` registra a nova arte, o recorte RGBA e a integração; commit `25ae3fb` publicado na branch feature; QA `860aa1d1-a3cf-4715-a89e-2a07d7e0126b` com 190/190 Node e 71/71 Chromium; Safari/iPhone confirmado. `FLO-007` permanece para Feroz e Alfa. Produção inalterada.
 - **2026-10-26 — Uivante das Sombras V2 aprovado e publicado:** `FLO-017` registra a nova arte (lobo espectral de fumaça, olhos azuis e garras), o recorte RGBA com transparência real e a integração; commit `bb7197a` publicado na branch feature; QA `7e466fdf-248b-4dd2-b8e7-0230ea425e06` com 191/191 Node e 74/74 Chromium e paridade SHA-256 entre o site público e `_qa-dist`. Atributos, Golpe Brutal, Fúria e progressão inalterados; JPEG antigo preservado; Safari/iPhone e produção pendentes.
+- **2026-10-26 — escala do Uivante ampliada:** a pedido do responsável, o enquadramento passou de `w:0.51`/`h:0.80` para `w:0.58`/`h:0.95`; commit `385bdf5` e deployment `f6b00e93-2405-4cd7-b617-c1efcf5723ca`. A regra de não sobreposição com o Mago passou a comparar silhuetas pintadas (alfa), com tolerância de 4% da largura do palco para o mini-chefe. 191/191 Node e 74/74 Chromium.
 
 ## Como interpretar
 
