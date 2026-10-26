@@ -27,3 +27,18 @@ test('Lobisomens e Alfa continuam apontando para as artes originais', () => {
 test('atributos de combate do primeiro lobo permanecem inalterados', () => {
   assert.match(game, /id:'lobo_selvagem'.*hp:30, atk:6,\s+def:2, xp:12, coinMin:4,\s+coinMax:8,\s+tier:0/);
 });
+
+test('Lobo Cinzento V2 usa arte recortada e preserva atributos e Bote', () => {
+  assert.match(game, /id:'lobo_cinzento',\s+name:'Lobo Cinzento'.*portrait:'assets\/images\/enemies\/forest\/lobo_cinzento_combat_v2\.png'.*portraitLayout:'natural'/);
+  assert.match(game, /id:'lobo_cinzento'.*hp:42, atk:8,\s+def:3, xp:18, coinMin:6,\s+coinMax:10,\s+tier:1/);
+  assert.match(game, /m\.id==='lobo_cinzento' && !m\.grayPouncePrepared/);
+  assert.match(game, /grayPouncePrepared\)\{ mult=1\.55/);
+
+  const asset = 'assets/images/enemies/forest/lobo_cinzento_combat_v2.png';
+  assert.equal(sha256(asset), '5174F63C343350C87E493A79E853A3297E92F63D0EAE05A17681FCBC982A4D86');
+  const png = fs.readFileSync(path.join(root, asset));
+  assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(png.readUInt32BE(16), 1536);
+  assert.equal(png.readUInt32BE(20), 1024);
+  assert.equal(png[25], 6); // RGBA
+});
