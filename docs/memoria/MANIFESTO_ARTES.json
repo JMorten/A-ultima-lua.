@@ -208,10 +208,10 @@
       "modo": "RGBA",
       "transparencia": { "presente": true, "min": 0, "max": 255 },
       "versao": "V2_integracao_commitada",
-      "estado_aprovacao": "aprovado_visual_integrado_e_commitado_na_branch_feature",
+      "estado_aprovacao": "aprovado_visual_e_qa_isolado_validado",
       "origem": "recorte RGBA derivado da fonte aprovada, com remoção do fundo quadriculado",
       "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit 83eb67781e3ce4293238ca6ef43d4067298d96ce (não presente na branch documental)",
-      "evidencia": "DEC-2026-10-25-FLO-014; commit 83eb677; 189/189 Node e 68/68 Chromium; evidencias/lobo-cinzento-v2/"
+      "evidencia": "DEC-2026-10-25-FLO-014; DEC-2026-10-25-QLT-015; commit 83eb677; deployment 45362c1d-ca92-4c0b-b6d4-6b51c258fc9d; 189/189 Node e 68/68 Chromium; evidencias/lobo-cinzento-v2/"
     },
     {
       "id": "ART-FLORESTA-LOBO-SELVAGEM-ATUAL",
@@ -250,7 +250,7 @@
         "branch": "feature/floresta-uivante-v2-etapa1",
         "asset": "ART-FLORESTA-LOBO-CINZENTO-V2",
         "commit": "83eb67781e3ce4293238ca6ef43d4067298d96ce",
-        "estado": "commitado localmente; não publicado"
+        "estado": "commitado e publicado na branch feature; QA isolado validado"
       }
     },
     {

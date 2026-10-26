@@ -153,6 +153,17 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Arquivos conhecidos:** `src/game.js`, `styles/game.css`, asset novo, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`, `tests/persistence.test.cjs`.
 - **Relação:** resolve o escopo do Lobo Cinzento em `DEC-2026-10-25-FLO-013`; preserva `DEC-ND-FLO-007`; não autoriza push, deploy ou produção.
 
+## DEC-2026-10-25-QLT-015 — QA isolado e validação Safari do Lobo Cinzento V2
+
+- **Área:** Oficina / Galeria
+- **Estado:** aprovado
+- **Data:** 2026-10-25
+- **Descrição:** publicar o pacote QA gerado exclusivamente do commit `83eb67781e3ce4293238ca6ef43d4067298d96ce` no projeto Cloudflare Pages isolado `a-ultima-lua-floresta-v2-qa` e validar o site no Safari de iPhone físico. O deployment `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` foi publicado na branch de produção `floresta-v2-qa` desse projeto isolado.
+- **Escopo:** somente QA isolado. Não é produção do jogo; não altera `a-ultima-lua-qa`, GitHub Pages, `main` ou `qa-preview`.
+- **Evidência:** autorização do responsável; confirmação “Tudo funcionando” após o teste físico; deployment `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d`; URLs `https://45362c1d.a-ultima-lua-floresta-v2-qa.pages.dev/` e `https://a-ultima-lua-floresta-v2-qa.pages.dev/`; hashes publicados conferem com o pacote; HTTP 200; 189/189 Node e 68/68 Chromium; smoke test sem erros, 404 ou overflow.
+- **Limite:** a validação Safari é declaração humana; não há captura ou log do iPhone anexado ao repositório.
+- **Relação:** complementa `DEC-2026-10-25-FLO-014`; não autoriza promoção à produção.
+
 ## Rejeitado ou não autorizado
 
 - **DEC-2026-10-16-VIS-R01 — Respiração/idle por escala da imagem inteira:** rejeitado. O efeito foi percebido como zoom artificial. Não integrar sem nova decisão e novas artes adequadas.
@@ -167,5 +178,6 @@ Este índice é navegação; não altera o texto nem o estado original dos regis
 - `DEC-2026-10-20-FIX-006` — promoção à produção segue pendente.
 - `DEC-ND-FLO-007` — preservação mantida; a integração do Lobo Comum foi executada localmente (`FLO-009`) e validada (`FLO-010`).
 - `DEC-2026-10-25-FLO-013` — permanece `proposto`; o escopo do Lobo Cinzento foi resolvido por `DEC-2026-10-25-FLO-014`; Uivante das Sombras, Romar e Lobo da Matilha seguem pendentes.
-- `DEC-2026-10-25-FLO-014` — `aprovado` em 2026-10-25; integração commitada na branch feature, sem push; não autoriza produção.
+- `DEC-2026-10-25-FLO-014` — `aprovado` em 2026-10-25; integração commitada e publicada na branch feature; QA isolado e Safari complementados por `QLT-015`; produção não autorizada.
+- `DEC-2026-10-25-QLT-015` — `aprovado`; complementa `FLO-014` com o QA isolado publicado e a confirmação Safari; produção não autorizada.
 - `DEC-2026-10-25-DOC-012` — `aprovado` em 2026-10-25; a aprovação cobre a reconciliação documental, não push ou deploy.

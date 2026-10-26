@@ -29,7 +29,7 @@ O palco separa cenário, atores, HUD e efeitos. Retratos naturais usam contenç�
 
 ### Floresta Uivante V2 — Lobo Comum e Lobo Cinzento
 
-Na branch `feature/floresta-uivante-v2-etapa1`, baseada em `11bff6c`, o mapa da Floresta recebe `arenaBackground` próprio. O Lobo Comum (`16f4c9c`) e o Lobo Cinzento (`83eb677`) mantêm ID e atributos existentes, trocando somente nome apresentado quando aplicável, asset e layout visual. `COMBAT_PRESENTATION` posiciona ambos à direita; o Mago continua usando seu asset original à esquerda. O Lobo Comum foi validado no Safari físico (`FLO-010`); o Cinzento foi aprovado visualmente (`FLO-014`), mas ainda não tem playtest Safari nem push. Produção não foi alterada. O inventário e os estados de aprovação das oito entidades da Floresta estão em [BESTIARIO_FLORESTA_UIVANTE.md](BESTIARIO_FLORESTA_UIVANTE.md).
+Na branch `feature/floresta-uivante-v2-etapa1`, baseada em `11bff6c`, o mapa da Floresta recebe `arenaBackground` próprio. O Lobo Comum (`16f4c9c`) e o Lobo Cinzento (`83eb677`) mantêm ID e atributos existentes, trocando somente nome apresentado quando aplicável, asset e layout visual. `COMBAT_PRESENTATION` posiciona ambos à direita; o Mago continua usando seu asset original à esquerda. O Lobo Comum foi validado no Safari físico (`FLO-010`); o Cinzento foi aprovado (`FLO-014`), publicado no QA isolado e confirmado no Safari/iPhone (`QLT-015`). Produção não foi alterada. O inventário e os estados de aprovação das oito entidades da Floresta estão em [BESTIARIO_FLORESTA_UIVANTE.md](BESTIARIO_FLORESTA_UIVANTE.md).
 
 ## QA
 

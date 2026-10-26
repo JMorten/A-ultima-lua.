@@ -23,7 +23,7 @@ Fontes: `src/game.js` (checkout `081fce4` para mecânica histórica; worktree `f
 | # | Nome canônico | Nome exibido na V2 | ID interno | Papel | Arte | Aprovação |
 |---|---|---|---|---|---|---|
 | 1 | Lobo Selvagem | Lobo Comum | `lobo_selvagem` | comum, tier 0 | JPEG legado + PNG V2 | **aprovado** (V2), commitado na branch feature |
-| 2 | Lobo Cinzento | Lobo Cinzento | `lobo_cinzento` | comum, tier 1 | JPEG legado + PNG V2 | **aprovado** (V2), commitado localmente na branch feature |
+| 2 | Lobo Cinzento | Lobo Cinzento | `lobo_cinzento` | comum, tier 1 | JPEG legado + PNG V2 | **aprovado** (V2), QA e Safari confirmados |
 | 3 | Lobisomem Jovem | Lobisomem Jovem | `lobisomem_jovem` | comum, tier 2 | JPEG | **preservar** |
 | 4 | Lobisomem Feroz | Lobisomem Feroz | `lobisomem_feroz` | comum, tier 3 | JPEG | **preservar** |
 | 5 | Uivante das Sombras | Uivante das Sombras | `uivante_sombras` | mini-chefe | JPEG | em uso, não reavaliado; sem decisão |
@@ -70,9 +70,9 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 - **Encontro:** 25% no estágio 0; 50% no estágio 1; 20% no estágio 2.
 - **Transparência real:** o asset V2 é RGBA; os quatro cantos têm alpha 0 e 3,81% dos pixels são borda suave. O xadrez não está incrustado no asset final.
 - **Comportamento:** a cada 3ª ação de IA prepara **Bote** (×1.55). O golpe pode ser interrompido por um impacto ≥ max(8, 12% do HP máximo), consumindo a preparação também em esquiva.
-- **Estado:** arte legada preservada; nova arte e recorte **aprovados** (`DEC-2026-10-25-FLO-014`). Integração commitada localmente na branch `feature/...` em `83eb677`, **não publicada**. Atributos, Bote, recompensas e progressão inalterados.
-- **Pendência:** o escopo do Cinzento em `FLO-013` foi resolvido por `FLO-014`; `FLO-013` permanece como registro histórico proposto para Uivante, Romar e Lobo da Matilha.
-- **Evidência:** `src/game.js:176`, `:2000-2004`, `:2045`, `:1687-1693`; commit `83eb677`; 189/189 Node e 68/68 Chromium; `evidencias/lobo-cinzento-v2/`; manifesto.
+- **Estado:** arte legada preservada; nova arte e recorte **aprovados** (`DEC-2026-10-25-FLO-014`). Integração commitada e publicada na branch `feature/...` em `83eb677`. QA isolado `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` publicado e funcionamento confirmado no Safari/iPhone (`DEC-2026-10-25-QLT-015`). Produção pendente. Atributos, Bote, recompensas e progressão inalterados.
+- **Pendência:** o escopo do Cinzento em `FLO-013` foi resolvido por `FLO-014`; `FLO-013` permanece como registro histórico proposto para Uivante, Romar e Lobo da Matilha. Falta apenas promoção à produção, não autorizada.
+- **Evidência:** `src/game.js:176`, `:2000-2004`, `:2045`, `:1687-1693`; commits `83eb677`; QA `45362c1d`; 189/189 Node e 68/68 Chromium; `evidencias/lobo-cinzento-v2/`; manifesto.
 
 ## 3. Lobisomem Jovem — `lobisomem_jovem`
 
@@ -149,7 +149,7 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 | Entidade | Aprovação | Decisão | Próximo passo |
 |---|---|---|---|
 | Lobo Comum | aprovado (visual e Safari) | `FLO-009`, `FLO-010` | commitado e publicado; QA isolado autorizado; produção pendente |
-| Lobo Cinzento | aprovado (V2) | `FLO-014` | commit local `83eb677`; push e playtest Safari pendentes |
+| Lobo Cinzento | aprovado (V2), QA e Safari | `FLO-014`, `QLT-015` | commit e QA publicados; produção pendente |
 | Lobisomem Jovem | preservar | `FLO-007` | nenhum |
 | Lobisomem Feroz | preservar | `FLO-007` | nenhum |
 | Uivante das Sombras | não reavaliado | `FLO-013` (proposto) | decidir arte V2 |
@@ -159,7 +159,7 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 
 ## NÃO VERIFICADO
 
-- Execução nesta missão: **189 Node e 68 Chromium** (Chromium 151 do Playwright 1.62.1). Safari/iPhone do Lobo Cinzento **não executado**.
+- Execução nesta missão: **189 Node e 68 Chromium** (Chromium 151 do Playwright 1.62.1). Safari/iPhone confirmado por declaração humana em `QLT-015`; sem captura ou log do dispositivo.
 - Validação Safari/iPhone: declaração humana (`FLO-010`), sem captura ou log do dispositivo no repositório.
 - Julgamento artístico de Romar e das artes legadas: não há registro de avaliação.
 - Paridade SHA-256 entre o deployment público e `_qa-dist`: o conteúdo público foi conferido por leitura, não por hash de download binário.
@@ -167,4 +167,4 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 
 ## Evidências consultadas
 
-`src/game.js` (linhas citadas), `src/persistence.js`, `styles/game.css`, `docs/memoria/MANIFESTO_ARTES.json`, `docs/memoria/DECISOES_APROVADAS.md`, commits `4236b84`, `16f4c9c` e `83eb677`, `tests/miniboss-progression.test.cjs`, `tests/romar-combat.test.cjs`, `tests/romar-discoveries.test.cjs`, `tests/romar-playtest-quest.test.cjs`, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`; hashes e dimensões recalculados em 2026-10-25.
+`src/game.js` (linhas citadas), `src/persistence.js`, `styles/game.css`, `docs/memoria/MANIFESTO_ARTES.json`, `docs/memoria/DECISOES_APROVADAS.md`, commits `4236b84`, `16f4c9c` e `83eb677`, deployment `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d`, `tests/miniboss-progression.test.cjs`, `tests/romar-combat.test.cjs`, `tests/romar-discoveries.test.cjs`, `tests/romar-playtest-quest.test.cjs`, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`; hashes e dimensões recalculados em 2026-10-25.

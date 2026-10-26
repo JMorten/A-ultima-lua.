@@ -9,17 +9,16 @@
 - Autorização e publicação do QA isolado da Floresta V2 — `DEC-2026-10-25-QLT-011`.
 - Reconciliação documental do Palácio e criação do bestiário — `DEC-2026-10-25-DOC-012`, aprovado em 2026-10-25.
 - Lobo Comum V2 versionado: commits `4236b84` e `16f4c9c` publicados na branch feature.
-- Lobo Cinzento V2 aprovado e integrado: `DEC-2026-10-25-FLO-014`; commit local `83eb677`.
+- Lobo Cinzento V2 aprovado, integrado e publicado: `DEC-2026-10-25-FLO-014`; commit `83eb677` publicado.
+- QA isolado do Lobo Cinzento publicado (`45362c1d-ca92-4c0b-b6d4-6b51c258fc9d`) e funcionamento confirmado no Safari/iPhone — `DEC-2026-10-25-QLT-015`.
 - Revalidação: **189/189 Node** e **68/68 Chromium** (Chromium 151 do Playwright 1.62.1).
 
 ## Pendente — exige decisão humana
 
-1. **Push do Lobo Cinzento V2:** o commit `83eb677` está apenas local; publicar exige autorização específica.
-2. **QA e playtest Safari do Cinzento:** gerar build/deploy isolado e validar no iPhone físico.
-3. **Escopo visual restante:** Uivante das Sombras, Romar e Lobo da Matilha — `DEC-2026-10-25-FLO-013` permanece `proposto` como registro histórico.
-4. **Reconciliação de linhas Git:** decidir como unir `081fce4` (`qa-preview`) com `origin/qa-preview` (`11bff6c`).
-5. **Promoção à produção:** não autorizada para a Floresta V2.
-6. **Cobertura documental:** manter bestiário e manifesto sincronizados quando arte ou entidade mudar.
+1. **Escopo visual restante:** Uivante das Sombras, Romar e Lobo da Matilha — `DEC-2026-10-25-FLO-013` permanece `proposto` como registro histórico.
+2. **Reconciliação de linhas Git:** decidir como unir `081fce4` (`qa-preview`) com `origin/qa-preview` (`11bff6c`).
+3. **Promoção à produção:** não autorizada para a Floresta V2.
+4. **Cobertura documental:** manter bestiário e manifesto sincronizados quando arte ou entidade mudar.
 
 ## Fora de escopo até nova decisão
 

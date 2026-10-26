@@ -2,7 +2,7 @@
 
 **Snapshot documental:** 2026-10-25 (reconciliação documental).
 **Checkout documental:** `D:\Projetos\A-ultima-lua`.
-**Branch:** `docs/palacio-memoria-v1`, base `9a6545910ed15ed6b23102766b6928e2c8f636dd`. Este documento descreve o estado do worktree; o commit documental correspondente será o seguinte a essa base.
+**Branch:** `docs/palacio-memoria-v1`, base `6d5eab17df0ac245ac3c070424fa9a3980dc0a6d`. Este documento descreve o estado do worktree; o commit documental desta atualização será o seguinte a essa base.
 **Natureza:** este arquivo descreve estado. Decisões e aprovações ficam em [DECISOES_APROVADAS.md](DECISOES_APROVADAS.md).
 
 ## Como ler
@@ -15,9 +15,9 @@
 
 | Branch | HEAD | Worktree | Situação no snapshot |
 |---|---|---|---|
-| `docs/palacio-memoria-v1` | `9a65459` | raiz `D:\Projetos\A-ultima-lua` | Linha documental canônica. `origin/docs/palacio-memoria-v1` está no mesmo commit; o registro desta etapa será o commit seguinte. |
+| `docs/palacio-memoria-v1` | `6d5eab1` | raiz `D:\Projetos\A-ultima-lua` | Linha documental canônica. `origin/docs/palacio-memoria-v1` está no mesmo commit; o registro desta etapa será o commit seguinte. |
 | `qa-preview` | `081fce4` | — | 1 commit à frente e 1 atrás de `origin/qa-preview` (`11bff6c`). |
-| `feature/floresta-uivante-v2-etapa1` | `83eb677` | `laboratorios/floresta-uivante-v2-etapa1/checkout` | Lobo Comum V2 commitado e publicado (`4236b84`, `16f4c9c`); Lobo Cinzento V2 commitado localmente em `83eb677`, ainda não publicado. |
+| `feature/floresta-uivante-v2-etapa1` | `83eb677` | `laboratorios/floresta-uivante-v2-etapa1/checkout` | Lobo Comum V2 (`4236b84`, `16f4c9c`) e Lobo Cinzento V2 (`83eb677`) commitados e publicados em `origin`. |
 | `fix/pos-playtest-v1` | `11bff6c` | `laboratorios/pos-playtest-v1/candidate` | Candidata pós-playtest. |
 | `main` | `f7e25ef` | `laboratorios/protocolo-autonomo-v1/main-integracao` | 8 commits à frente de `origin/main` (`4833b5f`). |
 | `release/trincheiras-rc1` | `e6a965e` | — | 15 commits à frente de `origin/main`. |
@@ -41,9 +41,9 @@ Não confundir os seis níveis abaixo; cada registro deve dizer a qual pertence.
 ## Floresta Uivante — estado atual
 
 - O bestiário completo, com IDs, assets, condições de encontro e estados de aprovação, está em [BESTIARIO_FLORESTA_UIVANTE.md](BESTIARIO_FLORESTA_UIVANTE.md). São **oito entidades**.
-- **Lobo Comum V2** (`lobo_selvagem`): aparência e recorte aprovados; combate validado no Safari físico pelo responsável em 2026-10-25 (`DEC-2026-10-25-FLO-010`). Integração commitada e publicada na branch `feature/floresta-uivante-v2-etapa1` (`4236b84` e `16f4c9c`).
-- **Lobo Cinzento V2** (`lobo_cinzento`): arte, recorte e integração experimental aprovados (`DEC-2026-10-25-FLO-014`); commit local `83eb677` na branch feature, **não publicado**. Atributos, Bote, recompensas e progressão inalterados; arte antiga preservada.
-- **QA isolado**: Direct Upload autorizado pelo responsável e publicado em 2026-10-25 no projeto `a-ultima-lua-floresta-v2-qa`, deployment `3e8e9679-2441-46a6-a907-928166b5194e` (`DEC-2026-10-25-QLT-011`). Refere-se ao build do Lobo Comum; não é produção e não alterou `a-ultima-lua-qa` nem GitHub Pages.
+- **Lobo Comum V2** (`lobo_selvagem`): aparência e recorte aprovados; combate validado no Safari físico em 2026-10-25 (`DEC-2026-10-25-FLO-010`). Integração commitada e publicada na branch `feature/floresta-uivante-v2-etapa1` (`4236b84` e `16f4c9c`).
+- **Lobo Cinzento V2** (`lobo_cinzento`): arte, recorte e integração aprovados (`DEC-2026-10-25-FLO-014`); commit `83eb677` publicado na branch feature. QA isolado publicado em `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` e funcionamento confirmado no Safari/iPhone (`DEC-2026-10-25-QLT-015`). Atributos, Bote, recompensas e progressão inalterados; arte antiga preservada.
+- **QA isolado**: dois deployments no projeto `a-ultima-lua-floresta-v2-qa`: `3e8e9679-2441-46a6-a907-928166b5194e` (Lobo Comum) e `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` (Lobo Cinzento). Ambos são QA isolado; não são produção e não alteraram `a-ultima-lua-qa` nem GitHub Pages.
 - **Produção**: inalterada. Nenhuma promoção autorizada.
 - **Lobisomem Jovem, Lobisomem Feroz e Alfa da Matilha**: artes atuais preservadas por `DEC-ND-FLO-007`; sem autorização para substituição.
 - **Uivante das Sombras, Romar e Lobo da Matilha**: sem arte V2; permanecem no escopo histórico de `DEC-2026-10-25-FLO-013` (proposto). O Lobo Cinzento foi resolvido por `FLO-014`.
@@ -51,7 +51,7 @@ Não confundir os seis níveis abaixo; cada registro deve dizer a qual pertence.
 
 ## Cartografia
 
-- T1 — Floresta Uivante: implementada; apresentações V2 do Lobo Comum e do Lobo Cinzento aprovadas e commitadas na branch feature. Produção inalterada.
+- T1 — Floresta Uivante: implementada; apresentações V2 do Lobo Comum e do Lobo Cinzento aprovadas, commitadas e com QA isolado; o Cinzento foi confirmado no Safari. Produção inalterada.
 - T2 — Pântano Podre: implementado, incluindo Senhor do Pântano, materiais e fluxo de vitória pendente documentados.
 - T3 — Trincheiras Orc: progressão determinística, Xamã ritualístico, Gorthak e apresentação Arena V2.4 implementados na linha QA/release.
 - T4 — Cripta Sangrenta: definida no código com inimigos, miniboss e boss; sem evidência de revisão visual V2 equivalente às Trincheiras.
@@ -68,13 +68,13 @@ Não confundir os seis níveis abaixo; cada registro deve dizer a qual pertence.
 ## Divergências abertas
 
 1. `qa-preview` local (`081fce4`) e `origin/qa-preview` (`11bff6c`) continuam divergentes; reconciliação não decidida.
-2. O commit `83eb677` do Lobo Cinzento V2 é **local**; push para `origin/feature/...` pendente.
-3. QA isolado e playtest Safari do Lobo Cinzento ainda não realizados; o deployment existente é do Lobo Comum.
-4. Escopo visual de Uivante das Sombras, Romar e Lobo da Matilha permanece sem decisão (`FLO-013`, histórico proposto); o Cinzento foi resolvido por `FLO-014`.
-5. `PROJECT-CHECKPOINT.md` continua descrevendo um estado de 2026-10-13 e `main`.
-6. Contagens de teste antigas continuam citadas em documentos históricos e não devem ser somadas.
-7. Laboratórios podem conter propostas ou resultados locais; presença em `laboratorios/` não significa integração ou aprovação.
-8. O log de Frenesi foi corrigido para nome dinâmico em `16f4c9c` (D5 resolvido).
+2. Produção do jogo permanece inalterada; promoção não autorizada.
+3. Escopo visual de Uivante das Sombras, Romar e Lobo da Matilha permanece sem decisão (`FLO-013`, histórico proposto); o Cinzento foi resolvido por `FLO-014`.
+4. `PROJECT-CHECKPOINT.md` continua descrevendo um estado de 2026-10-13 e `main`.
+5. Contagens de teste antigas continuam citadas em documentos históricos e não devem ser somadas.
+6. Laboratórios podem conter propostas ou resultados locais; presença em `laboratorios/` não significa integração ou aprovação.
+7. O log de Frenesi foi corrigido para nome dinâmico em `16f4c9c` (D5 resolvido).
+8. O commit documental desta atualização é local até autorização de push.
 
 **Resolvidas nesta reconciliação:** o Palácio mais recente passou a estar versionado na linha documental (D1); `ARQUITETURA` distingue implementação local, deploy QA e produção (D2); o deploy isolado tem autorização registrada em `QLT-011` (D3); estado atual e snapshots históricos estão separados (D4); a branch ativa foi corrigida (D6); o manifesto deixou de tratar o JPEG antigo do lobo como arte em uso na branch feature (D8).
 
