@@ -19,6 +19,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
+        with:
+          # O teste de baseline Romar usa `git show bff8a72`.
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -33,9 +36,9 @@ jobs:
           node --check _qa/build.cjs
           node --check _qa/debug.js
 
-  browser-tests:
+  browser-chromium:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,17 +48,43 @@ jobs:
         working-directory: tests/browser
         run: |
           if [ -f package-lock.json ]; then npm ci; else npm install --no-audit --no-fund; fi
-      - name: Instalar browsers
+      - name: Instalar Chromium
         working-directory: tests/browser
-        run: npx playwright install --with-deps chromium webkit
-      - name: Rodar Chromium + WebKit
+        run: npx playwright install --with-deps chromium
+      - name: Rodar Chromium
         working-directory: tests/browser
-        run: npm test
-      - name: Guardar artefatos
+        run: node run.cjs chromium
+      - name: Guardar artefatos Chromium
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-artifacts
+          name: playwright-chromium
+          path: tests/browser/artifacts
+          if-no-files-found: ignore
+
+  browser-webkit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Instalar Playwright do projeto
+        working-directory: tests/browser
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install --no-audit --no-fund; fi
+      - name: Instalar WebKit
+        working-directory: tests/browser
+        run: npx playwright install --with-deps webkit
+      - name: Rodar WebKit
+        working-directory: tests/browser
+        run: node run.cjs webkit
+      - name: Guardar artefatos WebKit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-webkit
           path: tests/browser/artifacts
           if-no-files-found: ignore
 
@@ -67,6 +96,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      # Meta atingida: 11,74 MB em WebP. Teto por arquivo: 600 KB.
+      # WebP: 11,74 MB no total; teto por arquivo: 600 KB.
       - name: Verificar orçamento de assets
         run: node tools/check-assets.mjs assets 600 15
