@@ -192,6 +192,17 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Relação:** resolve o escopo do Uivante das Sombras em `DEC-2026-10-25-FLO-013`; preserva a arte JPEG antiga; não autoriza promoção à produção.
 - **Nota posterior (2026-10-26):** após revisão do responsável, o enquadramento foi ampliado de `w:0.51`/`h:0.80` para `w:0.58`/`h:0.95` (commit `385bdf5`, deployment `f6b00e93-2405-4cd7-b617-c1efcf5723ca`). A checagem de sobreposição com o Mago passou a comparar silhuetas pintadas por alfa, com tolerância de 4% da largura do palco para a fumaça do mini-chefe; os quatro inimigos da Floresta continuam cobertos. Arte, atributos e comportamento não mudaram.
 
+## DEC-2026-10-26-QLT-018 — Validação física do Uivante das Sombras V2
+
+- **Área:** Oficina / Galeria
+- **Estado:** aprovado
+- **Data:** 2026-10-26
+- **Descrição:** validar no Safari de iPhone físico o deployment `f6b00e93-2405-4cd7-b617-c1efcf5723ca` do projeto isolado `a-ultima-lua-floresta-v2-qa`, com a escala final do Uivante (`w:0.58`/`h:0.95`) e a nova checagem de sobreposição por silhueta pintada.
+- **Escopo:** somente QA isolado. Não é produção do jogo; não altera `a-ultima-lua-qa`, GitHub Pages, `main` ou `qa-preview`.
+- **Evidência:** declaração do responsável após o teste no dispositivo (“Perfeito prossiga”); deployment `f6b00e93-2405-4cd7-b617-c1efcf5723ca`; URLs `https://a-ultima-lua-floresta-v2-qa.pages.dev/?v=f6b00e93` e `https://f6b00e93.a-ultima-lua-floresta-v2-qa.pages.dev/`; paridade SHA-256 entre o site público e `_qa-dist`; 191/191 Node e 74/74 Chromium; smoke público em 320/375/390 sem erros, 404 ou overflow; capturas em `evidencias/uivante-sombras-v2/`.
+- **Limite:** a validação é declaração humana; não há captura nem log do iPhone anexado ao repositório. Não cobre promoção à produção.
+- **Relação:** complementa `DEC-2026-10-26-FLO-017`; não autoriza promoção à produção.
+
 ## Rejeitado ou não autorizado
 
 - **DEC-2026-10-16-VIS-R01 — Respiração/idle por escala da imagem inteira:** rejeitado. O efeito foi percebido como zoom artificial. Não integrar sem nova decisão e novas artes adequadas.
@@ -209,5 +220,6 @@ Este índice é navegação; não altera o texto nem o estado original dos regis
 - `DEC-2026-10-25-FLO-014` — `aprovado` em 2026-10-25; integração commitada e publicada na branch feature; QA isolado e Safari complementados por `QLT-015`; produção não autorizada.
 - `DEC-2026-10-25-QLT-015` — `aprovado`; complementa `FLO-014` com o QA isolado publicado e a confirmação Safari; produção não autorizada.
 - `DEC-2026-10-26-FLO-016` — `aprovado`; nova arte e integração do Lobisomem Jovem, com QA isolado e Safari confirmados; produção não autorizada.
-- `DEC-2026-10-26-FLO-017` — `aprovado`; nova arte e integração do Uivante das Sombras, com QA isolado publicado e conferido por hash; Safari e produção não autorizados.
+- `DEC-2026-10-26-FLO-017` — `aprovado`; nova arte e integração do Uivante das Sombras, com QA isolado publicado e conferido por hash; Safari complementado por `QLT-018`; produção não autorizada.
+- `DEC-2026-10-26-QLT-018` — `aprovado`; validação física do Uivante no Safari/iPhone sobre o deployment `f6b00e93`; produção não autorizada.
 - `DEC-2026-10-25-DOC-012` — `aprovado` em 2026-10-25; a aprovação cobre a reconciliação documental, não push ou deploy.

@@ -26,7 +26,7 @@ Fontes: `src/game.js` (checkout `081fce4` para mecânica histórica; worktree `f
 | 2 | Lobo Cinzento | Lobo Cinzento | `lobo_cinzento` | comum, tier 1 | JPEG legado + PNG V2 | **aprovado** (V2), QA e Safari confirmados |
 | 3 | Lobisomem Jovem | Lobisomem Jovem | `lobisomem_jovem` | comum, tier 2 | JPEG legado + PNG V2 | **aprovado** (V2), QA e Safari confirmados |
 | 4 | Lobisomem Feroz | Lobisomem Feroz | `lobisomem_feroz` | comum, tier 3 | JPEG | **preservar** |
-| 5 | Uivante das Sombras | Uivante das Sombras | `uivante_sombras` | mini-chefe | JPEG legado + PNG V2 | **aprovado** (V2), integração e QA publicados |
+| 5 | Uivante das Sombras | Uivante das Sombras | `uivante_sombras` | mini-chefe | JPEG legado + PNG V2 | **aprovado** (V2), QA e Safari confirmados |
 | 6 | Alfa da Matilha | Alfa da Matilha | `alfa_matilha` | chefe | JPEG | **preservar** |
 | 7 | Romar | Romar | `romar` | especial não letal, 3 estágios | 3 JPEG | em uso sem avaliação documentada |
 | 8 | Lobo da Matilha | Lobo da Matilha | *sem ID próprio* | invocação do Alfa | **sem arte** | não se aplica; sem arte |
@@ -107,7 +107,7 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 - **Encontro:** **somente desafio direto** na tela do território. Primeiro rastro exige **14 abates comuns**; após cada vitória, mais **7**. Não aparece no pool comum nem no sorteio de 6%. A interface mostra “OCULTO / LOCALIZADO / RASTRO PERDIDO”.
 - **Comportamento:** **Presságio Sombrio** prepara **Golpe Brutal** (×1.75), anunciado e interrompível; a primeira preparação ocorre em turno aleatório 2–4 e o intervalo seguinte é 2–4 turnos +1. Abaixo de 40% HP recebe **Fúria Desesperada** (ATQ ×1.20, uma vez).
 - **Apresentação V2:** `portraitLayout:'natural'`, entrada própria em `COMBAT_PRESENTATION` (`x:0.70`, `w:0.58`, `h:0.95`) e seletor CSS `[data-actor="uivante_sombras"]`. A caixa é maior que a dos lobos comuns e preserva a hierarquia de mini-chefe em todas as larguras, com a cauda de fumaça dentro do palco. Em 375/390 px a fumaça do ombro passa na frente da capa do Mago (sobreposição de silhueta ≤ 4% da largura do palco); em 320 px não há contato.
-- **Estado:** arte, recorte e integração **aprovados** (`DEC-2026-10-26-FLO-017`); escala final aprovada pelo responsável em 2026-10-26; commits `bb7197a` e `385bdf5` publicados na branch feature; QA isolado `f6b00e93-2405-4cd7-b617-c1efcf5723ca` publicado e conferido por SHA-256. Atributos, Presságio Sombrio, Golpe Brutal, Fúria Desesperada, drops e progressão inalterados. Safari/iPhone e produção pendentes.
+- **Estado:** arte, recorte e integração **aprovados** (`DEC-2026-10-26-FLO-017`); escala final aprovada pelo responsável em 2026-10-26; commits `bb7197a` e `385bdf5` publicados na branch feature; QA isolado `f6b00e93-2405-4cd7-b617-c1efcf5723ca` publicado, conferido por SHA-256 e **validado no Safari/iPhone** (`DEC-2026-10-26-QLT-018`). Atributos, Presságio Sombrio, Golpe Brutal, Fúria Desesperada, drops e progressão inalterados. Produção pendente.
 - **Preservação:** a arte JPEG antiga permanece no repositório e no commit-base. Não há perfil de reação para o Uivante.
 - **Evidência:** `src/game.js:28`, `:184`, `:812-814`, `:851-857`, `:1399`, `:1962-1964`, `:2008-2012`, `:2043`, `:2154-2156`; commits `bb7197a` e `385bdf5`; deployments `7e466fdf` e `f6b00e93`; 191/191 Node e 74/74 Chromium; `evidencias/uivante-sombras-v2/`; manifesto.
 
@@ -158,17 +158,17 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 | Lobo Cinzento | aprovado (V2), QA e Safari | `FLO-014`, `QLT-015` | commit e QA publicados; produção pendente |
 | Lobisomem Jovem | aprovado (V2), QA e Safari | `FLO-016` | commit e QA publicados; produção pendente |
 | Lobisomem Feroz | preservar | `FLO-007` | nenhum |
-| Uivante das Sombras | aprovado (V2), integração e QA | `FLO-017` | commit e QA publicados; Safari e produção pendentes |
+| Uivante das Sombras | aprovado (V2), QA e Safari | `FLO-017`, `QLT-018` | commit e QA publicados; Safari confirmado; produção pendente |
 | Alfa da Matilha | preservar | `FLO-007` | nenhum |
 | Romar | sem avaliação documentada | `FLO-013` (proposto) | decidir escopo e avaliar artes |
 | Lobo da Matilha | sem arte | `FLO-013` (proposto) | decidir se terá arte própria |
 
 ## NÃO VERIFICADO
 
-- Execução nesta missão: **191 Node e 74 Chromium** (Chromium 151 do Playwright 1.62.1). Safari/iPhone de Lobo Comum, Lobo Cinzento e Lobisomem Jovem confirmados por declaração humana; sem captura ou log dos dispositivos. O Uivante das Sombras V2 **não** foi testado em Safari/iPhone.
-- Validação Safari/iPhone: declaração humana (`FLO-010`), sem captura ou log do dispositivo no repositório. `FLO-017` não inclui esse nível de evidência.
+- Execução nesta missão: **191 Node e 74 Chromium** (Chromium 151 do Playwright 1.62.1). Safari/iPhone de Lobo Comum, Lobo Cinzento, Lobisomem Jovem e Uivante das Sombras confirmados por declaração humana; sem captura ou log dos dispositivos.
+- Validação Safari/iPhone: declaração humana (`FLO-010`, `QLT-018`), sem captura ou log do dispositivo no repositório. `FLO-017` sozinho não inclui esse nível de evidência; `QLT-018` complementa.
 - Julgamento artístico de Romar e das artes legadas: não há registro de avaliação.
-- Paridade SHA-256 entre o deployment público e `_qa-dist`: conferida binariamente para o Uivante V2 (`7e466fdf`); nos deployments anteriores o conteúdo público foi conferido por leitura.
+- Paridade SHA-256 entre o deployment público e `_qa-dist`: conferida binariamente para o Uivante V2 (`7e466fdf` e `f6b00e93`); nos deployments anteriores o conteúdo público foi conferido por leitura.
 - Comportamento em WebKit: não executado.
 
 ## Evidências consultadas

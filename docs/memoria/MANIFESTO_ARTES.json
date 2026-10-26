@@ -347,10 +347,10 @@
       "modo": "RGBA",
       "transparencia": { "presente": true, "min": 0, "max": 255 },
       "versao": "V2_integracao_commitada",
-      "estado_aprovacao": "aprovado_integracao_publicada_em_qa",
+      "estado_aprovacao": "aprovado_e_validado_no_safari",
       "origem": "recorte RGBA derivado da fonte aprovada; somente o canal alfa foi normalizado",
       "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commits bb7197ab0e79844c128589d2160e40c05bab242a e 385bdf51873fa0e980228a3319af29040031cedc (escala final w 0.58/h 0.95); deployments 7e466fdf-248b-4dd2-b8e7-0230ea425e06 e f6b00e93-2405-4cd7-b617-c1efcf5723ca (não presentes na branch documental)",
-      "evidencia": "DEC-2026-10-26-FLO-017; commits bb7197a e 385bdf5; deployments 7e466fdf e f6b00e93; 191/191 Node e 74/74 Chromium; evidencias/uivante-sombras-v2/"
+      "evidencia": "DEC-2026-10-26-FLO-017; DEC-2026-10-26-QLT-018; commits bb7197a e 385bdf5; deployments 7e466fdf e f6b00e93; 191/191 Node e 74/74 Chromium; Safari/iPhone confirmado; evidencias/uivante-sombras-v2/"
     },
     {
       "id": "ART-FLORESTA-UIVANTE-SOMBRAS",
