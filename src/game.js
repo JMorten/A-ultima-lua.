@@ -22,6 +22,7 @@ const COMBAT_PRESENTATION = {
     mago:{ x:0.25, ground:0, w:0.44, h:0.72, ax:-0.5, ay:0 },
   },
   enemies:{
+    lobo_selvagem:{ x:0.73, ground:0, w:0.50, h:0.60, ax:-0.5, ay:0 },
     orc_batedor:{ x:0.68, ground:0, w:0.46, h:0.76, ax:-0.5, ay:0 },
     orc_guerreiro:{ x:0.69, ground:0, w:0.378, h:0.702, ax:-0.5, ay:0 },
     orc_capitao:{ x:0.69, ground:0, w:0.42, h:0.78, ax:-0.5, ay:0 },
@@ -168,10 +169,10 @@ const SLOT_BASE_STATS = {
 
 const MAPS = [
   {
-    name:'Floresta Uivante', sub:'Território dos lobos e lobisomens', theme:'🐺', fam:'fam-lobo',
+    arenaBackground:'assets/images/backgrounds/floresta_uivante_arena_v2.jpeg', name:'Floresta Uivante', sub:'Território dos lobos e lobisomens', theme:'🐺', fam:'fam-lobo',
     unlockLevel:1,
     monsters:[
-      { id:'lobo_selvagem', name:'Lobo Selvagem', emoji:'🐺', portrait:'assets/images/enemies/forest/lobo_selvagem.jpg', hp:30, atk:6,  def:2, xp:12, coinMin:4,  coinMax:8,  tier:0 },
+      { id:'lobo_selvagem', name:'Lobo Comum', emoji:'🐺', portrait:'assets/images/enemies/forest/lobo_comum_combat_v2.png', portraitLayout:'natural', hp:30, atk:6,  def:2, xp:12, coinMin:4,  coinMax:8,  tier:0 },
       { id:'lobo_cinzento',  name:'Lobo Cinzento', emoji:'🐺', portrait:'assets/images/enemies/forest/lobo_cinzento.jpg', hp:42, atk:8,  def:3, xp:18, coinMin:6,  coinMax:10, tier:1 },
       { id:'lobisomem_jovem',name:'Lobisomem Jovem', emoji:'🐾', portrait:'assets/images/enemies/forest/lobisomem_jovem.jpg', hp:58, atk:11, def:4, xp:26, coinMin:8,  coinMax:14, tier:2 },
       { id:'lobisomem_feroz', name:'Lobisomem Feroz', emoji:'🐾', portrait:'assets/images/enemies/forest/lobisomem_feroz.jpg', hp:75, atk:14, def:6, xp:35, coinMin:10, coinMax:18, tier:3 },
@@ -1978,7 +1979,7 @@ function updateEnemyBehaviorBeforeCounter(){
     m.frenzyTriggered=true;
     m.atk=Math.round(m.atk*1.25);
     m.def=Math.max(0,Math.round(m.def*0.70));
-    logPush('<span class="log-bad"><b>Frenesi!</b> Ferido, o Lobo Selvagem ataca com mais força, mas abandona a cautela e fica mais vulnerável.</span>');
+    logPush(`<span class="log-bad"><b>Frenesi!</b> Ferido, o ${m.name} ataca com mais força, mas abandona a cautela e fica mais vulnerável.</span>`);
   }
 }
 

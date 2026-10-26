@@ -879,7 +879,7 @@ test('Natural portrait layout is opt-in, survives Scout art changes and never ch
  e.run('fleeBattle();startBattle(2,MAPS[2].monsters[3],false)');assert.ok(!enemy().includes('portrait-natural'));
  e.run('ui.monster.portraitLayout="natural"');assert.match(enemy(),/portrait-natural/);
  e.run('delete ui.monster.portraitLayout');assert.ok(!enemy().includes('portrait-natural'));
- assert.equal(e.run('MAPS.flatMap(map=>[...map.monsters,map.boss,map.miniBoss]).filter(m=>m && m.portraitLayout).length'),5);
+ assert.equal(e.run('MAPS.flatMap(map=>[...map.monsters,map.boss,map.miniBoss]).filter(m=>m && m.portraitLayout).length'),6);
  const css=fs.readFileSync(path.join(root,'styles/game.css'),'utf8');
  assert.match(css,/\.portrait-ring\.portrait-natural\{height:auto;max-width:100%;\}/);
  assert.match(css,/\.portrait-ring\.portrait-natural > \.avatar-img-circle\{display:block;width:100%;height:auto;\}/);

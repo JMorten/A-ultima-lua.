@@ -5,7 +5,7 @@ const artifacts = process.env.AUL_PW_ARTIFACTS || path.join(__dirname, 'artifact
 
 module.exports = defineConfig({
   testDir: __dirname,
-  testMatch: ['post-playtest.spec.cjs', 'qa.spec.cjs', 'gorthak-reactions.spec.cjs', 'scout-reactions.spec.cjs', 'warrior-reactions.spec.cjs', 'captain-reactions.spec.cjs', 'butcher-reactions.spec.cjs'],
+  testMatch: ['post-playtest.spec.cjs', 'qa.spec.cjs', 'gorthak-reactions.spec.cjs', 'scout-reactions.spec.cjs', 'warrior-reactions.spec.cjs', 'captain-reactions.spec.cjs', 'butcher-reactions.spec.cjs', 'forest-v2.spec.cjs'],
   outputDir: path.join(artifacts, 'test-results'),
   reporter: [['list']],
   timeout: 45_000,
