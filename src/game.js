@@ -26,6 +26,7 @@ const COMBAT_PRESENTATION = {
     lobo_cinzento:{ x:0.73, ground:0, w:0.50, h:0.60, ax:-0.5, ay:0 },
     lobisomem_jovem:{ x:0.73, ground:0, w:0.50, h:0.70, ax:-0.5, ay:0 },
     uivante_sombras:{ x:0.70, ground:0, w:0.58, h:0.95, ax:-0.5, ay:0 },
+    romar:{ x:0.70, ground:0, w:0.46, h:0.92, ax:-0.5, ay:0 },
     orc_batedor:{ x:0.68, ground:0, w:0.46, h:0.76, ax:-0.5, ay:0 },
     orc_guerreiro:{ x:0.69, ground:0, w:0.378, h:0.702, ax:-0.5, ay:0 },
     orc_capitao:{ x:0.69, ground:0, w:0.42, h:0.78, ax:-0.5, ay:0 },
@@ -530,7 +531,7 @@ function classCombatAvatarHtml(classKey){
 function monsterAvatarHtml(monster, cssClass){
   // A arte normal do Batedor é transparente para Arena V2.3; o chifre ainda usa o asset de estado aprovado anteriormente.
   const imageSize=monster.id==='orc_batedor' && monster.portraitLayout==='natural' ? (monster.scoutHornVisual ? ' width="1254" height="1254"' : ' width="1427" height="1102"') : '';
-  if(monster.id==='romar') return `<span class="romar-avatar ${monster.romarTransform?'romar-transform':''}"><span aria-label="Romar">⚔️</span><img src="${monster.portrait}" class="${cssClass}" alt="Romar" onerror="this.style.display='none'"></span>`;
+  if(monster.id==='romar') return `<span class="romar-avatar ${monster.romarTransform?'romar-transform':''}"><span aria-label="Romar">⚔️</span><img src="${monster.portrait}" class="${cssClass}" alt="Romar" onload="this.parentElement.classList.add('romar-loaded')" onerror="this.style.display='none'"></span>`;
   if(monster.id==='orc_batedor' && monster.scoutHornVisual) return `<img src="assets/images/enemies/trenches/orc_batedor_alerta_combat.png" class="${cssClass}" alt="Orc Batedor tocando o chifre"${imageSize}>`;
   if(monster.portrait) return `<img src="${monster.portrait}" class="${cssClass}" alt="${monster.name}"${imageSize}>`;
   return monster.emoji;
@@ -1430,7 +1431,7 @@ function startRomarEncounter(){
   const band=player.level>=8 ? [1.15,1.10,1.08] : player.level>=6 ? [1.08,1.05,1.05] : [1,1,1];
   const hp=Math.round(300*band[0]), atk=24*band[1], def=12*band[2];
   ui.monster={id:'romar',name:'Romar',emoji:'⚔️',hp,hpMax:hp,atk,def,
-    battleBaseDef:def,portrait:'assets/images/enemies/forest/romar_15.jpg',
+    battleBaseDef:def,portrait:'assets/images/enemies/forest/romar_v2_estagio1.png',portraitLayout:'natural',
     romarStage:1,romarHistory:[],romarPrepared:null,romarSurgePending:false,
     romarChoice:false,romarTransform:false,romarLastMove:null};
   ui.inBattle=true; ui.locked=false; ui.skillCooldowns={}; ui.buffs={}; ui.tab='batalha';
@@ -1504,12 +1505,12 @@ function resolveRomarAction(kind,damage=0){
   }
   let transitioned=false;
   if(m.romarStage<2 && m.hp<=m.hpMax*0.65){
-    m.romarStage=2; m.portrait='assets/images/enemies/forest/romar_30.jpg';
+    m.romarStage=2; m.portrait='assets/images/enemies/forest/romar_v2_estagio2.png';
     m.romarPrepared=null; m.romarTransform=true; transitioned=true;
     logPush('<b>“Não... agora não.”</b> As runas pulsam. Romar perde a ação enquanto luta pelo controle.');
   }
   if(m.romarStage<3 && m.hp<=m.hpMax*0.35){
-    m.romarStage=3; m.portrait='assets/images/enemies/forest/romar_45.jpg';
+    m.romarStage=3; m.portrait='assets/images/enemies/forest/romar_v2_estagio3.png';
     m.romarTransform=true; transitioned=true; m.romarPrepared='rupture';
     logPush('Romar cai sobre um joelho; as marcas avançam. <b>“Fique... longe de mim.”</b>');
     logPush('<b>Ruptura da Marca preparada!</b> As runas concentram poder na arma. Uma ação de '+Math.ceil(m.hpMax*0.12)+' de dano pode interromper o golpe.');

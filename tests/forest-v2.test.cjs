@@ -73,3 +73,30 @@ test('Uivante das Sombras V2 usa arte recortada e preserva atributos e Golpe Bru
   assert.equal(png.readUInt32BE(20), 1024);
   assert.equal(png[25], 6); // RGBA
 });
+
+test('Romar V2 usa três artes recortadas e preserva estágios e escolha final', () => {
+  assert.match(game, /portrait:'assets\/images\/enemies\/forest\/romar_v2_estagio1\.png',portraitLayout:'natural'/);
+  assert.match(game, /m\.romarStage=2; m\.portrait='assets\/images\/enemies\/forest\/romar_v2_estagio2\.png'/);
+  assert.match(game, /m\.romarStage=3; m\.portrait='assets\/images\/enemies\/forest\/romar_v2_estagio3\.png'/);
+  assert.match(game, /romar:\{ x:0\.70, ground:0, w:0\.46, h:0\.92, ax:-0\.5, ay:0 \}/);
+  // Mecânica preservada: faixas dos estágios e escolha final.
+  assert.match(game, /m\.hp<=m\.hpMax\*0\.65/);
+  assert.match(game, /m\.hp<=m\.hpMax\*0\.35/);
+  assert.match(game, /function romarFinalChoice\(m\)/);
+  assert.match(game, /m\.hp=Math\.max\(m\.hpMax\*0\.20,m\.hp\)/);
+
+  const assets = {
+    1: '7382D5666C3186CA4849CB9F4E686C0ED628090B516F30627C48AC3B5B178FEE',
+    2: 'B9CC5745B42F6BDA46152EAE777C1D21238305F02539150CCA9DD92FB2AA34E7',
+    3: 'B3626F3C324967218D2197381431CECF7259886763F0DDB13B681B2521C506A7',
+  };
+  for (const [stage, hash] of Object.entries(assets)) {
+    const asset = `assets/images/enemies/forest/romar_v2_estagio${stage}.png`;
+    assert.equal(sha256(asset), hash, `hash do estágio ${stage}`);
+    const png = fs.readFileSync(path.join(root, asset));
+    assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+    assert.equal(png.readUInt32BE(16), 1024);
+    assert.equal(png.readUInt32BE(20), 1536);
+    assert.equal(png[25], 6); // RGBA
+  }
+});
