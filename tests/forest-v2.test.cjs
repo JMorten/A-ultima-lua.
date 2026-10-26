@@ -18,8 +18,7 @@ test('Floresta V2 usa somente os novos assets visuais aprovados', () => {
   assert.equal(sha256('assets/images/enemies/forest/lobo_comum_combat_v2.png'), 'B39E5D1ABC1DFB9A1297F624B7697AC96D5662446950CF7375F709F5DED6090D');
 });
 
-test('Lobisomens e Alfa continuam apontando para as artes originais', () => {
-  assert.match(game, /id:'lobisomem_jovem'.*portrait:'assets\/images\/enemies\/forest\/lobisomem_jovem\.jpg'/);
+test('Lobisomem Feroz e Alfa continuam apontando para as artes originais', () => {
   assert.match(game, /id:'lobisomem_feroz'.*portrait:'assets\/images\/enemies\/forest\/lobisomem_feroz\.jpg'/);
   assert.match(game, /boss:\{ id:'alfa_matilha'.*portrait:'assets\/images\/enemies\/forest\/alfa_matilha\.jpg'/);
 });
@@ -36,6 +35,22 @@ test('Lobo Cinzento V2 usa arte recortada e preserva atributos e Bote', () => {
 
   const asset = 'assets/images/enemies/forest/lobo_cinzento_combat_v2.png';
   assert.equal(sha256(asset), '5174F63C343350C87E493A79E853A3297E92F63D0EAE05A17681FCBC982A4D86');
+  const png = fs.readFileSync(path.join(root, asset));
+  assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(png.readUInt32BE(16), 1536);
+  assert.equal(png.readUInt32BE(20), 1024);
+  assert.equal(png[25], 6); // RGBA
+});
+
+test('Lobisomem Jovem V2 usa arte recortada e preserva atributos e Instinto de Caça', () => {
+  assert.match(game, /id:'lobisomem_jovem',\s*name:'Lobisomem Jovem'.*portrait:'assets\/images\/enemies\/forest\/lobisomem_jovem_combat_v2\.png'.*portraitLayout:'natural'/);
+  assert.match(game, /id:'lobisomem_jovem'.*hp:58, atk:11, def:4, xp:26, coinMin:8,\s+coinMax:14,\s+tier:2/);
+  assert.match(game, /m\.id==='lobisomem_jovem'/);
+  assert.match(game, /m\.youngHuntPrepared=true/);
+  assert.match(game, /youngHuntPrepared\)\{ mult=1\.40/);
+
+  const asset = 'assets/images/enemies/forest/lobisomem_jovem_combat_v2.png';
+  assert.equal(sha256(asset), 'E26AC2C0C4FE2B15F289C180FAE4BDB28406064174CAF3CF43488D0700D1D6A3');
   const png = fs.readFileSync(path.join(root, asset));
   assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
   assert.equal(png.readUInt32BE(16), 1536);

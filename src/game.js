@@ -24,6 +24,7 @@ const COMBAT_PRESENTATION = {
   enemies:{
     lobo_selvagem:{ x:0.73, ground:0, w:0.50, h:0.60, ax:-0.5, ay:0 },
     lobo_cinzento:{ x:0.73, ground:0, w:0.50, h:0.60, ax:-0.5, ay:0 },
+    lobisomem_jovem:{ x:0.73, ground:0, w:0.50, h:0.70, ax:-0.5, ay:0 },
     orc_batedor:{ x:0.68, ground:0, w:0.46, h:0.76, ax:-0.5, ay:0 },
     orc_guerreiro:{ x:0.69, ground:0, w:0.378, h:0.702, ax:-0.5, ay:0 },
     orc_capitao:{ x:0.69, ground:0, w:0.42, h:0.78, ax:-0.5, ay:0 },
@@ -175,7 +176,7 @@ const MAPS = [
     monsters:[
       { id:'lobo_selvagem', name:'Lobo Comum', emoji:'🐺', portrait:'assets/images/enemies/forest/lobo_comum_combat_v2.png', portraitLayout:'natural', hp:30, atk:6,  def:2, xp:12, coinMin:4,  coinMax:8,  tier:0 },
       { id:'lobo_cinzento',  name:'Lobo Cinzento', emoji:'🐺', portrait:'assets/images/enemies/forest/lobo_cinzento_combat_v2.png', portraitLayout:'natural', hp:42, atk:8,  def:3, xp:18, coinMin:6,  coinMax:10, tier:1 },
-      { id:'lobisomem_jovem',name:'Lobisomem Jovem', emoji:'🐾', portrait:'assets/images/enemies/forest/lobisomem_jovem.jpg', hp:58, atk:11, def:4, xp:26, coinMin:8,  coinMax:14, tier:2 },
+      { id:'lobisomem_jovem',name:'Lobisomem Jovem', emoji:'🐾', portrait:'assets/images/enemies/forest/lobisomem_jovem_combat_v2.png', portraitLayout:'natural', hp:58, atk:11, def:4, xp:26, coinMin:8,  coinMax:14, tier:2 },
       { id:'lobisomem_feroz', name:'Lobisomem Feroz', emoji:'🐾', portrait:'assets/images/enemies/forest/lobisomem_feroz.jpg', hp:75, atk:14, def:6, xp:35, coinMin:10, coinMax:18, tier:3 },
     ],
     boss:{ id:'alfa_matilha', name:'Alfa da Matilha', emoji:'🐺', portrait:'assets/images/enemies/forest/alfa_matilha.jpg', hp:300, atk:30, def:14, xp:130, coinMin:40, coinMax:60, isBoss:true },

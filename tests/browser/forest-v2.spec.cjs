@@ -28,6 +28,7 @@ async function openForestBattle(page, width, enemyName = 'Lobo Comum') {
 for (const [wolfName, slug, expectedAsset] of [
   ['Lobo Comum', 'comum', 'assets/images/enemies/forest/lobo_comum_combat_v2.png'],
   ['Lobo Cinzento', 'cinzento', 'assets/images/enemies/forest/lobo_cinzento_combat_v2.png'],
+  ['Lobisomem Jovem', 'jovem', 'assets/images/enemies/forest/lobisomem_jovem_combat_v2.png'],
 ]) {
   for (const width of [320, 375, 390]) {
     test(`${wolfName} V2: enquadramento real em ${width}px`, async ({page}) => {
@@ -91,7 +92,6 @@ for (const [wolfName, slug, expectedAsset] of [
 test('Floresta V2 não altera os assets dos outros encontros', async ({page}) => {
   await openForestBattle(page, 390);
   for (const [name, expectedPath] of [
-    ['Lobisomem Jovem', 'assets/images/enemies/forest/lobisomem_jovem.jpg'],
     ['Lobisomem Feroz', 'assets/images/enemies/forest/lobisomem_feroz.jpg'],
     ['Alfa da Matilha', 'assets/images/enemies/forest/alfa_matilha.jpg']
   ]) {
