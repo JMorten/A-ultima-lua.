@@ -11,7 +11,8 @@
 - Lobo Comum V2 versionado: commits `4236b84` e `16f4c9c` publicados na branch feature.
 - Lobo Cinzento V2 aprovado, integrado e publicado: `DEC-2026-10-25-FLO-014`; commit `83eb677` publicado.
 - QA isolado do Lobo Cinzento publicado (`45362c1d-ca92-4c0b-b6d4-6b51c258fc9d`) e funcionamento confirmado no Safari/iPhone — `DEC-2026-10-25-QLT-015`.
-- Revalidação: **189/189 Node** e **68/68 Chromium** (Chromium 151 do Playwright 1.62.1).
+- Lobisomem Jovem V2 aprovado, integrado e publicado: `DEC-2026-10-26-FLO-016`; commit `25ae3fb`; QA `860aa1d1-a3cf-4715-a89e-2a07d7e0126b`; Safari/iPhone confirmado.
+- Revalidação: **190/190 Node** e **71/71 Chromium** (Chromium 151 do Playwright 1.62.1).
 
 ## Pendente — exige decisão humana
 
@@ -23,7 +24,7 @@
 ## Fora de escopo até nova decisão
 
 - Reações visuais de dano/recuo/crítico na Floresta: o motor compartilhado cobre somente as Trincheiras.
-- Substituição de Lobisomem Jovem, Lobisomem Feroz e Alfa da Matilha: preservados por `DEC-ND-FLO-007`.
+- Substituição de Lobisomem Feroz e Alfa da Matilha: preservados por `DEC-ND-FLO-007`; o Lobisomem Jovem foi aprovado em `DEC-2026-10-26-FLO-016`.
 - Reutilização automática dos assets do Lobo Comum ou do Lobo Cinzento para outra entidade.
 - Qualquer mudança de mecânica, balanceamento, atributo, item ou progressão.
 

@@ -24,7 +24,7 @@ Fontes: `src/game.js` (checkout `081fce4` para mecânica histórica; worktree `f
 |---|---|---|---|---|---|---|
 | 1 | Lobo Selvagem | Lobo Comum | `lobo_selvagem` | comum, tier 0 | JPEG legado + PNG V2 | **aprovado** (V2), commitado na branch feature |
 | 2 | Lobo Cinzento | Lobo Cinzento | `lobo_cinzento` | comum, tier 1 | JPEG legado + PNG V2 | **aprovado** (V2), QA e Safari confirmados |
-| 3 | Lobisomem Jovem | Lobisomem Jovem | `lobisomem_jovem` | comum, tier 2 | JPEG | **preservar** |
+| 3 | Lobisomem Jovem | Lobisomem Jovem | `lobisomem_jovem` | comum, tier 2 | JPEG legado + PNG V2 | **aprovado** (V2), QA e Safari confirmados |
 | 4 | Lobisomem Feroz | Lobisomem Feroz | `lobisomem_feroz` | comum, tier 3 | JPEG | **preservar** |
 | 5 | Uivante das Sombras | Uivante das Sombras | `uivante_sombras` | mini-chefe | JPEG | em uso, não reavaliado; sem decisão |
 | 6 | Alfa da Matilha | Alfa da Matilha | `alfa_matilha` | chefe | JPEG | **preservar** |
@@ -78,11 +78,14 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 
 - **Papel:** comum, `tier: 2`. XP 26; moedas 8–14.
 - **Stats base:** 58 HP · 11 ATQ · 4 DEF. **Efetivos:** 65/12/4; com Onda Sombria 85/16/5.
-- **Arte:** `assets/images/enemies/forest/lobisomem_jovem.jpg` — 480×576, JPEG, SHA-256 `3D6C792EEF5C7F1C20D7267A1C0405A9D0FC34B2F5F244668D1F34B8072E18DD`.
+- **Arte legada preservada:** `assets/images/enemies/forest/lobisomem_jovem.jpg` — 480×576, JPEG, SHA-256 `3D6C792EEF5C7F1C20D7267A1C0405A9D0FC34B2F5F244668D1F34B8072E18DD`.
+- **Fonte aprovada:** `lobisomem-jovem-v2-aprovado.png` — 1536×1024, PNG RGBA, SHA-256 `59F9F30840F7AD224281633EE613E5D1BF7C87B4023036E1606740BCD8753276` (transparência real; cantos alpha 0).
+- **Arte V2 (branch feature, commit `25ae3fb`):** `assets/images/enemies/forest/lobisomem_jovem_combat_v2.png` — 1536×1024, PNG RGBA, SHA-256 `E26AC2C0C4FE2B15F289C180FAE4BDB28406064174CAF3CF43488D0700D1D6A3`.
 - **Encontro:** 25% no estágio 1; 40% no estágio 2.
 - **Comportamento:** quando o jogador usa uma ação não ofensiva (cura, poção, suporte), ganha **Instinto de Caça** (×1.40) na ação seguinte.
-- **Estado:** **preservar** (`DEC-ND-FLO-007`). Sem V2.
-- **Evidência:** `src/game.js:176`, `:2259-2264`, `:1995`; manifesto.
+- **Estado:** arte e recorte **aprovados** (`DEC-2026-10-26-FLO-016`); integração commitada e publicada na branch feature (`25ae3fb`), QA isolado `860aa1d1` e Safari/iPhone confirmados. Atributos, Instinto de Caça, recompensas e progressão inalterados. Produção pendente.
+- **Preservação:** `FLO-016` substitui `FLO-007` **somente** para o Lobisomem Jovem; Lobisomem Feroz e Alfa permanecem preservados.
+- **Evidência:** `src/game.js:178`, `:2312-2315`, `:2047`, `:1956`; commit `25ae3fb`; deployment `860aa1d1`; 190/190 Node e 71/71 Chromium; `evidencias/lobisomem-jovem-v2/`; manifesto.
 
 ## 4. Lobisomem Feroz — `lobisomem_feroz`
 
@@ -150,7 +153,7 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 |---|---|---|---|
 | Lobo Comum | aprovado (visual e Safari) | `FLO-009`, `FLO-010` | commitado e publicado; QA isolado autorizado; produção pendente |
 | Lobo Cinzento | aprovado (V2), QA e Safari | `FLO-014`, `QLT-015` | commit e QA publicados; produção pendente |
-| Lobisomem Jovem | preservar | `FLO-007` | nenhum |
+| Lobisomem Jovem | aprovado (V2), QA e Safari | `FLO-016` | commit e QA publicados; produção pendente |
 | Lobisomem Feroz | preservar | `FLO-007` | nenhum |
 | Uivante das Sombras | não reavaliado | `FLO-013` (proposto) | decidir arte V2 |
 | Alfa da Matilha | preservar | `FLO-007` | nenhum |
@@ -159,7 +162,7 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 
 ## NÃO VERIFICADO
 
-- Execução nesta missão: **189 Node e 68 Chromium** (Chromium 151 do Playwright 1.62.1). Safari/iPhone confirmado por declaração humana em `QLT-015`; sem captura ou log do dispositivo.
+- Execução nesta missão: **190 Node e 71 Chromium** (Chromium 151 do Playwright 1.62.1). Safari/iPhone de Lobo Comum, Lobo Cinzento e Lobisomem Jovem confirmados por declaração humana; sem captura ou log dos dispositivos.
 - Validação Safari/iPhone: declaração humana (`FLO-010`), sem captura ou log do dispositivo no repositório.
 - Julgamento artístico de Romar e das artes legadas: não há registro de avaliação.
 - Paridade SHA-256 entre o deployment público e `_qa-dist`: o conteúdo público foi conferido por leitura, não por hash de download binário.
@@ -167,4 +170,4 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 
 ## Evidências consultadas
 
-`src/game.js` (linhas citadas), `src/persistence.js`, `styles/game.css`, `docs/memoria/MANIFESTO_ARTES.json`, `docs/memoria/DECISOES_APROVADAS.md`, commits `4236b84`, `16f4c9c` e `83eb677`, deployment `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d`, `tests/miniboss-progression.test.cjs`, `tests/romar-combat.test.cjs`, `tests/romar-discoveries.test.cjs`, `tests/romar-playtest-quest.test.cjs`, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`; hashes e dimensões recalculados em 2026-10-25.
+`src/game.js` (linhas citadas), `src/persistence.js`, `styles/game.css`, `docs/memoria/MANIFESTO_ARTES.json`, `docs/memoria/DECISOES_APROVADAS.md`, commits `4236b84`, `16f4c9c`, `83eb677` e `25ae3fb`, deployments `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` e `860aa1d1-a3cf-4715-a89e-2a07d7e0126b`, `tests/miniboss-progression.test.cjs`, `tests/romar-combat.test.cjs`, `tests/romar-discoveries.test.cjs`, `tests/romar-playtest-quest.test.cjs`, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`; hashes e dimensões recalculados em 2026-10-25/26.

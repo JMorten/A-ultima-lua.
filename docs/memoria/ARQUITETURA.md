@@ -25,11 +25,11 @@ A Última Lua é uma aplicação web estática, sem framework de runtime. `index
 
 ## Arena V2.4
 
-O palco separa cenário, atores, HUD e efeitos. Retratos naturais usam contenção e ancoragem inferior; o motor de reações atua sobre a superfície do ator e restaura o estado após cancelamento. Trincheiras são a implementação visual mais completa. No commit-base `11bff6c`, a Floresta ainda não tinha apresentação V2; a branch feature recebeu o Lobo Comum em `16f4c9c` e o Lobo Cinzento em `83eb677`, e o QA isolado publicado é um nível distinto de evidência (ver `ESTADO_ATUAL.md` e `DEC-2026-10-25-QLT-011`).
+O palco separa cenário, atores, HUD e efeitos. Retratos naturais usam contenção e ancoragem inferior; o motor de reações atua sobre a superfície do ator e restaura o estado após cancelamento. Trincheiras são a implementação visual mais completa. No commit-base `11bff6c`, a Floresta ainda não tinha apresentação V2; a branch feature recebeu o Lobo Comum em `16f4c9c`, o Lobo Cinzento em `83eb677` e o Lobisomem Jovem em `25ae3fb`, e o QA isolado publicado é um nível distinto de evidência (ver `ESTADO_ATUAL.md` e `DEC-2026-10-25-QLT-011`).
 
-### Floresta Uivante V2 — Lobo Comum e Lobo Cinzento
+### Floresta Uivante V2 — Lobo Comum, Lobo Cinzento e Lobisomem Jovem
 
-Na branch `feature/floresta-uivante-v2-etapa1`, baseada em `11bff6c`, o mapa da Floresta recebe `arenaBackground` próprio. O Lobo Comum (`16f4c9c`) e o Lobo Cinzento (`83eb677`) mantêm ID e atributos existentes, trocando somente nome apresentado quando aplicável, asset e layout visual. `COMBAT_PRESENTATION` posiciona ambos à direita; o Mago continua usando seu asset original à esquerda. O Lobo Comum foi validado no Safari físico (`FLO-010`); o Cinzento foi aprovado (`FLO-014`), publicado no QA isolado e confirmado no Safari/iPhone (`QLT-015`). Produção não foi alterada. O inventário e os estados de aprovação das oito entidades da Floresta estão em [BESTIARIO_FLORESTA_UIVANTE.md](BESTIARIO_FLORESTA_UIVANTE.md).
+Na branch `feature/floresta-uivante-v2-etapa1`, baseada em `11bff6c`, o mapa da Floresta recebe `arenaBackground` próprio. Lobo Comum (`16f4c9c`), Lobo Cinzento (`83eb677`) e Lobisomem Jovem (`25ae3fb`) mantêm ID e atributos existentes, trocando somente nome apresentado quando aplicável, asset e layout visual. `COMBAT_PRESENTATION` posiciona os três à direita; o Mago continua usando seu asset original à esquerda. Os três foram validados no Safari físico (`FLO-010`, `QLT-015`, `FLO-016`). Produção não foi alterada. O inventário e os estados de aprovação das oito entidades da Floresta estão em [BESTIARIO_FLORESTA_UIVANTE.md](BESTIARIO_FLORESTA_UIVANTE.md).
 
 ## QA
 

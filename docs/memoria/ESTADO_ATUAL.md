@@ -1,8 +1,8 @@
 # Estado atual
 
-**Snapshot documental:** 2026-10-25 (reconciliação documental).
+**Snapshot documental:** 2026-10-26 (Lobisomem Jovem V2).
 **Checkout documental:** `D:\Projetos\A-ultima-lua`.
-**Branch:** `docs/palacio-memoria-v1`, base `6d5eab17df0ac245ac3c070424fa9a3980dc0a6d`. Este documento descreve o estado do worktree; o commit documental desta atualização será o seguinte a essa base.
+**Branch:** `docs/palacio-memoria-v1`, base `233cefb70e0a477d84e558e5b0ce21cd480ed4b3`. Este documento descreve o estado do worktree; o commit documental desta atualização será o seguinte a essa base.
 **Natureza:** este arquivo descreve estado. Decisões e aprovações ficam em [DECISOES_APROVADAS.md](DECISOES_APROVADAS.md).
 
 ## Como ler
@@ -11,20 +11,20 @@
 - **Snapshots anteriores** preserva o texto de inspeções antigas, mesmo quando superado; nada ali descreve o presente.
 - Nome de arquivo, relatório, commit ou deploy não prova, sozinho, aprovação artística ou de game design.
 
-## Linhas de desenvolvimento (inspeção de 2026-10-25)
+## Linhas de desenvolvimento (inspeção de 2026-10-26)
 
 | Branch | HEAD | Worktree | Situação no snapshot |
 |---|---|---|---|
-| `docs/palacio-memoria-v1` | `6d5eab1` | raiz `D:\Projetos\A-ultima-lua` | Linha documental canônica. `origin/docs/palacio-memoria-v1` está no mesmo commit; o registro desta etapa será o commit seguinte. |
+| `docs/palacio-memoria-v1` | `233cefb` | raiz `D:\Projetos\A-ultima-lua` | Linha documental canônica. `origin/docs/palacio-memoria-v1` está no mesmo commit; o registro desta etapa será o commit seguinte. |
 | `qa-preview` | `081fce4` | — | 1 commit à frente e 1 atrás de `origin/qa-preview` (`11bff6c`). |
-| `feature/floresta-uivante-v2-etapa1` | `83eb677` | `laboratorios/floresta-uivante-v2-etapa1/checkout` | Lobo Comum V2 (`4236b84`, `16f4c9c`) e Lobo Cinzento V2 (`83eb677`) commitados e publicados em `origin`. |
+| `feature/floresta-uivante-v2-etapa1` | `25ae3fb` | `laboratorios/floresta-uivante-v2-etapa1/checkout` | Lobo Comum (`4236b84`, `16f4c9c`), Lobo Cinzento (`83eb677`) e Lobisomem Jovem (`25ae3fb`) commitados e publicados em `origin`. |
 | `fix/pos-playtest-v1` | `11bff6c` | `laboratorios/pos-playtest-v1/candidate` | Candidata pós-playtest. |
 | `main` | `f7e25ef` | `laboratorios/protocolo-autonomo-v1/main-integracao` | 8 commits à frente de `origin/main` (`4833b5f`). |
 | `release/trincheiras-rc1` | `e6a965e` | — | 15 commits à frente de `origin/main`. |
 | `docs/protocolo-autonomo-v1` | `990fb38` | `laboratorios/protocolo-autonomo-v1/checkout` | Documentação do protocolo autônomo. |
 
 - A raiz é um **worktree separado**; o código da Floresta V2 não está nela. Evidência de código deve ser lida no worktree da branch `feature/floresta-uivante-v2-etapa1`.
-- Não rastreados preservados no checkout documental: `Imagem do ChatGPT 18 de out. de 2026, 12_30_18.jpg`, `lobo-comum-v2-aprovado.png`, `lobo-cinzento-v2-aprovado.png` e `pacote-floresta-v2.zip`.
+- Não rastreados preservados no checkout documental: `Imagem do ChatGPT 18 de out. de 2026, 12_30_18.jpg`, `lobo-comum-v2-aprovado.png`, `lobo-cinzento-v2-aprovado.png`, `lobisomem-jovem-v2-aprovado.png`, `comparacao-lobisomem-jovem-v2.png` e `pacote-floresta-v2.zip`.
 - Esta documentação não sincroniza, não faz merge e não resolve a divergência entre branches.
 
 ## Níveis de evidência
@@ -43,15 +43,16 @@ Não confundir os seis níveis abaixo; cada registro deve dizer a qual pertence.
 - O bestiário completo, com IDs, assets, condições de encontro e estados de aprovação, está em [BESTIARIO_FLORESTA_UIVANTE.md](BESTIARIO_FLORESTA_UIVANTE.md). São **oito entidades**.
 - **Lobo Comum V2** (`lobo_selvagem`): aparência e recorte aprovados; combate validado no Safari físico em 2026-10-25 (`DEC-2026-10-25-FLO-010`). Integração commitada e publicada na branch `feature/floresta-uivante-v2-etapa1` (`4236b84` e `16f4c9c`).
 - **Lobo Cinzento V2** (`lobo_cinzento`): arte, recorte e integração aprovados (`DEC-2026-10-25-FLO-014`); commit `83eb677` publicado na branch feature. QA isolado publicado em `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` e funcionamento confirmado no Safari/iPhone (`DEC-2026-10-25-QLT-015`). Atributos, Bote, recompensas e progressão inalterados; arte antiga preservada.
-- **QA isolado**: dois deployments no projeto `a-ultima-lua-floresta-v2-qa`: `3e8e9679-2441-46a6-a907-928166b5194e` (Lobo Comum) e `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` (Lobo Cinzento). Ambos são QA isolado; não são produção e não alteraram `a-ultima-lua-qa` nem GitHub Pages.
+- **Lobisomem Jovem V2** (`lobisomem_jovem`): arte, recorte e integração aprovados (`DEC-2026-10-26-FLO-016`); commit `25ae3fb` publicado na branch feature. QA isolado `860aa1d1-a3cf-4715-a89e-2a07d7e0126b` e Safari/iPhone confirmados. Atributos, Instinto de Caça, recompensas e progressão inalterados; arte antiga preservada.
+- **QA isolado**: três deployments no projeto `a-ultima-lua-floresta-v2-qa`: `3e8e9679-2441-46a6-a907-928166b5194e` (Lobo Comum), `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` (Lobo Cinzento) e `860aa1d1-a3cf-4715-a89e-2a07d7e0126b` (Lobisomem Jovem). Todos são QA isolado; não são produção e não alteraram `a-ultima-lua-qa` nem GitHub Pages.
 - **Produção**: inalterada. Nenhuma promoção autorizada.
-- **Lobisomem Jovem, Lobisomem Feroz e Alfa da Matilha**: artes atuais preservadas por `DEC-ND-FLO-007`; sem autorização para substituição.
-- **Uivante das Sombras, Romar e Lobo da Matilha**: sem arte V2; permanecem no escopo histórico de `DEC-2026-10-25-FLO-013` (proposto). O Lobo Cinzento foi resolvido por `FLO-014`.
+- **Lobisomem Feroz e Alfa da Matilha**: artes atuais preservadas por `DEC-ND-FLO-007`; sem autorização para substituição.
+- **Uivante das Sombras, Romar e Lobo da Matilha**: sem arte V2; permanecem no escopo histórico de `DEC-2026-10-25-FLO-013` (proposto). Lobo Cinzento e Lobisomem Jovem foram resolvidos por `FLO-014` e `FLO-016`.
 - **Reações visuais**: o motor compartilhado cobre somente os atores das Trincheiras; nenhum inimigo da Floresta tem perfil de dano/recuo/crítico.
 
 ## Cartografia
 
-- T1 — Floresta Uivante: implementada; apresentações V2 do Lobo Comum e do Lobo Cinzento aprovadas, commitadas e com QA isolado; o Cinzento foi confirmado no Safari. Produção inalterada.
+- T1 — Floresta Uivante: implementada; apresentações V2 do Lobo Comum, Lobo Cinzento e Lobisomem Jovem aprovadas, commitadas e com QA isolado; os três foram confirmados no Safari. Produção inalterada.
 - T2 — Pântano Podre: implementado, incluindo Senhor do Pântano, materiais e fluxo de vitória pendente documentados.
 - T3 — Trincheiras Orc: progressão determinística, Xamã ritualístico, Gorthak e apresentação Arena V2.4 implementados na linha QA/release.
 - T4 — Cripta Sangrenta: definida no código com inimigos, miniboss e boss; sem evidência de revisão visual V2 equivalente às Trincheiras.
@@ -63,13 +64,13 @@ Não confundir os seis níveis abaixo; cada registro deve dizer a qual pertence.
 - Persistência em `localStorage`, chave `a-ultima-lua.checkpoint`, schema 5 no checkout ativo.
 - Arena V2.4 usa cenário, atores, HUD e efeitos em camadas; Trincheiras têm cenário territorial próprio e a Floresta V2 tem cenário próprio na branch feature.
 - QA Debug é produzido por `_qa/build.cjs` para `_qa-dist`; a produção normal não referencia o painel de debug.
-- Testes Node e Playwright existem. A revalidação de 2026-10-25 registrou **189/189 Node** e **68/68 Chromium**. Números antigos (171/51, 185/61, 188/65) continuam como snapshots históricos.
+- Testes Node e Playwright existem. A revalidação de 2026-10-26 registrou **190/190 Node** e **71/71 Chromium**. Números antigos (171/51, 185/61, 188/65, 189/68) continuam como snapshots históricos.
 
 ## Divergências abertas
 
 1. `qa-preview` local (`081fce4`) e `origin/qa-preview` (`11bff6c`) continuam divergentes; reconciliação não decidida.
 2. Produção do jogo permanece inalterada; promoção não autorizada.
-3. Escopo visual de Uivante das Sombras, Romar e Lobo da Matilha permanece sem decisão (`FLO-013`, histórico proposto); o Cinzento foi resolvido por `FLO-014`.
+3. Escopo visual de Uivante das Sombras, Romar e Lobo da Matilha permanece sem decisão (`FLO-013`, histórico proposto); Lobo Cinzento e Lobisomem Jovem foram resolvidos por `FLO-014` e `FLO-016`.
 4. `PROJECT-CHECKPOINT.md` continua descrevendo um estado de 2026-10-13 e `main`.
 5. Contagens de teste antigas continuam citadas em documentos históricos e não devem ser somadas.
 6. Laboratórios podem conter propostas ou resultados locais; presença em `laboratorios/` não significa integração ou aprovação.

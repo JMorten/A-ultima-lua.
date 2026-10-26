@@ -75,6 +75,7 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Evidência:** instrução do responsável na missão Floresta Uivante V2 e arquivos locais inspecionados.
 - **Arquivos conhecidos:** `assets/images/characters/combat/mago.png`, artes atuais da Floresta, pacote e laboratório do Lobo.
 - **Relação:** complementa a Arena V2.4; integração ainda pendente.
+- **Nota posterior (2026-10-26):** a preservação do Lobisomem Jovem foi substituída por `DEC-2026-10-26-FLO-016`; Lobisomem Feroz e Alfa permanecem preservados.
 
 ## DEC-2026-10-25-FLO-008 — Recorte do Lobo Comum V2
 
@@ -141,6 +142,7 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Arquivos conhecidos:** `src/game.js`, assets da Floresta, manifesto.
 - **Relação:** complementa `DEC-ND-FLO-007` e `DEC-2026-10-25-FLO-009`; qualquer arte nova exige decisão específica.
 - **Resolução parcial (2026-10-25):** o escopo do Lobo Cinzento foi resolvido por `DEC-2026-10-25-FLO-014`; Uivante das Sombras, Romar e Lobo da Matilha permanecem pendentes.
+- **Nota posterior (2026-10-26):** o Lobisomem Jovem foi substituído por `DEC-2026-10-26-FLO-016`; Lobisomem Feroz e Alfa permanecem preservados.
 
 ## DEC-2026-10-25-FLO-014 — Aprovação do Lobo Cinzento V2
 
@@ -164,6 +166,18 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Limite:** a validação Safari é declaração humana; não há captura ou log do iPhone anexado ao repositório.
 - **Relação:** complementa `DEC-2026-10-25-FLO-014`; não autoriza promoção à produção.
 
+## DEC-2026-10-26-FLO-016 — Aprovação e validação Safari do Lobisomem Jovem V2
+
+- **Área:** Galeria / Oficina
+- **Estado:** aprovado
+- **Data:** 2026-10-26
+- **Descrição:** aprovar a nova arte do Lobisomem Jovem V2 (homem no início da transformação), o recorte RGBA derivado do arquivo fornecido e a integração na Arena V2. A integração preserva ID, atributos (58/11/4), Instinto de Caça, recompensas e progressão; altera somente imagem, enquadramento e posição. O QA isolado foi publicado e validado no Safari/iPhone pelo responsável.
+- **Justificativa:** integrar o Jovem à linguagem visual da Floresta V2 sem alterar combate e preservando a identidade humana parcialmente transformada.
+- **Evidência:** autorização e confirmação do responsável; fonte `lobisomem-jovem-v2-aprovado.png` (1536×1024, RGBA, SHA-256 `59F9F30840F7AD224281633EE613E5D1BF7C87B4023036E1606740BCD8753276`); asset `assets/images/enemies/forest/lobisomem_jovem_combat_v2.png` (1536×1024, PNG RGBA, SHA-256 `E26AC2C0C4FE2B15F289C180FAE4BDB28406064174CAF3CF43488D0700D1D6A3`); commit `25ae3fbba448d3e6ce49147bbbfdc51829d738e2`; deployment `860aa1d1-a3cf-4715-a89e-2a07d7e0126b`; 190/190 Node e 71/71 Chromium; capturas em `evidencias/lobisomem-jovem-v2/`.
+- **Limite:** a validação Safari é declaração humana; não há captura ou log do iPhone anexado ao repositório.
+- **Arquivos conhecidos:** `src/game.js`, `styles/game.css`, asset novo, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`, `tests/persistence.test.cjs`.
+- **Relação:** substitui `DEC-ND-FLO-007` **somente** para o Lobisomem Jovem; Feroz e Alfa permanecem preservados; não autoriza promoção à produção.
+
 ## Rejeitado ou não autorizado
 
 - **DEC-2026-10-16-VIS-R01 — Respiração/idle por escala da imagem inteira:** rejeitado. O efeito foi percebido como zoom artificial. Não integrar sem nova decisão e novas artes adequadas.
@@ -176,8 +190,9 @@ Este índice é navegação; não altera o texto nem o estado original dos regis
 - `DEC-2026-10-25-FLO-008` (pendente) — superada por `DEC-2026-10-25-FLO-009` (recorte aprovado) e `DEC-2026-10-25-FLO-010` (validação física).
 - `DEC-2026-10-25-FLO-009` — o item “Safari/iPhone pendente” foi complementado por `DEC-2026-10-25-FLO-010`; o item “não autoriza deploy” permanece válido e é delimitado por `DEC-2026-10-25-QLT-011`; commit, push e produção continuam não autorizados.
 - `DEC-2026-10-20-FIX-006` — promoção à produção segue pendente.
-- `DEC-ND-FLO-007` — preservação mantida; a integração do Lobo Comum foi executada localmente (`FLO-009`) e validada (`FLO-010`).
-- `DEC-2026-10-25-FLO-013` — permanece `proposto`; o escopo do Lobo Cinzento foi resolvido por `DEC-2026-10-25-FLO-014`; Uivante das Sombras, Romar e Lobo da Matilha seguem pendentes.
+- `DEC-ND-FLO-007` — preservação mantida para Mago, Lobisomem Feroz e Alfa; o Lobisomem Jovem foi substituído por `DEC-2026-10-26-FLO-016`; o Lobo Comum foi executado em `FLO-009`/`FLO-010`.
+- `DEC-2026-10-25-FLO-013` — permanece `proposto`; Lobo Cinzento e Lobisomem Jovem foram resolvidos por `DEC-2026-10-25-FLO-014` e `DEC-2026-10-26-FLO-016`; Uivante das Sombras, Romar e Lobo da Matilha seguem pendentes.
 - `DEC-2026-10-25-FLO-014` — `aprovado` em 2026-10-25; integração commitada e publicada na branch feature; QA isolado e Safari complementados por `QLT-015`; produção não autorizada.
 - `DEC-2026-10-25-QLT-015` — `aprovado`; complementa `FLO-014` com o QA isolado publicado e a confirmação Safari; produção não autorizada.
+- `DEC-2026-10-26-FLO-016` — `aprovado`; nova arte e integração do Lobisomem Jovem, com QA isolado e Safari confirmados; produção não autorizada.
 - `DEC-2026-10-25-DOC-012` — `aprovado` em 2026-10-25; a aprovação cobre a reconciliação documental, não push ou deploy.

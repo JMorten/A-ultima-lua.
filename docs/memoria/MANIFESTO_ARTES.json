@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "snapshot": "2026-10-25 (Lobo Cinzento V2)",
+  "snapshot": "2026-10-26 (Lobisomem Jovem V2)",
   "escopo": "Artes de combate e cenários diretamente relevantes às Trincheiras aprovadas e à Floresta Uivante V2 em andamento. Não é inventário de todas as imagens do jogo.",
   "regras": [
     "A presença de um arquivo não implica aprovação.",
@@ -35,7 +35,8 @@
     "nao_rastreado_no_checkout": [
       "ART-FLORESTA-ARENA-V2",
       "ART-LOBO-COMUM-V2-FONTE",
-      "ART-LOBO-CINZENTO-V2-FONTE"
+      "ART-LOBO-CINZENTO-V2-FONTE",
+      "ART-LOBISOMEM-JOVEM-V2-FONTE"
     ],
     "laboratorio_ignorado_pelo_git": [
       "ART-LOBO-COMUM-V2-RECORTE"
@@ -43,7 +44,8 @@
     "integracao_commitada_na_branch_feature": [
       "ART-FLORESTA-ARENA-V2-COMBATE",
       "ART-LOBO-COMUM-V2-COMBATE",
-      "ART-FLORESTA-LOBO-CINZENTO-V2"
+      "ART-FLORESTA-LOBO-CINZENTO-V2",
+      "ART-FLORESTA-LOBISOMEM-JOVEM-V2"
     ]
   },
   "classificacao_aprovacao": {
@@ -55,6 +57,8 @@
       "ART-LOBO-COMUM-V2-COMBATE",
       "ART-LOBO-CINZENTO-V2-FONTE",
       "ART-FLORESTA-LOBO-CINZENTO-V2",
+      "ART-LOBISOMEM-JOVEM-V2-FONTE",
+      "ART-FLORESTA-LOBISOMEM-JOVEM-V2",
       "ART-T3-ARENA",
       "ART-T3-BATEDOR",
       "ART-T3-BATEDOR-ALERTA",
@@ -67,7 +71,6 @@
     ],
     "preservacao_explicita_sem_nova_aprovacao_artistica": [
       "ART-MAGO-COMBATE-ORIGINAL",
-      "ART-FLORESTA-LOBISOMEM-JOVEM",
       "ART-FLORESTA-LOBISOMEM-FEROZ",
       "ART-FLORESTA-ALFA-MATILHA"
     ],
@@ -78,7 +81,8 @@
     ],
     "substituido_na_branch_feature": [
       "ART-FLORESTA-LOBO-SELVAGEM-ATUAL",
-      "ART-FLORESTA-LOBO-CINZENTO-ATUAL"
+      "ART-FLORESTA-LOBO-CINZENTO-ATUAL",
+      "ART-FLORESTA-LOBISOMEM-JOVEM"
     ],
     "em_uso_sem_aprovacao_v2_documentada": [
       "ART-FLORESTA-UIVANTE-SOMBRAS"
@@ -254,6 +258,35 @@
       }
     },
     {
+      "id": "ART-LOBISOMEM-JOVEM-V2-FONTE",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "lobisomem-jovem-v2-aprovado.png",
+      "sha256": "59F9F30840F7AD224281633EE613E5D1BF7C87B4023036E1606740BCD8753276",
+      "dimensoes": { "largura": 1536, "altura": 1024 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 254 },
+      "versao": "V2_fonte",
+      "estado_aprovacao": "aparencia_aprovada_recorte_executado",
+      "origem": "arquivo fornecido para a Floresta V2; não rastreado",
+      "evidencia": "DEC-2026-10-26-FLO-016"
+    },
+    {
+      "id": "ART-FLORESTA-LOBISOMEM-JOVEM-V2",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "assets/images/enemies/forest/lobisomem_jovem_combat_v2.png",
+      "sha256": "E26AC2C0C4FE2B15F289C180FAE4BDB28406064174CAF3CF43488D0700D1D6A3",
+      "dimensoes": { "largura": 1536, "altura": 1024 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 255 },
+      "versao": "V2_integracao_commitada",
+      "estado_aprovacao": "aprovado_e_validado_no_safari",
+      "origem": "recorte RGBA derivado da fonte aprovada; transparência real preservada",
+      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit 25ae3fbba448d3e6ce49147bbbfdc51829d738e2; deployment 860aa1d1-a3cf-4715-a89e-2a07d7e0126b (não presente na branch documental)",
+      "evidencia": "DEC-2026-10-26-FLO-016; commit 25ae3fb; deployment 860aa1d1; 190/190 Node e 71/71 Chromium; evidencias/lobisomem-jovem-v2/"
+    },
+    {
       "id": "ART-FLORESTA-LOBISOMEM-JOVEM",
       "area": "Galeria/Floresta Uivante",
       "caminho": "assets/images/enemies/forest/lobisomem_jovem.jpg",
@@ -263,9 +296,15 @@
       "modo": "RGB",
       "transparencia": { "presente": false },
       "versao": "atual",
-      "estado_aprovacao": "preservar",
+      "estado_aprovacao": "em_uso_no_commit_base_11bff6c_substituido_na_branch_feature",
       "origem": "repositório; src/game.js",
-      "evidencia": "DEC-ND-FLO-007"
+      "evidencia": "src/game.js; DEC-2026-10-26-FLO-016",
+      "substituicao": {
+        "branch": "feature/floresta-uivante-v2-etapa1",
+        "asset": "ART-FLORESTA-LOBISOMEM-JOVEM-V2",
+        "commit": "25ae3fbba448d3e6ce49147bbbfdc51829d738e2",
+        "estado": "commitado e publicado na branch feature; QA/Safari validado"
+      }
     },
     {
       "id": "ART-FLORESTA-LOBISOMEM-FEROZ",
