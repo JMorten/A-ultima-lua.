@@ -5,7 +5,7 @@ for(const width of [320,375,390,1366])test('Capitão: transparência, direção,
  await page.setViewportSize({width,height:width>1000?768:844});
  const errors=await encounter(page,'Orc Capitão','.captain-reaction-surface');
  const img=page.locator('#portrait-enemy img');
- await expect(img).toHaveAttribute('src','assets/images/enemies/trenches/orc_capitao_combat_v2.png');
+ await expect(img).toHaveAttribute('src','assets/images/enemies/trenches/orc_capitao_combat_v2.webp');
  const frame=await page.locator('.arena-actor[data-actor="orc_capitao"]').evaluate(actor=>{
   const stage=actor.closest('.arena-stage').getBoundingClientRect(),r=actor.getBoundingClientRect(),i=actor.querySelector('img'),c=getComputedStyle(i);
   return {naturalWidth:i.naturalWidth,naturalHeight:i.naturalHeight,fit:c.objectFit,position:c.objectPosition,

@@ -5,13 +5,13 @@
    DADOS DO JOGO
    ========================================================= */
 const CLASSES = {
-  mago:      { name:'Mago',      emoji:'🧙', tag:'Poder Arcano · Conjurador Lunar · Mago de Batalha', portrait:'assets/images/classes/mago.jpg', combatPortrait:'assets/images/characters/combat/mago.png',
+  mago:      { name:'Mago',      emoji:'🧙', tag:'Poder Arcano · Conjurador Lunar · Mago de Batalha', portrait:'assets/images/classes/mago.webp', combatPortrait:'assets/images/characters/combat/mago.webp',
                baseHp:55, baseAtk:14, baseDef:3,  baseMp:40, baseMagia:16, baseAgi:3,  hpG:9,  atkG:3.4, defG:0.9, mpG:4.2, magiaG:3.6, agiG:0.3 },
-  arqueiro:  { name:'Arqueiro',  emoji:'🏹', tag:'Precisão letal à distância', portrait:'assets/images/classes/arqueiro.jpg',
+  arqueiro:  { name:'Arqueiro',  emoji:'🏹', tag:'Precisão letal à distância', portrait:'assets/images/classes/arqueiro.webp',
                baseHp:70, baseAtk:11, baseDef:5,  baseMp:25, baseMagia:2, baseAgi:10, hpG:11, atkG:2.9, defG:1.4, mpG:2.6, magiaG:0.3, agiG:1.8 },
-  guerreiro: { name:'Guerreiro', emoji:'⚔️', tag:'Aço e sangue na linha de frente', portrait:'assets/images/classes/guerreiro.jpg',
+  guerreiro: { name:'Guerreiro', emoji:'⚔️', tag:'Aço e sangue na linha de frente', portrait:'assets/images/classes/guerreiro.webp',
                baseHp:95, baseAtk:9,  baseDef:8,  baseMp:15, baseMagia:1, baseAgi:5,  hpG:14, atkG:2.3, defG:2.1, mpG:1.6, magiaG:0.2, agiG:0.8 },
-  cavaleiro: { name:'Cavaleiro', emoji:'🛡️', tag:'Escudo e fé contra a escuridão', portrait:'assets/images/classes/cavaleiro.jpg',
+  cavaleiro: { name:'Cavaleiro', emoji:'🛡️', tag:'Escudo e fé contra a escuridão', portrait:'assets/images/classes/cavaleiro.webp',
                baseHp:105, baseAtk:7, baseDef:12, baseMp:20, baseMagia:1, baseAgi:4,  hpG:15, atkG:1.9, defG:2.8, mpG:2.0, magiaG:0.2, agiG:0.6 },
 };
 
@@ -171,82 +171,82 @@ const MAPS = [
     name:'Floresta Uivante', sub:'Território dos lobos e lobisomens', theme:'🐺', fam:'fam-lobo',
     unlockLevel:1,
     monsters:[
-      { id:'lobo_selvagem', name:'Lobo Selvagem', emoji:'🐺', portrait:'assets/images/enemies/forest/lobo_selvagem.jpg', hp:30, atk:6,  def:2, xp:12, coinMin:4,  coinMax:8,  tier:0 },
-      { id:'lobo_cinzento',  name:'Lobo Cinzento', emoji:'🐺', portrait:'assets/images/enemies/forest/lobo_cinzento.jpg', hp:42, atk:8,  def:3, xp:18, coinMin:6,  coinMax:10, tier:1 },
-      { id:'lobisomem_jovem',name:'Lobisomem Jovem', emoji:'🐾', portrait:'assets/images/enemies/forest/lobisomem_jovem.jpg', hp:58, atk:11, def:4, xp:26, coinMin:8,  coinMax:14, tier:2 },
-      { id:'lobisomem_feroz', name:'Lobisomem Feroz', emoji:'🐾', portrait:'assets/images/enemies/forest/lobisomem_feroz.jpg', hp:75, atk:14, def:6, xp:35, coinMin:10, coinMax:18, tier:3 },
+      { id:'lobo_selvagem', name:'Lobo Selvagem', emoji:'🐺', portrait:'assets/images/enemies/forest/lobo_selvagem.webp', hp:30, atk:6,  def:2, xp:12, coinMin:4,  coinMax:8,  tier:0 },
+      { id:'lobo_cinzento',  name:'Lobo Cinzento', emoji:'🐺', portrait:'assets/images/enemies/forest/lobo_cinzento.webp', hp:42, atk:8,  def:3, xp:18, coinMin:6,  coinMax:10, tier:1 },
+      { id:'lobisomem_jovem',name:'Lobisomem Jovem', emoji:'🐾', portrait:'assets/images/enemies/forest/lobisomem_jovem.webp', hp:58, atk:11, def:4, xp:26, coinMin:8,  coinMax:14, tier:2 },
+      { id:'lobisomem_feroz', name:'Lobisomem Feroz', emoji:'🐾', portrait:'assets/images/enemies/forest/lobisomem_feroz.webp', hp:75, atk:14, def:6, xp:35, coinMin:10, coinMax:18, tier:3 },
     ],
-    boss:{ id:'alfa_matilha', name:'Alfa da Matilha', emoji:'🐺', portrait:'assets/images/enemies/forest/alfa_matilha.jpg', hp:300, atk:30, def:14, xp:130, coinMin:40, coinMax:60, isBoss:true },
-    miniBoss:{ id:'uivante_sombras', name:'Uivante das Sombras', emoji:'🐺', portrait:'assets/images/enemies/forest/uivante_sombras.jpg', hp:190, atk:25, def:12, xp:85, coinMin:20, coinMax:30, isMiniBoss:true },
+    boss:{ id:'alfa_matilha', name:'Alfa da Matilha', emoji:'🐺', portrait:'assets/images/enemies/forest/alfa_matilha.webp', hp:300, atk:30, def:14, xp:130, coinMin:40, coinMax:60, isBoss:true },
+    miniBoss:{ id:'uivante_sombras', name:'Uivante das Sombras', emoji:'🐺', portrait:'assets/images/enemies/forest/uivante_sombras.webp', hp:190, atk:25, def:12, xp:85, coinMin:20, coinMax:30, isMiniBoss:true },
   },
   {
     name:'Pântano Podre', sub:'Domínio dos trolls e ogros', theme:'🧌', fam:'fam-troll',
     unlockLevel:5,
     monsters:[
-      { id:'troll_lodo',     name:'Troll do Lodo', emoji:'🧌', portrait:'assets/images/enemies/swamp/troll_lodo.jpg', hp:95,  atk:16, def:7,  xp:45, coinMin:14, coinMax:22, tier:0 },
-      { id:'troll_apodrecido',name:'Troll Apodrecido', emoji:'🧌', portrait:'assets/images/enemies/swamp/troll_apodrecido.jpg', hp:115, atk:19, def:9,  xp:55, coinMin:16, coinMax:26, tier:1 },
-      { id:'ogro_menor',     name:'Ogro Menor', emoji:'👹', portrait:'assets/images/enemies/swamp/ogro_menor.jpg', hp:135, atk:22, def:10, xp:65, coinMin:20, coinMax:30, tier:2 },
-      { id:'ogro_guerra',    name:'Ogro de Guerra', emoji:'👹', portrait:'assets/images/enemies/swamp/ogro_guerra.jpg', hp:160, atk:26, def:12, xp:78, coinMin:24, coinMax:36, tier:3 },
+      { id:'troll_lodo',     name:'Troll do Lodo', emoji:'🧌', portrait:'assets/images/enemies/swamp/troll_lodo.webp', hp:95,  atk:16, def:7,  xp:45, coinMin:14, coinMax:22, tier:0 },
+      { id:'troll_apodrecido',name:'Troll Apodrecido', emoji:'🧌', portrait:'assets/images/enemies/swamp/troll_apodrecido.webp', hp:115, atk:19, def:9,  xp:55, coinMin:16, coinMax:26, tier:1 },
+      { id:'ogro_menor',     name:'Ogro Menor', emoji:'👹', portrait:'assets/images/enemies/swamp/ogro_menor.webp', hp:135, atk:22, def:10, xp:65, coinMin:20, coinMax:30, tier:2 },
+      { id:'ogro_guerra',    name:'Ogro de Guerra', emoji:'👹', portrait:'assets/images/enemies/swamp/ogro_guerra.webp', hp:160, atk:26, def:12, xp:78, coinMin:24, coinMax:36, tier:3 },
     ],
-    boss:{ id:'senhor_pantano', name:'Senhor do Pântano', emoji:'🧌', portrait:'assets/images/enemies/swamp/senhor_pantano.jpg', hp:520, atk:52, def:24, xp:220, coinMin:80, coinMax:120, isBoss:true },
-    miniBoss:{ id:'devorador_charco', name:'Devorador do Charco', emoji:'🧌', portrait:'assets/images/enemies/swamp/devorador_charco.jpg', hp:280, atk:40, def:18, xp:140, coinMin:45, coinMax:65, isMiniBoss:true },
+    boss:{ id:'senhor_pantano', name:'Senhor do Pântano', emoji:'🧌', portrait:'assets/images/enemies/swamp/senhor_pantano.webp', hp:520, atk:52, def:24, xp:220, coinMin:80, coinMax:120, isBoss:true },
+    miniBoss:{ id:'devorador_charco', name:'Devorador do Charco', emoji:'🧌', portrait:'assets/images/enemies/swamp/devorador_charco.webp', hp:280, atk:40, def:18, xp:140, coinMin:45, coinMax:65, isMiniBoss:true },
   },
   {
-    arenaBackground:'assets/images/backgrounds/trincheiras_orc_arena.png', name:'Trincheiras Orc', sub:'Acampamento de guerra orc', theme:'👺', fam:'fam-orc',
+    arenaBackground:'assets/images/backgrounds/trincheiras_orc_arena.webp', name:'Trincheiras Orc', sub:'Acampamento de guerra orc', theme:'👺', fam:'fam-orc',
     unlockLevel:9,
     monsters:[
-      { id:'orc_batedor',  name:'Orc Batedor', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_batedor_combat.png', portraitLayout:'natural', hp:190, atk:30, def:14, xp:95,  coinMin:30, coinMax:45, tier:0 },
-      { id:'orc_guerreiro',name:'Orc Guerreiro', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_guerreiro_combat_v2.png', portraitLayout:'natural', hp:220, atk:35, def:16, xp:110, coinMin:35, coinMax:50, tier:1 },
-      { id:'orc_capitao',  name:'Orc Capitão', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_capitao_combat_v2.png', portraitLayout:'natural', hp:260, atk:44, def:19, xp:135, coinMin:44, coinMax:64, tier:2 },
-      { id:'acougueiro_trincheira', name:'Açougueiro da Trincheira', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_acougueiro_combat_v2.png', hp:460, atk:68, def:30, xp:240, coinMin:75, coinMax:105, tier:3 },
+      { id:'orc_batedor',  name:'Orc Batedor', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_batedor_combat.webp', portraitLayout:'natural', hp:190, atk:30, def:14, xp:95,  coinMin:30, coinMax:45, tier:0 },
+      { id:'orc_guerreiro',name:'Orc Guerreiro', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_guerreiro_combat_v2.webp', portraitLayout:'natural', hp:220, atk:35, def:16, xp:110, coinMin:35, coinMax:50, tier:1 },
+      { id:'orc_capitao',  name:'Orc Capitão', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_capitao_combat_v2.webp', portraitLayout:'natural', hp:260, atk:44, def:19, xp:135, coinMin:44, coinMax:64, tier:2 },
+      { id:'acougueiro_trincheira', name:'Açougueiro da Trincheira', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_acougueiro_combat_v2.webp', hp:460, atk:68, def:30, xp:240, coinMin:75, coinMax:105, tier:3 },
     ],
-    boss:{ id:'warlord_gorthak', name:'Warlord Gorthak', emoji:'👺', portrait:'assets/images/enemies/trenches/warlord_gorthak_combat.png', portraitLayout:'natural', hp:740, atk:72, def:30, xp:300, coinMin:150, coinMax:220, isBoss:true },
-    miniBoss:{ id:'orc_xama', name:'Orc Xamã', emoji:'💀', portrait:'assets/images/enemies/trenches/orc_xama_transe.png', portraitLayout:'natural', hp:360, atk:48, def:20, xp:240, coinMin:75, coinMax:105, isMiniBoss:true },
+    boss:{ id:'warlord_gorthak', name:'Warlord Gorthak', emoji:'👺', portrait:'assets/images/enemies/trenches/warlord_gorthak_combat.webp', portraitLayout:'natural', hp:740, atk:72, def:30, xp:300, coinMin:150, coinMax:220, isBoss:true },
+    miniBoss:{ id:'orc_xama', name:'Orc Xamã', emoji:'💀', portrait:'assets/images/enemies/trenches/orc_xama_transe.webp', portraitLayout:'natural', hp:360, atk:48, def:20, xp:240, coinMin:75, coinMax:105, isMiniBoss:true },
   },
   {
     name:'Cripta Sangrenta', sub:'Trono dos vampiros ancestrais', theme:'🧛', fam:'fam-vampiro',
     unlockLevel:13,
     monsters:[
-      { id:'servo_vampirico', name:'Servo Vampírico', emoji:'🧛', portrait:'assets/images/enemies/crypt/servo_vampirico.jpg', hp:300, atk:52, def:22, xp:170, coinMin:60, coinMax:85,  tier:0 },
-      { id:'noiva_palida',    name:'Noiva Pálida', emoji:'🧛‍♀️', portrait:'assets/images/enemies/crypt/noiva_palida.jpg', hp:340, atk:58, def:24, xp:190, coinMin:68, coinMax:95,  tier:1 },
-      { id:'cavaleiro_noite', name:'Cavaleiro da Noite', emoji:'🧛', portrait:'assets/images/enemies/crypt/cavaleiro_noite.jpg', hp:390, atk:64, def:28, xp:215, coinMin:78, coinMax:108, tier:2 },
-      { id:'vampiro_anciao',  name:'Vampiro Ancião', emoji:'🧛', portrait:'assets/images/enemies/crypt/vampiro_anciao.jpg', hp:450, atk:72, def:32, xp:245, coinMin:90, coinMax:125, tier:3 },
+      { id:'servo_vampirico', name:'Servo Vampírico', emoji:'🧛', portrait:'assets/images/enemies/crypt/servo_vampirico.webp', hp:300, atk:52, def:22, xp:170, coinMin:60, coinMax:85,  tier:0 },
+      { id:'noiva_palida',    name:'Noiva Pálida', emoji:'🧛‍♀️', portrait:'assets/images/enemies/crypt/noiva_palida.webp', hp:340, atk:58, def:24, xp:190, coinMin:68, coinMax:95,  tier:1 },
+      { id:'cavaleiro_noite', name:'Cavaleiro da Noite', emoji:'🧛', portrait:'assets/images/enemies/crypt/cavaleiro_noite.webp', hp:390, atk:64, def:28, xp:215, coinMin:78, coinMax:108, tier:2 },
+      { id:'vampiro_anciao',  name:'Vampiro Ancião', emoji:'🧛', portrait:'assets/images/enemies/crypt/vampiro_anciao.webp', hp:450, atk:72, def:32, xp:245, coinMin:90, coinMax:125, tier:3 },
     ],
-    boss:{ id:'lorde_draven', name:'Lorde Draven', emoji:'🧛‍♂️', portrait:'assets/images/enemies/crypt/lorde_draven.jpg', hp:1080, atk:114, def:48, xp:600, coinMin:300, coinMax:450, isBoss:true },
-    miniBoss:{ id:'arauto_draven', name:'Arauto de Draven', emoji:'🧛', portrait:'assets/images/enemies/crypt/arauto_draven.jpg', hp:780, atk:110, def:45, xp:420, coinMin:160, coinMax:220, isMiniBoss:true },
+    boss:{ id:'lorde_draven', name:'Lorde Draven', emoji:'🧛‍♂️', portrait:'assets/images/enemies/crypt/lorde_draven.webp', hp:1080, atk:114, def:48, xp:600, coinMin:300, coinMax:450, isBoss:true },
+    miniBoss:{ id:'arauto_draven', name:'Arauto de Draven', emoji:'🧛', portrait:'assets/images/enemies/crypt/arauto_draven.webp', hp:780, atk:110, def:45, xp:420, coinMin:160, coinMax:220, isMiniBoss:true },
   },
 ];
 
 
 /* VS 1.6 — artes aprovadas de equipamentos e consumíveis */
 const ITEM_ART = {
-  necklace: 'assets/images/equipment/necklace.jpg',
-  sword_cavalier: 'assets/images/equipment/sword_cavalier.jpg',
-  ring: 'assets/images/equipment/ring.jpg',
-  wand: 'assets/images/equipment/wand.jpg',
-  pistol: 'assets/images/equipment/pistol.jpg',
-  staff: 'assets/images/equipment/staff.jpg',
-  bracelet: 'assets/images/equipment/bracelet.jpg',
-  hp_medium: 'assets/images/consumables/hp_medium.jpg',
-  hp_small: 'assets/images/consumables/hp_small.jpg',
-  hammer_unique: 'assets/images/equipment/hammer_unique.jpg',
-  mp_medium: 'assets/images/consumables/mp_medium.jpg',
-  mp_large: 'assets/images/consumables/mp_large.jpg',
-  hammer: 'assets/images/equipment/hammer.jpg',
-  hp_large: 'assets/images/consumables/hp_large.jpg',
-  orb: 'assets/images/equipment/orb.jpg',
-  armor: 'assets/images/equipment/armor.jpg',
-  earring: 'assets/images/equipment/earring.jpg',
-  helmet: 'assets/images/equipment/helmet.jpg',
-  mp_small: 'assets/images/consumables/mp_small.jpg',
-  sword_warrior: 'assets/images/equipment/sword_warrior.jpg',
-  bow_unique: 'assets/images/equipment/bow_unique.jpg',
-  gloves: 'assets/images/equipment/gloves.jpg',
-  boots: 'assets/images/equipment/boots.jpg',
-  xp_tonic: 'assets/images/consumables/xp_tonic.jpg',
-  sword_unique: 'assets/images/equipment/sword_unique.jpg',
-  shield: 'assets/images/equipment/shield.jpg',
-  bow: 'assets/images/equipment/bow.jpg',
+  necklace: 'assets/images/equipment/necklace.webp',
+  sword_cavalier: 'assets/images/equipment/sword_cavalier.webp',
+  ring: 'assets/images/equipment/ring.webp',
+  wand: 'assets/images/equipment/wand.webp',
+  pistol: 'assets/images/equipment/pistol.webp',
+  staff: 'assets/images/equipment/staff.webp',
+  bracelet: 'assets/images/equipment/bracelet.webp',
+  hp_medium: 'assets/images/consumables/hp_medium.webp',
+  hp_small: 'assets/images/consumables/hp_small.webp',
+  hammer_unique: 'assets/images/equipment/hammer_unique.webp',
+  mp_medium: 'assets/images/consumables/mp_medium.webp',
+  mp_large: 'assets/images/consumables/mp_large.webp',
+  hammer: 'assets/images/equipment/hammer.webp',
+  hp_large: 'assets/images/consumables/hp_large.webp',
+  orb: 'assets/images/equipment/orb.webp',
+  armor: 'assets/images/equipment/armor.webp',
+  earring: 'assets/images/equipment/earring.webp',
+  helmet: 'assets/images/equipment/helmet.webp',
+  mp_small: 'assets/images/consumables/mp_small.webp',
+  sword_warrior: 'assets/images/equipment/sword_warrior.webp',
+  bow_unique: 'assets/images/equipment/bow_unique.webp',
+  gloves: 'assets/images/equipment/gloves.webp',
+  boots: 'assets/images/equipment/boots.webp',
+  xp_tonic: 'assets/images/consumables/xp_tonic.webp',
+  sword_unique: 'assets/images/equipment/sword_unique.webp',
+  shield: 'assets/images/equipment/shield.webp',
+  bow: 'assets/images/equipment/bow.webp',
 };
 function artImg(src, cls, alt=''){ return src ? `<img src="${src}" class="${cls}" alt="${alt}">` : ''; }
 function itemArtFor(item){
@@ -527,7 +527,7 @@ function monsterAvatarHtml(monster, cssClass){
   // A arte normal do Batedor é transparente para Arena V2.3; o chifre ainda usa o asset de estado aprovado anteriormente.
   const imageSize=monster.id==='orc_batedor' && monster.portraitLayout==='natural' ? (monster.scoutHornVisual ? ' width="1254" height="1254"' : ' width="1427" height="1102"') : '';
   if(monster.id==='romar') return `<span class="romar-avatar ${monster.romarTransform?'romar-transform':''}"><span aria-label="Romar">⚔️</span><img src="${monster.portrait}" class="${cssClass}" alt="Romar" onerror="this.style.display='none'"></span>`;
-  if(monster.id==='orc_batedor' && monster.scoutHornVisual) return `<img src="assets/images/enemies/trenches/orc_batedor_alerta_combat.png" class="${cssClass}" alt="Orc Batedor tocando o chifre"${imageSize}>`;
+  if(monster.id==='orc_batedor' && monster.scoutHornVisual) return `<img src="assets/images/enemies/trenches/orc_batedor_alerta_combat.webp" class="${cssClass}" alt="Orc Batedor tocando o chifre"${imageSize}>`;
   if(monster.portrait) return `<img src="${monster.portrait}" class="${cssClass}" alt="${monster.name}"${imageSize}>`;
   return monster.emoji;
 }
@@ -736,9 +736,9 @@ const MINI_BOSS_CHANCE = 0.06;
 
 /* VS 1.7 — Artes finais das armadilhas da Floresta Uivante. */
 const TRAP_ART = {
-  bear: 'assets/images/traps/bear.jpg',
-  stakes: 'assets/images/traps/stakes.jpg',
-  rune: 'assets/images/traps/rune.jpg'
+  bear: 'assets/images/traps/bear.webp',
+  stakes: 'assets/images/traps/stakes.webp',
+  rune: 'assets/images/traps/rune.webp'
 };
 const FOREST_TRAPS = [
   { id:'bear', name:'Armadilha de Urso', damage:20, image:TRAP_ART.bear, sub:'Mandíbulas de ferro se fecham sobre sua perna antes que você consiga recuar.' },
@@ -929,7 +929,7 @@ const ROMAR_DISCOVERIES = [
   {
     "id": "massacre",
     "title": "O MASSACRE",
-    "image": "assets/images/events/forest/romar/romar_massacre.png",
+    "image": "assets/images/events/forest/romar/romar_massacre.webp",
     "button": "CONTINUAR",
     "paragraphs": [
       "O cheiro chega antes da clareira.",
@@ -942,7 +942,7 @@ const ROMAR_DISCOVERIES = [
   {
     "id": "marcas",
     "title": "MARCAS ENTRE AS ÁRVORES",
-    "image": "assets/images/events/forest/romar/romar_marcas_arvores.png",
+    "image": "assets/images/events/forest/romar/romar_marcas_arvores.webp",
     "button": "SEGUIR EXPLORANDO",
     "paragraphs": [
       "Mais adiante, outro tronco carrega a marca de uma lâmina pesada. O corte atravessou madeira que um homem dificilmente conseguiria romper.",
@@ -954,7 +954,7 @@ const ROMAR_DISCOVERIES = [
   {
     "id": "runa",
     "title": "A RUNA VIOLADA",
-    "image": "assets/images/events/forest/romar/romar_runa_violada.png",
+    "image": "assets/images/events/forest/romar/romar_runa_violada.webp",
     "button": "AFASTAR-SE",
     "paragraphs": [
       "Sob raízes antigas, uma pedra que deveria permanecer enterrada foi exposta.",
@@ -968,7 +968,7 @@ const ROMAR_DISCOVERIES = [
   {
     "id": "acampamento",
     "title": "ACAMPAMENTO ABANDONADO",
-    "image": "assets/images/events/forest/romar/romar_acampamento_abandonado.png",
+    "image": "assets/images/events/forest/romar/romar_acampamento_abandonado.webp",
     "button": "CONTINUAR",
     "paragraphs": [
       "Alguém tentou sobreviver aqui.",
@@ -1175,7 +1175,7 @@ function renderForgeWorkshop(){
 }
 
 // Lucas: cena transitória separada da progressão permanente.
-const LUCAS_ART='assets/images/npcs/lucas.jpg';
+const LUCAS_ART='assets/images/npcs/lucas.webp';
 function normalizeLucasProgress(forge){
   const old=forge.lucas||{};
   forge.lucas={version:1,discovered:old.discovered===true,forgeUnlocked:old.discovered===true,
@@ -1429,7 +1429,7 @@ function startRomarEncounter(){
   const band=player.level>=8 ? [1.15,1.10,1.08] : player.level>=6 ? [1.08,1.05,1.05] : [1,1,1];
   const hp=Math.round(300*band[0]), atk=24*band[1], def=12*band[2];
   ui.monster={id:'romar',name:'Romar',emoji:'⚔️',hp,hpMax:hp,atk,def,
-    battleBaseDef:def,portrait:'assets/images/enemies/forest/romar_15.jpg',
+    battleBaseDef:def,portrait:'assets/images/enemies/forest/romar_15.webp',
     romarStage:1,romarHistory:[],romarPrepared:null,romarSurgePending:false,
     romarChoice:false,romarTransform:false,romarLastMove:null};
   ui.inBattle=true; ui.locked=false; ui.skillCooldowns={}; ui.buffs={}; ui.tab='batalha';
@@ -1503,12 +1503,12 @@ function resolveRomarAction(kind,damage=0){
   }
   let transitioned=false;
   if(m.romarStage<2 && m.hp<=m.hpMax*0.65){
-    m.romarStage=2; m.portrait='assets/images/enemies/forest/romar_30.jpg';
+    m.romarStage=2; m.portrait='assets/images/enemies/forest/romar_30.webp';
     m.romarPrepared=null; m.romarTransform=true; transitioned=true;
     logPush('<b>“Não... agora não.”</b> As runas pulsam. Romar perde a ação enquanto luta pelo controle.');
   }
   if(m.romarStage<3 && m.hp<=m.hpMax*0.35){
-    m.romarStage=3; m.portrait='assets/images/enemies/forest/romar_45.jpg';
+    m.romarStage=3; m.portrait='assets/images/enemies/forest/romar_45.webp';
     m.romarTransform=true; transitioned=true; m.romarPrepared='rupture';
     logPush('Romar cai sobre um joelho; as marcas avançam. <b>“Fique... longe de mim.”</b>');
     logPush('<b>Ruptura da Marca preparada!</b> As runas concentram poder na arma. Uma ação de '+Math.ceil(m.hpMax*0.12)+' de dano pode interromper o golpe.');
@@ -1702,11 +1702,11 @@ function tryInterruptPreparedAttack(damage){
 
 /* Ritual do Orc Xamã: Totens são alvos temporários presos ao clone da batalha. */
 const SHAMAN_TOTEM_DEFS = {
-  blood:{ id:'totem_sangue', name:'Totem de Sangue', portrait:'assets/images/enemies/trenches/totem_sangue.png', hp:150, hpMax:150, def:10, active:true },
-  siphon:{ id:'totem_sifao', name:'Totem da Essência', portrait:'assets/images/enemies/trenches/totem_sifao.png', hp:150, hpMax:150, def:10, active:true },
+  blood:{ id:'totem_sangue', name:'Totem de Sangue', portrait:'assets/images/enemies/trenches/totem_sangue.webp', hp:150, hpMax:150, def:10, active:true },
+  siphon:{ id:'totem_sifao', name:'Totem da Essência', portrait:'assets/images/enemies/trenches/totem_sifao.webp', hp:150, hpMax:150, def:10, active:true },
 };
 function initShamanRitual(m){
-  Object.assign(m,{shamanRitual:true,shamanAwake:false,shamanSiphoned:0,shamanSiphonMax:54,selectedRitualTarget:'blood',portrait:'assets/images/enemies/trenches/orc_xama_transe.png',portraitLayout:'natural'});
+  Object.assign(m,{shamanRitual:true,shamanAwake:false,shamanSiphoned:0,shamanSiphonMax:54,selectedRitualTarget:'blood',portrait:'assets/images/enemies/trenches/orc_xama_transe.webp',portraitLayout:'natural'});
   m.shamanTargets = { blood:Object.assign({},SHAMAN_TOTEM_DEFS.blood), siphon:Object.assign({},SHAMAN_TOTEM_DEFS.siphon) };
 }
 function isShamanRitual(){return ui.inBattle && ui.mapIndex===2 && ui.monster && ui.monster.id==='orc_xama' && ui.monster.shamanRitual;}
@@ -1742,7 +1742,7 @@ function wakeShaman(){
   m.selectedRitualTarget=null;
   const bonus=Math.min(m.shamanSiphonMax,m.shamanSiphoned||0);
   m.hp += bonus;
-  m.portrait='assets/images/enemies/trenches/orc_xama_combat.png';
+  m.portrait='assets/images/enemies/trenches/orc_xama_combat.webp';
   logPush('<b>O RITUAL FOI ROMPIDO</b> Os Totens se calam. O Xamã desperta.');
   if(bonus>0)logPush(`<span class="log-bad">Energia sifonada envolve o Xamã: +${bonus} HP temporário.</span>`);
   return true;
@@ -3022,7 +3022,7 @@ function renderBatalhaTab(){
 
 function renderQuestItems(){
   const fragment=player.questItems && player.questItems.fragmento_ferro_runico;
-  return `<section class="status-card"><h3>ITENS DE MISSÃO</h3>${fragment ? `<img src="assets/images/quest-items/fragmento_ferro_runico.jpg" class="equip-art-large" style="float:none;display:block;width:100%;max-width:280px;height:auto;box-sizing:border-box;margin:12px auto;" alt="Fragmento de placa de armadura negra com rebites e fissuras rúnicas vermelhas"><h4>Fragmento de Ferro Rúnico</h4><p>Categoria: Item de Missão</p><p>Um fragmento pesado de metal escurecido, arrancado da armadura de Romar.</p><p>Marcas avermelhadas percorrem sua superfície como veias sob o ferro. Mesmo separado da armadura, o metal permanece estranhamente morno.</p><p>Você não sabe quem poderia trabalhar algo assim.</p>` : '<p>Nenhum item de missão.</p>'}</section>`;
+  return `<section class="status-card"><h3>ITENS DE MISSÃO</h3>${fragment ? `<img src="assets/images/quest-items/fragmento_ferro_runico.webp" class="equip-art-large" style="float:none;display:block;width:100%;max-width:280px;height:auto;box-sizing:border-box;margin:12px auto;" alt="Fragmento de placa de armadura negra com rebites e fissuras rúnicas vermelhas"><h4>Fragmento de Ferro Rúnico</h4><p>Categoria: Item de Missão</p><p>Um fragmento pesado de metal escurecido, arrancado da armadura de Romar.</p><p>Marcas avermelhadas percorrem sua superfície como veias sob o ferro. Mesmo separado da armadura, o metal permanece estranhamente morno.</p><p>Você não sabe quem poderia trabalhar algo assim.</p>` : '<p>Nenhum item de missão.</p>'}</section>`;
 }
 function renderInventarioTab(){
   const LEFT_COL = ['helmet','necklace','earring','armor','boots'];

@@ -67,7 +67,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-      # Orçamento atual: 57 MB / 3.200 KB por arquivo.
-      # Meta: reduzir para 15 MB / 500 KB depois da conversão WebP/AVIF.
+      # Meta atingida: 11,74 MB em WebP. Teto por arquivo: 600 KB.
       - name: Verificar orçamento de assets
-        run: node tools/check-assets.mjs assets 3200 57
+        run: node tools/check-assets.mjs assets 600 15

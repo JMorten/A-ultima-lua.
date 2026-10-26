@@ -84,7 +84,7 @@ não contam); após as três, a próxima oportunidade livre reapresenta a cena.
 Armadilhas e minibosses mantêm prioridade e seus sorteios originais. Lucas torna-se
 elegível após três abates comuns, sem exigir o Devorador. Após descoberta, o acesso
 à Forja é permanente no Pântano; reconhecimento posterior do Fragmento ocorre uma vez.
-Arte futura: assets/images/npcs/lucas.jpg. Sem esse arquivo, a imagem fica oculta;
+Arte futura: assets/images/npcs/lucas.webp. Sem esse arquivo, a imagem fica oculta;
 nenhuma arte substituta foi adicionada.
 
 ## Economia da oficina (schema 4)

@@ -2,7 +2,7 @@ const {test,expect}=require('playwright/test');
 const {encounter}=require('./combat-visual-helpers.cjs');
 for(const width of [320,375,390,1366])test('Batedor: arte preservada e sem idle em '+width+'px',async({page})=>{
   await page.setViewportSize({width,height:width>1000?768:844});const errors=await encounter(page,'Orc Batedor','.scout-reaction-surface');
-  await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src','assets/images/enemies/trenches/orc_batedor_combat.png');
+  await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src','assets/images/enemies/trenches/orc_batedor_combat.webp');
   expect(await page.locator('#portrait-enemy').evaluate(e=>e.getAnimations().length)).toBe(0);
   expect(await page.evaluate(()=>Math.max(document.body.scrollWidth,document.documentElement.scrollWidth))).toBeLessThanOrEqual(width+1);
   await page.locator('.battle-arena').screenshot({path:process.env.AUL_PW_ARTIFACTS+'/orc-batedor-'+width+'.png'});expect(errors).toEqual([]);
@@ -17,7 +17,7 @@ test('Batedor: dano, crítico, recuo e chifre por ações reais; cancelamento e 
     if(n>=6&&['damage','critical'].every(x=>seen.includes(x))&&sources.size===2)break;
   }
   for(const action of ['damage','critical'])expect(seen).toContain(action);
-  expect([...sources]).toContain('assets/images/enemies/trenches/orc_batedor_alerta_combat.png');
+  expect([...sources]).toContain('assets/images/enemies/trenches/orc_batedor_alerta_combat.webp');
   await expect(page.locator('#portrait-enemy')).not.toHaveAttribute('data-reaction',/./);
   expect(await page.locator('#portrait-enemy').evaluate(e=>getComputedStyle(e).transform)).toBe('none');
   await page.evaluate(()=>{window.oldScout=document.getElementById('portrait-enemy');});

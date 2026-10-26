@@ -51,7 +51,7 @@
 | Node | 185/185 (falhava 1 por CRLF no Windows) | **185/185** |
 | Chromium | 61/61 | **61/61** |
 | WebKit | 59/61 | **61/61** |
-| Assets | 55,69 MB | WebP **9,37 MB** (-83,2%) / AVIF **4,97 MB** (-91,1%) |
+| Assets | 55,69 MB | WebP **11,74 MB** (-78,9%), mantendo as dimensões originais |
 
 O WebKit não existia no fluxo anterior. Esta é a primeira execução real do motor Safari no projeto.
 
@@ -79,24 +79,23 @@ python tools/optimize-images.py
 
 ## 5. Orçamento de assets
 
-O CI usa o teto **atual** (57 MB / 3.200 KB por arquivo) para impedir crescimento. A meta é apertar para **15 MB / 500 KB** depois da migração WebP/AVIF.
+O CI usa o teto **15 MB / 600 KB por arquivo**. O total atual é **11,74 MB**.
 
-O script `tools/optimize-images.py` gerou:
+O script `tools/optimize-images.py` gerou o conjunto de produção:
 
 ```
-assets-optimized/webp/   9,37 MB
-assets-optimized/avif/   4,97 MB
-assets-optimized/report.csv
+assets/*.webp             11,74 MB (81 arquivos)
+assets-original/*         55,69 MB (backup local ignorado)
+assets-webp/report.csv    relatório de conversão
 ```
 
-Nada em `assets/` foi alterado. A migração de referências e testes de assinatura precisa de aprovação.
+Nada em `assets-original/` é versionado. A migração de referências e testes foi feita; o jogo usa somente WebP.
 
 ## 6. Pendências
 
 - Push da branch e execução do CI no GitHub (não autorizado nesta tarefa).
-- Migrar assets para WebP/AVIF e atualizar referências/testes.
-- Decidir se a branch será integrada em `qa-preview`, `feature/floresta-uivante-v2-etapa1` ou `main`.
 - Teste físico no Safari/iPhone continua obrigatório para mudanças visuais.
+- Decidir se a branch será integrada em `qa-preview`, `feature/floresta-uivante-v2-etapa1` ou `main`.
 - Produção não foi tocada.
 
 ## 7. Nível de evidência

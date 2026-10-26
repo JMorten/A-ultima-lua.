@@ -13,4 +13,6 @@
 
 # Otimização de imagens (gerado localmente; não versionar)
 /assets-optimized/
+/assets-original/
+/assets-webp/
 /tools/__pycache__/

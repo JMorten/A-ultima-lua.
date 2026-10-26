@@ -3,6 +3,7 @@ const fs=require('node:fs');
 const path=require('node:path');
 const vm=require('node:vm');
 const {test}=require('node:test');
+const { assertWebp }=require('./image-dimensions.cjs');
 function game(){
   const element={style:{},dataset:{},classList:{add(){},remove(){}},addEventListener(){},appendChild(){},remove(){}};
   const context=vm.createContext({console,Date,Math:Object.create(Math),setTimeout(){},setInterval(){},
@@ -245,11 +246,10 @@ test('eligibility switches counter only on next accepted exploration',()=>{
   assert.equal(run('getRomarDiscoveries().clueAttempts'),0);
   assert.notEqual(run('ui.monster.id'),'romar');
 });
-test('art paths exist and PNG signatures match',()=>{
+test('art paths exist and WebP signatures match',()=>{
   const run=game();
   const scenes=JSON.parse(run('JSON.stringify(ROMAR_DISCOVERIES)'));
   for(const scene of scenes){
-    const bytes=fs.readFileSync(path.join(__dirname,'..',scene.image));
-    assert.equal(bytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+    assertWebp(path.join(__dirname,'..',scene.image));
   }
 });

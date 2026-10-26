@@ -262,7 +262,7 @@ test('Essência ativa armazena energia ao destruir Sangue; destruir ambos desper
   await expect(page.locator('.arena-enemy-chip')).toContainText('RITUAL ROMPIDO · combate direto');
   const xamaHpAfter = currentHp(await page.locator('#arena-hp-enemy-text').innerText()).current;
   expect(xamaHpAfter - xamaHpBefore).toBe(stored);
-  await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src', /orc_xama_combat\.png/);
+  await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src', /orc_xama_combat\.webp/);
   await page.waitForFunction(() => { const image = document.querySelector('#portrait-enemy img'); return image && image.complete && image.naturalWidth > 0; });
   await assertNoClientErrors(errors);
 });
@@ -502,12 +502,12 @@ test('Xamã V2: orientação, corpo inteiro e pé ancorado antes/depois do despe
   await page.emulateMedia({reducedMotion:'reduce'});
   await startShaman(page,errors,{level:100,forca:10000,vitalidade:10000});
   await expect(page.locator('#portrait-enemy')).not.toHaveClass(/shaman-reaction-surface/);
-  await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src',/orc_xama_transe\.png/);
+  await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src',/orc_xama_transe\.webp/);
   await page.locator('#game-screen').screenshot({path:process.env.AUL_PW_ARTIFACTS+'/orc-xama-v2-antes-despertar-390.png'});
   await destroySelectedTotem(page,'Totem de Sangue');
   await destroySelectedTotem(page,'Totem da Essência');
   await expect(page.locator('.ritual-target-actions')).toHaveCount(0);
-  await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src',/orc_xama_combat\.png/);
+  await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src',/orc_xama_combat\.webp/);
   await expect(page.locator('#portrait-enemy')).toHaveClass(/shaman-reaction-surface/);
   await page.waitForFunction(()=>{const i=document.querySelector('#portrait-enemy img');return i?.complete&&i.naturalWidth===1024&&i.naturalHeight===1536;});
   for(const width of [320,375,390,1366]){

@@ -1,5 +1,6 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const assert=require('node:assert/strict'),{test}=require('node:test');
+const { assertWebp }=require('./image-dimensions.cjs');
 const root=path.join(__dirname,'..'),gameCode=fs.readFileSync(path.join(root,'src/game.js'),'utf8'),saveCode=fs.readFileSync(path.join(root,'src/persistence.js'),'utf8');
 function boot(storage=new Map()){
  const cards=[],elements=new Map(),listeners={},timers=[];
@@ -353,7 +354,7 @@ test('salvage rejects changed instance/yield, duplicate uid, locked forge and in
 test('workshop shows three areas with official art and separates materials from quest fragment',()=>{
  const e=swampReady(true);meetLucas(e,true);e.run('visitForge();player.materials={fragmento_refinado:3}');
  const html=e.run('renderLucasScene()');
- for(const text of ['FABRICAR','DESMONTAR','MATERIAIS','Nenhuma receita conhecida.','assets/images/npcs/lucas.jpg','Fragmento Refinado · 3'])assert.ok(html.includes(text));
+ for(const text of ['FABRICAR','DESMONTAR','MATERIAIS','Nenhuma receita conhecida.','assets/images/npcs/lucas.webp','Fragmento Refinado · 3'])assert.ok(html.includes(text));
  assert.ok(!e.run('renderForgeMaterials()').includes('Ferro Rúnico'));
  assert.ok(!html.includes('confirmSalvage()'));
 });
@@ -693,7 +694,7 @@ test('Shaman ritual creates two totem targets, blocks War Alert and wakes withou
  assert.equal(e.run('ui.monster.shamanRitual'),false);assert.equal(e.run('ui.monster.shamanAwake'),true);
  assert.equal(e.run('ui.monster.hp'),e.run('ui.monster.hpMax+30'));
  assert.equal(e.run('player.hp'),10000);
- assert.match(e.run('monsterAvatarHtml(ui.monster,"avatar-img-circle")'),/orc_xama_combat.png/);
+ assert.match(e.run('monsterAvatarHtml(ui.monster,"avatar-img-circle")'),/orc_xama_combat.webp/);
 });
 
 test('Shaman totems use effective damage for terminal retaliation and siphon; totems grant no rewards',()=>{
@@ -834,10 +835,10 @@ test('Shaman recurrence uses miniboss cycle; common Butcher advances seven-kill 
 test('Scout portraits follow preparation, completion and next normal response without mutating templates',()=>{
  const e=scoutBattle(),template=e.run('JSON.stringify(MAPS[2].monsters[0])');
  const art=()=>e.run('monsterAvatarHtml(ui.monster,"avatar-img-circle")');
- assert.match(art(),/orc_batedor_combat.png/);
- scoutResponse(e);scoutResponse(e);scoutResponse(e);assert.match(art(),/orc_batedor_alerta_combat.png/);
- scoutResponse(e);assert.match(art(),/orc_batedor_alerta_combat.png/);
- scoutResponse(e);assert.match(art(),/orc_batedor_combat.png/);
+ assert.match(art(),/orc_batedor_combat.webp/);
+ scoutResponse(e);scoutResponse(e);scoutResponse(e);assert.match(art(),/orc_batedor_alerta_combat.webp/);
+ scoutResponse(e);assert.match(art(),/orc_batedor_alerta_combat.webp/);
+ scoutResponse(e);assert.match(art(),/orc_batedor_combat.webp/);
  assert.equal(e.run('JSON.stringify(MAPS[2].monsters[0])'),template);
 });
 
@@ -846,7 +847,7 @@ test('Scout visual state never leaks after flee or death; other portraits remain
   const e=scoutBattle();for(let i=0;i<3;i++)scoutResponse(e);
   if(death){e.run('resolvePlayerHit(99999,false)');e.tick();e.close();}else e.run('fleeBattle()');
   e.run('startBattle(2,MAPS[2].monsters[0],false)');assert.equal(e.run('ui.monster.scoutHornVisual'),false);
-  assert.match(e.run('monsterAvatarHtml(ui.monster)'),/orc_batedor_combat.png/);
+  assert.match(e.run('monsterAvatarHtml(ui.monster)'),/orc_batedor_combat.webp/);
  }
  const e=fresh();assert.equal(e.run('MAPS.every(map=>[...map.monsters,map.miniBoss,map.boss].filter(Boolean).every(m=>monsterAvatarHtml(m).includes(m.portrait)))'),true);
 });
@@ -858,10 +859,9 @@ test('War stance narrative is rendered before arena and controls, and remains in
  e.run('ui.monster.warStanceActions=0');assert.ok(!e.run('renderBatalhaTab()').split('battle-arena')[0].includes('ELES ESTAVAM ESPERANDO'));
 });
 
-test('Approved Scout PNG assets exist at portrait paths with expected dimensions',()=>{
- for(const [name,w,h] of [['orc_batedor_combat.png',1427,1102],['orc_batedor_alerta_combat.png',1254,1254]]){
-  const bytes=fs.readFileSync(path.join(root,'assets/images/enemies/trenches',name));
-  assert.equal(bytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(bytes.readUInt32BE(16),w);assert.equal(bytes.readUInt32BE(20),h);
+test('Approved Scout WebP assets exist at portrait paths with expected dimensions',()=>{
+ for(const [name,w,h] of [['orc_batedor_combat.webp',1427,1102],['orc_batedor_alerta_combat.webp',1254,1254]]){
+  assertWebp(path.join(root,'assets/images/enemies/trenches',name),w,h);
  }
 });
 
@@ -913,12 +913,12 @@ test('Existing floating numbers target effects; shake targets artwork; action lo
 
 test('Arena V2.4 selects only approved territory background and keeps combat art separate from class selection',()=>{
  const e=fresh();
- assert.match(e.run('classAvatarHtml("mago","class-portrait-img")'),/assets\/images\/classes\/mago.jpg/);
- assert.match(e.run('classCombatAvatarHtml("mago")'),/characters\/combat\/mago.png/);
+ assert.match(e.run('classAvatarHtml("mago","class-portrait-img")'),/assets\/images\/classes\/mago.webp/);
+ assert.match(e.run('classCombatAvatarHtml("mago")'),/characters\/combat\/mago.webp/);
  assert.match(e.run('classCombatAvatarHtml("mago")'),/width="1323" height="1189"/);
  for(let map=0;map<4;map++){
   e.run('startBattle('+map+',MAPS['+map+'].monsters[0],false)');
-  const html=e.run('renderBatalhaTab()');assert.equal(html.includes('backgrounds/trincheiras_orc_arena.png'),map===2);
+  const html=e.run('renderBatalhaTab()');assert.equal(html.includes('backgrounds/trincheiras_orc_arena.webp'),map===2);
   assert.match(html,/battlefield-background/);assert.ok(!html.includes('vs-glyph'));e.run('fleeBattle()');
  }
  assert.equal(e.run('classCombatAvatarHtml("cavaleiro")'),e.run('classAvatarHtml("cavaleiro","avatar-img-circle")'));
@@ -932,8 +932,8 @@ test('Arena V2.4 Mage and Scout natural art keeps stable HUD, mechanics and intr
   assert.match(html,/id="arena-hp-player-text">10000\/10000 HP/);assert.match(html,/id="arena-mp-player-text"/);
   assert.ok(html.indexOf('arena-stage')<html.indexOf('arena-hud-grid'));assert.match(html,/arena-global-effects/);
   assert.match(html,/combatant-statuses/);assert.match(html,/ATOLADO/);
-  if(i===3 || i===4){assert.match(html,/orc_batedor_alerta_combat.png/);assert.match(html,/width="1254" height="1254"/);}
-  else {assert.match(html,/orc_batedor_combat.png/);assert.match(html,/width="1427" height="1102"/);}
+  if(i===3 || i===4){assert.match(html,/orc_batedor_alerta_combat.webp/);assert.match(html,/width="1254" height="1254"/);}
+  else {assert.match(html,/orc_batedor_combat.webp/);assert.match(html,/width="1427" height="1102"/);}
   // Exercise the real state resolver without mutating the mechanical state through rendering.
   e.run('getDodgeChance=()=>1;resolveEnemyAttack()');
  }
@@ -942,8 +942,8 @@ test('Arena V2.4 Mage and Scout natural art keeps stable HUD, mechanics and intr
 });
 
 test('Arena V2.4 assets have approved formats and dimensions; stage and effects remain independent of HUD',()=>{
- for(const [file,w,h] of [['characters/combat/mago.png',1323,1189],['enemies/trenches/orc_capitao_combat_v2.png',1145,1337],['enemies/trenches/orc_acougueiro_combat_v2.png',1312,1199],['enemies/trenches/orc_batedor_combat.png',1427,1102],['enemies/trenches/warlord_gorthak_combat.png',1088,1445],['backgrounds/trincheiras_orc_arena.png',762,1024]]){
-  const b=fs.readFileSync(path.join(root,'assets/images',file));assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(b.readUInt32BE(16),w);assert.equal(b.readUInt32BE(20),h);
+ for(const [file,w,h] of [['characters/combat/mago.webp',1323,1189],['enemies/trenches/orc_capitao_combat_v2.webp',1145,1337],['enemies/trenches/orc_acougueiro_combat_v2.webp',1312,1199],['enemies/trenches/orc_batedor_combat.webp',1427,1102],['enemies/trenches/warlord_gorthak_combat.webp',1088,1445],['backgrounds/trincheiras_orc_arena.webp',762,1024]]){
+  assertWebp(path.join(root,'assets/images',file),w,h);
  }
  const css=fs.readFileSync(path.join(root,'styles/game.css'),'utf8');
  assert.match(css,/--stage-height:clamp\(318px,86vw,378px\)/);

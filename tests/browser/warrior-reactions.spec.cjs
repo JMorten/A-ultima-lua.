@@ -1,7 +1,7 @@
 const {test,expect}=require('playwright/test');const {encounter}=require('./combat-visual-helpers.cjs');
 for(const width of [320,375,390,1366])test('Guerreiro V2: corpo inteiro, chão e impacto em '+width+'px',async({page})=>{
  await page.setViewportSize({width,height:width>1000?768:844});const errors=await encounter(page,'Orc Guerreiro','.warrior-reaction-surface');
- await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src','assets/images/enemies/trenches/orc_guerreiro_combat_v2.png');
+ await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src','assets/images/enemies/trenches/orc_guerreiro_combat_v2.webp');
  const baseline=await page.locator('#portrait-enemy').evaluate(e=>{const r=e.getBoundingClientRect(),i=e.querySelector('img'),c=getComputedStyle(i),stage=e.closest('.arena-stage').getBoundingClientRect();const before=Math.min(stage.width*.42/i.naturalWidth,stage.height*.78/i.naturalHeight),after=Math.min(r.width/i.naturalWidth,r.height/i.naturalHeight);return {x:r.x,y:r.y,fit:c.objectFit,position:c.objectPosition,flipX:new DOMMatrix(c.transform).a,flipY:new DOMMatrix(c.transform).d,animations:e.getAnimations().length,scaleRatio:after/before,centerError:r.x+r.width/2-stage.x-stage.width*.69,groundError:r.bottom-stage.bottom};});
  expect(baseline.flipX).toBe(-1);expect(baseline.flipY).toBe(1);expect(baseline.fit).toBe('contain');expect(baseline.position).toBe('50% 100%');expect(baseline.animations).toBe(0);expect(baseline.scaleRatio).toBeCloseTo(.9,2);expect(Math.abs(baseline.centerError)).toBeLessThan(1);expect(Math.abs(baseline.groundError)).toBeLessThan(1);
  expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);

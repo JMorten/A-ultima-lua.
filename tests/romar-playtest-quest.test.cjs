@@ -32,5 +32,7 @@ test('legacy quest flag renders without modifying existing state',()=>{
 test('entire Romar combat implementation matches requested bff8a72 baseline',()=>{
  const old=execFileSync('git',['show','bff8a72ab1ccb0be7122a2d9d3c7f8ae6b3260cd:src/game.js'],{cwd:root,encoding:'utf8'});
  const segment=s=>s.slice(s.indexOf('function startRomarEncounter(){'),s.indexOf('function tickCooldowns(){')).replace(/\r\n/g,'\n');
- assert.equal(segment(source),segment(old));
+ // A migração de assets muda apenas a extensão; a implementação de combate deve continuar idêntica.
+ const normalizeAssets=s=>segment(s).replace(/\.(?:png|jpg|jpeg)(?=["'])/g,'.webp');
+ assert.equal(normalizeAssets(source),normalizeAssets(old));
 });
