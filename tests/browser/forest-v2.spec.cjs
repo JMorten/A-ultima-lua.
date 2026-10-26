@@ -29,6 +29,7 @@ for (const [wolfName, slug, expectedAsset] of [
   ['Lobo Comum', 'comum', 'assets/images/enemies/forest/lobo_comum_combat_v2.png'],
   ['Lobo Cinzento', 'cinzento', 'assets/images/enemies/forest/lobo_cinzento_combat_v2.png'],
   ['Lobisomem Jovem', 'jovem', 'assets/images/enemies/forest/lobisomem_jovem_combat_v2.png'],
+  ['Uivante das Sombras', 'uivante', 'assets/images/enemies/forest/uivante_sombras_combat_v2.png'],
 ]) {
   for (const width of [320, 375, 390]) {
     test(`${wolfName} V2: enquadramento real em ${width}px`, async ({page}) => {

@@ -57,3 +57,19 @@ test('Lobisomem Jovem V2 usa arte recortada e preserva atributos e Instinto de C
   assert.equal(png.readUInt32BE(20), 1024);
   assert.equal(png[25], 6); // RGBA
 });
+
+test('Uivante das Sombras V2 usa arte recortada e preserva atributos e Golpe Brutal', () => {
+  assert.match(game, /miniBoss:\{\s*id:'uivante_sombras'.*portrait:'assets\/images\/enemies\/forest\/uivante_sombras_combat_v2\.png'.*portraitLayout:'natural'/);
+  assert.match(game, /miniBoss:\{\s*id:'uivante_sombras'.*hp:190, atk:25, def:12, xp:85, coinMin:20, coinMax:30/);
+  assert.match(game, /m\.id==='uivante_sombras' && !m\.heavyPrepared/);
+  assert.match(game, /m\.id==='uivante_sombras' && m\.heavyPrepared/);
+  assert.match(game, /m\.atk = Math\.round\(m\.atk \* 1\.20\)/);
+
+  const asset = 'assets/images/enemies/forest/uivante_sombras_combat_v2.png';
+  assert.equal(sha256(asset), 'E17533A137F583B4BB6BC8A79931D09500EFFBC370791AE1EA1DA85C7FBD2BDF');
+  const png = fs.readFileSync(path.join(root, asset));
+  assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(png.readUInt32BE(16), 1536);
+  assert.equal(png.readUInt32BE(20), 1024);
+  assert.equal(png[25], 6); // RGBA
+});
