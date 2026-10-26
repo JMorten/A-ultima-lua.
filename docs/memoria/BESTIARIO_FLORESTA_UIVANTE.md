@@ -26,7 +26,7 @@ Fontes: `src/game.js` (checkout `081fce4` para mecânica histórica; worktree `f
 | 2 | Lobo Cinzento | Lobo Cinzento | `lobo_cinzento` | comum, tier 1 | JPEG legado + PNG V2 | **aprovado** (V2), QA e Safari confirmados |
 | 3 | Lobisomem Jovem | Lobisomem Jovem | `lobisomem_jovem` | comum, tier 2 | JPEG legado + PNG V2 | **aprovado** (V2), QA e Safari confirmados |
 | 4 | Lobisomem Feroz | Lobisomem Feroz | `lobisomem_feroz` | comum, tier 3 | JPEG | **preservar** |
-| 5 | Uivante das Sombras | Uivante das Sombras | `uivante_sombras` | mini-chefe | JPEG | em uso, não reavaliado; sem decisão |
+| 5 | Uivante das Sombras | Uivante das Sombras | `uivante_sombras` | mini-chefe | JPEG legado + PNG V2 | **aprovado** (V2), integração e QA publicados |
 | 6 | Alfa da Matilha | Alfa da Matilha | `alfa_matilha` | chefe | JPEG | **preservar** |
 | 7 | Romar | Romar | `romar` | especial não letal, 3 estágios | 3 JPEG | em uso sem avaliação documentada |
 | 8 | Lobo da Matilha | Lobo da Matilha | *sem ID próprio* | invocação do Alfa | **sem arte** | não se aplica; sem arte |
@@ -101,12 +101,15 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 
 - **Papel:** mini-chefe do território. `tier` ausente; XP 85; moedas 20–30. Drop com chance de 75% e raridade mínima rara.
 - **Stats base:** 190 HP · 25 ATQ · 12 DEF. **Efetivos:** 224/30/13; com Onda Sombria 291/39/17.
-- **Arte:** `assets/images/enemies/forest/uivante_sombras.jpg` — 480×503, JPEG, SHA-256 `9C070D13DF1CA9E209A057A9F199429BB535C8A596DF8D7624E94978DE9BB9D3`.
+- **Arte legada preservada:** `assets/images/enemies/forest/uivante_sombras.jpg` — 480×503, JPEG, SHA-256 `9C070D13DF1CA9E209A057A9F199429BB535C8A596DF8D7624E94978DE9BB9D3`.
+- **Fonte aprovada:** `uivante-sombras-v2-aprovado.png` — 1536×1024, PNG RGBA, SHA-256 `1A2BF63B4DB5ED9E78826BE44C7D4635981982A6BC54731CCF04AD9CACAFEDB4` (transparência real; cantos alpha 0).
+- **Arte V2 (branch feature, commit `bb7197a`):** `assets/images/enemies/forest/uivante_sombras_combat_v2.png` — 1536×1024, PNG RGBA, SHA-256 `E17533A137F583B4BB6BC8A79931D09500EFFBC370791AE1EA1DA85C7FBD2BDF`; 2.027.865 bytes. Somente o canal alfa foi normalizado (0 e 255 estáveis); nenhum redesenho.
 - **Encontro:** **somente desafio direto** na tela do território. Primeiro rastro exige **14 abates comuns**; após cada vitória, mais **7**. Não aparece no pool comum nem no sorteio de 6%. A interface mostra “OCULTO / LOCALIZADO / RASTRO PERDIDO”.
 - **Comportamento:** **Presságio Sombrio** prepara **Golpe Brutal** (×1.75), anunciado e interrompível; a primeira preparação ocorre em turno aleatório 2–4 e o intervalo seguinte é 2–4 turnos +1. Abaixo de 40% HP recebe **Fúria Desesperada** (ATQ ×1.20, uma vez).
-- **Estado:** arte legada em uso, **não reavaliada**; sem decisão de preservação ou substituição. É o inimigo da Floresta com menor cobertura documental.
-- **Pendência:** `FLO-013` (proposto). Não há arte V2 nem perfil de reação.
-- **Evidência:** `src/game.js:180`, `:761-764`, `:800-809`, `:1345`, `:1954-1958`, `:2098-2103`, `:2778-2797`; `tests/miniboss-progression.test.cjs`; manifesto.
+- **Apresentação V2:** `portraitLayout:'natural'`, entrada própria em `COMBAT_PRESENTATION` (`x:0.73`, `w:0.51`, `h:0.80`) e seletor CSS `[data-actor="uivante_sombras"]`. A caixa maior que a dos lobos comuns preserva a hierarquia de mini-chefe em 320 px e mantém a cauda de fumaça dentro do palco.
+- **Estado:** arte, recorte e integração **aprovados** (`DEC-2026-10-26-FLO-017`); commit `bb7197a` publicado na branch feature; QA isolado `7e466fdf-248b-4dd2-b8e7-0230ea425e06` publicado e conferido por SHA-256. Atributos, Presságio Sombrio, Golpe Brutal, Fúria Desesperada, drops e progressão inalterados. Safari/iPhone e produção pendentes.
+- **Preservação:** a arte JPEG antiga permanece no repositório e no commit-base. Não há perfil de reação para o Uivante.
+- **Evidência:** `src/game.js:28`, `:184`, `:812-814`, `:851-857`, `:1399`, `:1962-1964`, `:2008-2012`, `:2043`, `:2154-2156`; commit `bb7197a`; deployment `7e466fdf`; 191/191 Node e 74/74 Chromium; `evidencias/uivante-sombras-v2/`; manifesto.
 
 ## 6. Alfa da Matilha — `alfa_matilha`
 
@@ -155,19 +158,19 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 | Lobo Cinzento | aprovado (V2), QA e Safari | `FLO-014`, `QLT-015` | commit e QA publicados; produção pendente |
 | Lobisomem Jovem | aprovado (V2), QA e Safari | `FLO-016` | commit e QA publicados; produção pendente |
 | Lobisomem Feroz | preservar | `FLO-007` | nenhum |
-| Uivante das Sombras | não reavaliado | `FLO-013` (proposto) | decidir arte V2 |
+| Uivante das Sombras | aprovado (V2), integração e QA | `FLO-017` | commit e QA publicados; Safari e produção pendentes |
 | Alfa da Matilha | preservar | `FLO-007` | nenhum |
 | Romar | sem avaliação documentada | `FLO-013` (proposto) | decidir escopo e avaliar artes |
 | Lobo da Matilha | sem arte | `FLO-013` (proposto) | decidir se terá arte própria |
 
 ## NÃO VERIFICADO
 
-- Execução nesta missão: **190 Node e 71 Chromium** (Chromium 151 do Playwright 1.62.1). Safari/iPhone de Lobo Comum, Lobo Cinzento e Lobisomem Jovem confirmados por declaração humana; sem captura ou log dos dispositivos.
-- Validação Safari/iPhone: declaração humana (`FLO-010`), sem captura ou log do dispositivo no repositório.
+- Execução nesta missão: **191 Node e 74 Chromium** (Chromium 151 do Playwright 1.62.1). Safari/iPhone de Lobo Comum, Lobo Cinzento e Lobisomem Jovem confirmados por declaração humana; sem captura ou log dos dispositivos. O Uivante das Sombras V2 **não** foi testado em Safari/iPhone.
+- Validação Safari/iPhone: declaração humana (`FLO-010`), sem captura ou log do dispositivo no repositório. `FLO-017` não inclui esse nível de evidência.
 - Julgamento artístico de Romar e das artes legadas: não há registro de avaliação.
-- Paridade SHA-256 entre o deployment público e `_qa-dist`: o conteúdo público foi conferido por leitura, não por hash de download binário.
+- Paridade SHA-256 entre o deployment público e `_qa-dist`: conferida binariamente para o Uivante V2 (`7e466fdf`); nos deployments anteriores o conteúdo público foi conferido por leitura.
 - Comportamento em WebKit: não executado.
 
 ## Evidências consultadas
 
-`src/game.js` (linhas citadas), `src/persistence.js`, `styles/game.css`, `docs/memoria/MANIFESTO_ARTES.json`, `docs/memoria/DECISOES_APROVADAS.md`, commits `4236b84`, `16f4c9c`, `83eb677` e `25ae3fb`, deployments `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` e `860aa1d1-a3cf-4715-a89e-2a07d7e0126b`, `tests/miniboss-progression.test.cjs`, `tests/romar-combat.test.cjs`, `tests/romar-discoveries.test.cjs`, `tests/romar-playtest-quest.test.cjs`, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`; hashes e dimensões recalculados em 2026-10-25/26.
+`src/game.js` (linhas citadas), `src/persistence.js`, `styles/game.css`, `docs/memoria/MANIFESTO_ARTES.json`, `docs/memoria/DECISOES_APROVADAS.md`, commits `4236b84`, `16f4c9c`, `83eb677`, `25ae3fb` e `bb7197a`, deployments `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d`, `860aa1d1-a3cf-4715-a89e-2a07d7e0126b` e `7e466fdf-248b-4dd2-b8e7-0230ea425e06`, `tests/miniboss-progression.test.cjs`, `tests/romar-combat.test.cjs`, `tests/romar-discoveries.test.cjs`, `tests/romar-playtest-quest.test.cjs`, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`; hashes e dimensões recalculados em 2026-10-25/26.

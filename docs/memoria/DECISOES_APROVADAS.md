@@ -143,6 +143,7 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Relação:** complementa `DEC-ND-FLO-007` e `DEC-2026-10-25-FLO-009`; qualquer arte nova exige decisão específica.
 - **Resolução parcial (2026-10-25):** o escopo do Lobo Cinzento foi resolvido por `DEC-2026-10-25-FLO-014`; Uivante das Sombras, Romar e Lobo da Matilha permanecem pendentes.
 - **Nota posterior (2026-10-26):** o Lobisomem Jovem foi substituído por `DEC-2026-10-26-FLO-016`; Lobisomem Feroz e Alfa permanecem preservados.
+- **Nota posterior (2026-10-26):** o escopo do Uivante das Sombras foi resolvido por `DEC-2026-10-26-FLO-017`; Romar e Lobo da Matilha permanecem pendentes.
 
 ## DEC-2026-10-25-FLO-014 — Aprovação do Lobo Cinzento V2
 
@@ -178,6 +179,18 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Arquivos conhecidos:** `src/game.js`, `styles/game.css`, asset novo, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`, `tests/persistence.test.cjs`.
 - **Relação:** substitui `DEC-ND-FLO-007` **somente** para o Lobisomem Jovem; Feroz e Alfa permanecem preservados; não autoriza promoção à produção.
 
+## DEC-2026-10-26-FLO-017 — Aprovação do Uivante das Sombras V2
+
+- **Área:** Galeria / Oficina
+- **Estado:** aprovado
+- **Data:** 2026-10-26
+- **Descrição:** aprovar a nova arte do Uivante das Sombras V2 (lobo espectral de fumaça negra, olhos azuis e garras), o recorte RGBA derivado do arquivo fornecido e a integração na Arena V2. A integração preserva ID, atributos (190/25/12), Presságio Sombrio, Golpe Brutal, Fúria Desesperada, recompensas e progressão; altera somente imagem, enquadramento e posição. A única alteração no arquivo foi a normalização do canal alfa; nenhum redesenho.
+- **Justificativa:** o mini-chefe aparecia menor que os lobos comuns e com retângulo de JPEG visível contra a arena. A nova arte restaura a hierarquia visual do território sem tocar em combate ou balanceamento.
+- **Evidência:** autorização do responsável; fonte `uivante-sombras-v2-aprovado.png` (1536×1024, RGBA, cantos alpha 0, SHA-256 `1A2BF63B4DB5ED9E78826BE44C7D4635981982A6BC54731CCF04AD9CACAFEDB4`); asset `assets/images/enemies/forest/uivante_sombras_combat_v2.png` (1536×1024, PNG RGBA, 2.027.865 bytes, SHA-256 `E17533A137F583B4BB6BC8A79931D09500EFFBC370791AE1EA1DA85C7FBD2BDF`); commit `bb7197ab0e79844c128589d2160e40c05bab242a`; deployment `7e466fdf-248b-4dd2-b8e7-0230ea425e06`; 191/191 Node e 74/74 Chromium; smoke test público em 320/375/390 sem erros, 404 ou overflow; capturas em `evidencias/uivante-sombras-v2/`.
+- **Limite:** não houve teste em Safari/iPhone; a aprovação cobre a arte, o recorte e a integração, não a validação física. Não há captura ou log de dispositivo.
+- **Arquivos conhecidos:** `src/game.js`, `styles/game.css`, asset novo, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`, `tests/persistence.test.cjs`.
+- **Relação:** resolve o escopo do Uivante das Sombras em `DEC-2026-10-25-FLO-013`; preserva a arte JPEG antiga; não autoriza promoção à produção.
+
 ## Rejeitado ou não autorizado
 
 - **DEC-2026-10-16-VIS-R01 — Respiração/idle por escala da imagem inteira:** rejeitado. O efeito foi percebido como zoom artificial. Não integrar sem nova decisão e novas artes adequadas.
@@ -191,8 +204,9 @@ Este índice é navegação; não altera o texto nem o estado original dos regis
 - `DEC-2026-10-25-FLO-009` — o item “Safari/iPhone pendente” foi complementado por `DEC-2026-10-25-FLO-010`; o item “não autoriza deploy” permanece válido e é delimitado por `DEC-2026-10-25-QLT-011`; commit, push e produção continuam não autorizados.
 - `DEC-2026-10-20-FIX-006` — promoção à produção segue pendente.
 - `DEC-ND-FLO-007` — preservação mantida para Mago, Lobisomem Feroz e Alfa; o Lobisomem Jovem foi substituído por `DEC-2026-10-26-FLO-016`; o Lobo Comum foi executado em `FLO-009`/`FLO-010`.
-- `DEC-2026-10-25-FLO-013` — permanece `proposto`; Lobo Cinzento e Lobisomem Jovem foram resolvidos por `DEC-2026-10-25-FLO-014` e `DEC-2026-10-26-FLO-016`; Uivante das Sombras, Romar e Lobo da Matilha seguem pendentes.
+- `DEC-2026-10-25-FLO-013` — permanece `proposto`; Lobo Cinzento, Lobisomem Jovem e Uivante das Sombras foram resolvidos por `DEC-2026-10-25-FLO-014`, `DEC-2026-10-26-FLO-016` e `DEC-2026-10-26-FLO-017`; Romar e Lobo da Matilha seguem pendentes.
 - `DEC-2026-10-25-FLO-014` — `aprovado` em 2026-10-25; integração commitada e publicada na branch feature; QA isolado e Safari complementados por `QLT-015`; produção não autorizada.
 - `DEC-2026-10-25-QLT-015` — `aprovado`; complementa `FLO-014` com o QA isolado publicado e a confirmação Safari; produção não autorizada.
 - `DEC-2026-10-26-FLO-016` — `aprovado`; nova arte e integração do Lobisomem Jovem, com QA isolado e Safari confirmados; produção não autorizada.
+- `DEC-2026-10-26-FLO-017` — `aprovado`; nova arte e integração do Uivante das Sombras, com QA isolado publicado e conferido por hash; Safari e produção não autorizados.
 - `DEC-2026-10-25-DOC-012` — `aprovado` em 2026-10-25; a aprovação cobre a reconciliação documental, não push ou deploy.

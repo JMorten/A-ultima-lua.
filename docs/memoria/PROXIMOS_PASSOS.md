@@ -1,6 +1,6 @@
 # Próximos passos
 
-**Snapshot:** 2026-10-25 (reconciliação documental).
+**Snapshot:** 2026-10-26 (Uivante das Sombras V2).
 
 ## Concluído em 2026-10-25
 
@@ -12,14 +12,16 @@
 - Lobo Cinzento V2 aprovado, integrado e publicado: `DEC-2026-10-25-FLO-014`; commit `83eb677` publicado.
 - QA isolado do Lobo Cinzento publicado (`45362c1d-ca92-4c0b-b6d4-6b51c258fc9d`) e funcionamento confirmado no Safari/iPhone — `DEC-2026-10-25-QLT-015`.
 - Lobisomem Jovem V2 aprovado, integrado e publicado: `DEC-2026-10-26-FLO-016`; commit `25ae3fb`; QA `860aa1d1-a3cf-4715-a89e-2a07d7e0126b`; Safari/iPhone confirmado.
-- Revalidação: **190/190 Node** e **71/71 Chromium** (Chromium 151 do Playwright 1.62.1).
+- Uivante das Sombras V2 aprovado, integrado e publicado: `DEC-2026-10-26-FLO-017`; commit `bb7197a`; QA `7e466fdf-248b-4dd2-b8e7-0230ea425e06`, com paridade SHA-256 entre site público e `_qa-dist`; Safari/iPhone pendente.
+- Revalidação: **191/191 Node** e **74/74 Chromium** (Chromium 151 do Playwright 1.62.1).
 
 ## Pendente — exige decisão humana
 
-1. **Escopo visual restante:** Uivante das Sombras, Romar e Lobo da Matilha — `DEC-2026-10-25-FLO-013` permanece `proposto` como registro histórico.
-2. **Reconciliação de linhas Git:** decidir como unir `081fce4` (`qa-preview`) com `origin/qa-preview` (`11bff6c`).
-3. **Promoção à produção:** não autorizada para a Floresta V2.
-4. **Cobertura documental:** manter bestiário e manifesto sincronizados quando arte ou entidade mudar.
+1. **Escopo visual restante:** Romar e Lobo da Matilha — `DEC-2026-10-25-FLO-013` permanece `proposto` como registro histórico.
+2. **Validação física do Uivante das Sombras V2:** abrir `https://a-ultima-lua-floresta-v2-qa.pages.dev/?v=7e466fdf` no Safari do iPhone e registrar aprovação ou defeitos; Chromium não substitui esse teste.
+3. **Reconciliação de linhas Git:** decidir como unir `081fce4` (`qa-preview`) com `origin/qa-preview` (`11bff6c`).
+4. **Promoção à produção:** não autorizada para a Floresta V2.
+5. **Cobertura documental:** manter bestiário e manifesto sincronizados quando arte ou entidade mudar.
 
 ## Fora de escopo até nova decisão
 

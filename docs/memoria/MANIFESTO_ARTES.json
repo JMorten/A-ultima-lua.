@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "snapshot": "2026-10-26 (Lobisomem Jovem V2)",
+  "snapshot": "2026-10-26 (Uivante das Sombras V2)",
   "escopo": "Artes de combate e cenários diretamente relevantes às Trincheiras aprovadas e à Floresta Uivante V2 em andamento. Não é inventário de todas as imagens do jogo.",
   "regras": [
     "A presença de um arquivo não implica aprovação.",
@@ -36,7 +36,8 @@
       "ART-FLORESTA-ARENA-V2",
       "ART-LOBO-COMUM-V2-FONTE",
       "ART-LOBO-CINZENTO-V2-FONTE",
-      "ART-LOBISOMEM-JOVEM-V2-FONTE"
+      "ART-LOBISOMEM-JOVEM-V2-FONTE",
+      "ART-FLORESTA-UIVANTE-SOMBRAS-V2-FONTE"
     ],
     "laboratorio_ignorado_pelo_git": [
       "ART-LOBO-COMUM-V2-RECORTE"
@@ -45,7 +46,8 @@
       "ART-FLORESTA-ARENA-V2-COMBATE",
       "ART-LOBO-COMUM-V2-COMBATE",
       "ART-FLORESTA-LOBO-CINZENTO-V2",
-      "ART-FLORESTA-LOBISOMEM-JOVEM-V2"
+      "ART-FLORESTA-LOBISOMEM-JOVEM-V2",
+      "ART-FLORESTA-UIVANTE-SOMBRAS-V2"
     ]
   },
   "classificacao_aprovacao": {
@@ -59,6 +61,8 @@
       "ART-FLORESTA-LOBO-CINZENTO-V2",
       "ART-LOBISOMEM-JOVEM-V2-FONTE",
       "ART-FLORESTA-LOBISOMEM-JOVEM-V2",
+      "ART-FLORESTA-UIVANTE-SOMBRAS-V2-FONTE",
+      "ART-FLORESTA-UIVANTE-SOMBRAS-V2",
       "ART-T3-ARENA",
       "ART-T3-BATEDOR",
       "ART-T3-BATEDOR-ALERTA",
@@ -82,11 +86,10 @@
     "substituido_na_branch_feature": [
       "ART-FLORESTA-LOBO-SELVAGEM-ATUAL",
       "ART-FLORESTA-LOBO-CINZENTO-ATUAL",
-      "ART-FLORESTA-LOBISOMEM-JOVEM"
-    ],
-    "em_uso_sem_aprovacao_v2_documentada": [
+      "ART-FLORESTA-LOBISOMEM-JOVEM",
       "ART-FLORESTA-UIVANTE-SOMBRAS"
     ],
+    "em_uso_sem_aprovacao_v2_documentada": [],
     "em_uso_sem_avaliacao_documentada": [
       "ART-FLORESTA-ROMAR-ESTAGIO-1",
       "ART-FLORESTA-ROMAR-ESTAGIO-2",
@@ -321,6 +324,35 @@
       "evidencia": "DEC-ND-FLO-007"
     },
     {
+      "id": "ART-FLORESTA-UIVANTE-SOMBRAS-V2-FONTE",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "uivante-sombras-v2-aprovado.png",
+      "sha256": "1A2BF63B4DB5ED9E78826BE44C7D4635981982A6BC54731CCF04AD9CACAFEDB4",
+      "dimensoes": { "largura": 1536, "altura": 1024 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 254 },
+      "versao": "V2_fonte",
+      "estado_aprovacao": "aparencia_aprovada_recorte_executado",
+      "origem": "arquivo fornecido para a Floresta V2; não rastreado",
+      "evidencia": "DEC-2026-10-26-FLO-017"
+    },
+    {
+      "id": "ART-FLORESTA-UIVANTE-SOMBRAS-V2",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "assets/images/enemies/forest/uivante_sombras_combat_v2.png",
+      "sha256": "E17533A137F583B4BB6BC8A79931D09500EFFBC370791AE1EA1DA85C7FBD2BDF",
+      "dimensoes": { "largura": 1536, "altura": 1024 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 255 },
+      "versao": "V2_integracao_commitada",
+      "estado_aprovacao": "aprovado_integracao_publicada_em_qa",
+      "origem": "recorte RGBA derivado da fonte aprovada; somente o canal alfa foi normalizado",
+      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit bb7197ab0e79844c128589d2160e40c05bab242a; deployment 7e466fdf-248b-4dd2-b8e7-0230ea425e06 (não presente na branch documental)",
+      "evidencia": "DEC-2026-10-26-FLO-017; commit bb7197a; deployment 7e466fdf; 191/191 Node e 74/74 Chromium; evidencias/uivante-sombras-v2/"
+    },
+    {
       "id": "ART-FLORESTA-UIVANTE-SOMBRAS",
       "area": "Galeria/Floresta Uivante",
       "caminho": "assets/images/enemies/forest/uivante_sombras.jpg",
@@ -330,9 +362,15 @@
       "modo": "RGB",
       "transparencia": { "presente": false },
       "versao": "atual",
-      "estado_aprovacao": "em_uso_nao_reavaliado",
+      "estado_aprovacao": "em_uso_no_commit_base_11bff6c_substituido_na_branch_feature",
       "origem": "repositório; src/game.js",
-      "evidencia": "src/game.js"
+      "evidencia": "src/game.js; DEC-2026-10-26-FLO-017",
+      "substituicao": {
+        "branch": "feature/floresta-uivante-v2-etapa1",
+        "asset": "ART-FLORESTA-UIVANTE-SOMBRAS-V2",
+        "commit": "bb7197ab0e79844c128589d2160e40c05bab242a",
+        "estado": "commitado e publicado na branch feature; QA publicado e conferido por hash; Safari pendente"
+      }
     },
     {
       "id": "ART-FLORESTA-ALFA-MATILHA",
