@@ -1415,6 +1415,9 @@ function startBattle(mapIndex, monsterTemplate, isBoss){
   if(ui.monster.warStanceActions)logPush('<b>ELES ESTAVAM ESPERANDO</b> O chamado do Batedor chegou antes de você. O Orc assume posição de combate. POSTURA DE GUERRA: ATQ +15% nas duas primeiras ações.');
   ui.tab = 'batalha';
   render();
+  // WebKit/Safari preserva o scroll da seleção de classe; no desktop a arena deve começar no topo.
+  // No mobile o layout compacto usa o scroll para manter os controles visíveis.
+  if (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(min-width: 701px)').matches) window.scrollTo(0, 0);
 }
 
 /* Romar: encontro opcional liberado pela cadeia de descobertas.

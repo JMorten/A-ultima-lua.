@@ -10,3 +10,7 @@
 /tests/browser/test-results/
 /tests/browser/playwright-report/
 /tests/browser/RELATORIO_*.md
+
+# Otimização de imagens (gerado localmente; não versionar)
+/assets-optimized/
+/tools/__pycache__/

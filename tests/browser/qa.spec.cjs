@@ -499,6 +499,7 @@ test('vitória pendente de Gorthak sobrevive ao reload e confirma recompensas um
 test('Xamã V2: orientação, corpo inteiro e pé ancorado antes/depois do despertar em larguras mobile e desktop', async ({ page }) => {
   const errors=[];
   await page.addInitScript(()=>{window.__shamanReactions=[];document.addEventListener('DOMContentLoaded',()=>new MutationObserver(records=>{for(const r of records)if(r.target.id==='portrait-enemy'&&r.target.dataset.reaction)window.__shamanReactions.push(r.target.dataset.reaction);}).observe(document.body,{subtree:true,attributes:true,attributeFilter:['data-reaction']}));});
+  await page.emulateMedia({reducedMotion:'reduce'});
   await startShaman(page,errors,{level:100,forca:10000,vitalidade:10000});
   await expect(page.locator('#portrait-enemy')).not.toHaveClass(/shaman-reaction-surface/);
   await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src',/orc_xama_transe\.png/);
@@ -515,7 +516,6 @@ test('Xamã V2: orientação, corpo inteiro e pé ancorado antes/depois do despe
     expect(frame.naturalWidth).toBe(1024);expect(frame.naturalHeight).toBe(1536);expect(frame.fit).toBe('contain');expect(frame.position).toBe('50% 100%');expect(frame.scaleX).toBe(-1);expect(frame.scaleY).toBe(1);expect(frame.boxWidthRatio).toBeCloseTo(.44,3);expect(frame.boxHeightRatio).toBeCloseTo(.70,3);expect(Math.abs(frame.centerError)).toBeLessThan(1);expect(Math.abs(frame.groundError)).toBeLessThan(1);expect(frame.overflow).toBeLessThanOrEqual(1);
     await page.locator('#game-screen').screenshot({path:process.env.AUL_PW_ARTIFACTS+'/orc-xama-v2-desperto-'+width+'.png'});
   }
-  await page.emulateMedia({reducedMotion:'reduce'});
   await page.evaluate(()=>EnemyCombatVisual.hit(ui.monster,true));
   expect(await page.locator('#portrait-enemy').getAttribute('data-reaction-static')).toBe('true');
   expect(await page.locator('#portrait-enemy').evaluate(e=>e.getAnimations().length)).toBe(0);

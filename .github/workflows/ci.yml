@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main, qa-preview, "chore/**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  node-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Testes Node
+        run: node --test tests/*.test.cjs
+      - name: Sintaxe JS
+        run: |
+          node --check src/game.js
+          node --check src/persistence.js
+          node --check src/combat-animator.js
+          node --check src/gorthak-visual.js
+          node --check _qa/build.cjs
+          node --check _qa/debug.js
+
+  browser-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Instalar Playwright do projeto
+        working-directory: tests/browser
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install --no-audit --no-fund; fi
+      - name: Instalar browsers
+        working-directory: tests/browser
+        run: npx playwright install --with-deps chromium webkit
+      - name: Rodar Chromium + WebKit
+        working-directory: tests/browser
+        run: npm test
+      - name: Guardar artefatos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: tests/browser/artifacts
+          if-no-files-found: ignore
+
+  assets-budget:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      # Orçamento atual: 57 MB / 3.200 KB por arquivo.
+      # Meta: reduzir para 15 MB / 500 KB depois da conversão WebP/AVIF.
+      - name: Verificar orçamento de assets
+        run: node tools/check-assets.mjs assets 3200 57

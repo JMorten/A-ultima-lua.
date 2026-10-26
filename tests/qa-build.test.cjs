@@ -20,6 +20,6 @@ test('QA artifact is generated; all shared scripts/assets are byte-identical and
 test('production has no Debug entry and explicitly excludes both QA source and generated artifact',()=>{
  assert.ok(!fs.existsSync(path.join(root,'.nojekyll')));
  const config=fs.readFileSync(path.join(root,'_config.yml'),'utf8');
- for(const dir of ['_qa','_qa-dist','tests/qa-debug.test.cjs','tests/qa-build.test.cjs'])assert.ok(config.split('\n').includes('  - '+dir));
+ for(const dir of ['_qa','_qa-dist','tests/qa-debug.test.cjs','tests/qa-build.test.cjs'])assert.ok(config.split(/\r?\n/).includes('  - '+dir));
  for(const file of ['index.html','src/game.js','src/persistence.js','styles/game.css'])assert.doesNotMatch(fs.readFileSync(path.join(root,file),'utf8'),/QADebug|qa\/debug|MODO QA/);
 });

@@ -1,0 +1,39 @@
+{
+  // A Última Lua — copie para:
+  // D:\Projetos\A-ultima-lua\.opencode\opencode.jsonc
+  "$schema": "https://opencode.ai/config.json",
+
+  "mcp": {
+    "servers": {
+      "chrome-devtools": {
+        "type": "local",
+        "command": [
+          "cmd",
+          "/c",
+          "npx",
+          "-y",
+          "chrome-devtools-mcp@latest",
+          "--isolated",
+          "--no-usage-statistics"
+        ],
+        "timeout": { "startup": 90000 }
+      }
+    }
+  },
+
+  "permissions": [
+    { "action": "shell", "resource": "git push *", "effect": "ask" },
+    { "action": "shell", "resource": "npx wrangler *", "effect": "ask" },
+    { "action": "shell", "resource": "node tests/browser/run.cjs *", "effect": "allow" },
+    { "action": "shell", "resource": "node --test tests/*", "effect": "allow" }
+  ],
+
+  "watcher": {
+    "ignore": [
+      "_qa-dist/**",
+      "tests/browser/artifacts/**",
+      "laboratorios/**",
+      "node_modules/**"
+    ]
+  }
+}

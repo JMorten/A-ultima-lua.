@@ -745,6 +745,7 @@
 .gorthak-reaction-surface[data-reaction-static],.scout-reaction-surface[data-reaction-static],.warrior-reaction-surface[data-reaction-static],.captain-reaction-surface[data-reaction-static],.butcher-reaction-surface[data-reaction-static],.shaman-reaction-surface[data-reaction-static]{will-change:auto;outline:2px solid var(--gold);outline-offset:-2px;}
 @media(prefers-reduced-motion:reduce){
   .gorthak-reaction-surface[data-reaction],.scout-reaction-surface[data-reaction],.warrior-reaction-surface[data-reaction],.captain-reaction-surface[data-reaction],.butcher-reaction-surface[data-reaction],.shaman-reaction-surface[data-reaction]{will-change:auto;outline:2px solid var(--gold);outline-offset:-2px;}
+  .portrait-ring,.portrait-ring::after{animation:none!important;transition:none!important;}
 }
 
 /* Full-art fit for the reviewed actors. Override legacy natural-portrait auto height.
