@@ -27,7 +27,7 @@ test('Alfa da Matilha V2 usa arte recortada e preserva atributos', () => {
   assert.match(game, /boss:\{ id:'alfa_matilha'.*hp:300, atk:30, def:14, xp:130, coinMin:40, coinMax:60, isBoss:true \}/);
 
   const asset = 'assets/images/enemies/forest/alfa_matilha_combat_v2.png';
-  assert.equal(sha256(asset), 'D3A727DF25AC2DE1DDEEA22315BF32B282BFEF894918AE4F92C421D2FD150868');
+  assert.equal(sha256(asset), '6054B4A6238372BE1B8D5DA1B728ABA5ABBCB2357B179230D5C6E9A93D4FEC62');
   const png = fs.readFileSync(path.join(root, asset));
   assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
   assert.equal(png.readUInt32BE(16), 1024);
