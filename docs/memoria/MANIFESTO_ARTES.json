@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "snapshot": "2026-10-26 (Uivante das Sombras V2)",
+  "snapshot": "2026-10-26 (Romar V2)",
   "escopo": "Artes de combate e cenários diretamente relevantes às Trincheiras aprovadas e à Floresta Uivante V2 em andamento. Não é inventário de todas as imagens do jogo.",
   "regras": [
     "A presença de um arquivo não implica aprovação.",
@@ -37,7 +37,10 @@
       "ART-LOBO-COMUM-V2-FONTE",
       "ART-LOBO-CINZENTO-V2-FONTE",
       "ART-LOBISOMEM-JOVEM-V2-FONTE",
-      "ART-FLORESTA-UIVANTE-SOMBRAS-V2-FONTE"
+      "ART-FLORESTA-UIVANTE-SOMBRAS-V2-FONTE",
+      "ART-ROMAR-V2-FONTE-1",
+      "ART-ROMAR-V2-FONTE-2",
+      "ART-ROMAR-V2-FONTE-3"
     ],
     "laboratorio_ignorado_pelo_git": [
       "ART-LOBO-COMUM-V2-RECORTE"
@@ -47,7 +50,10 @@
       "ART-LOBO-COMUM-V2-COMBATE",
       "ART-FLORESTA-LOBO-CINZENTO-V2",
       "ART-FLORESTA-LOBISOMEM-JOVEM-V2",
-      "ART-FLORESTA-UIVANTE-SOMBRAS-V2"
+      "ART-FLORESTA-UIVANTE-SOMBRAS-V2",
+      "ART-FLORESTA-ROMAR-V2-1",
+      "ART-FLORESTA-ROMAR-V2-2",
+      "ART-FLORESTA-ROMAR-V2-3"
     ]
   },
   "classificacao_aprovacao": {
@@ -63,6 +69,12 @@
       "ART-FLORESTA-LOBISOMEM-JOVEM-V2",
       "ART-FLORESTA-UIVANTE-SOMBRAS-V2-FONTE",
       "ART-FLORESTA-UIVANTE-SOMBRAS-V2",
+      "ART-ROMAR-V2-FONTE-1",
+      "ART-ROMAR-V2-FONTE-2",
+      "ART-ROMAR-V2-FONTE-3",
+      "ART-FLORESTA-ROMAR-V2-1",
+      "ART-FLORESTA-ROMAR-V2-2",
+      "ART-FLORESTA-ROMAR-V2-3",
       "ART-T3-ARENA",
       "ART-T3-BATEDOR",
       "ART-T3-BATEDOR-ALERTA",
@@ -87,14 +99,13 @@
       "ART-FLORESTA-LOBO-SELVAGEM-ATUAL",
       "ART-FLORESTA-LOBO-CINZENTO-ATUAL",
       "ART-FLORESTA-LOBISOMEM-JOVEM",
-      "ART-FLORESTA-UIVANTE-SOMBRAS"
-    ],
-    "em_uso_sem_aprovacao_v2_documentada": [],
-    "em_uso_sem_avaliacao_documentada": [
+      "ART-FLORESTA-UIVANTE-SOMBRAS",
       "ART-FLORESTA-ROMAR-ESTAGIO-1",
       "ART-FLORESTA-ROMAR-ESTAGIO-2",
       "ART-FLORESTA-ROMAR-ESTAGIO-3"
-    ]
+    ],
+    "em_uso_sem_aprovacao_v2_documentada": [],
+    "em_uso_sem_avaliacao_documentada": []
   },
   "entidades_sem_arte": [
     {
@@ -387,6 +398,93 @@
       "evidencia": "DEC-ND-FLO-007"
     },
     {
+      "id": "ART-ROMAR-V2-FONTE-1",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "romar-v2-aprovado-1.png",
+      "sha256": "7569EDFEC5CD630BDE1E6CEF59782A991246F4FA7763912057DF944913BF1F0B",
+      "dimensoes": { "largura": 1024, "altura": 1536 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 254 },
+      "versao": "V2_fonte_estagio_1",
+      "estado_aprovacao": "aparencia_aprovada_recorte_executado",
+      "origem": "arquivo fornecido para a Floresta V2; não rastreado",
+      "evidencia": "DEC-2026-10-26-FLO-018"
+    },
+    {
+      "id": "ART-ROMAR-V2-FONTE-2",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "romar-v2-aprovado-2.png",
+      "sha256": "F93D92A36F4862A0990F92EA268817AEB0873D7EFCAFFC41FF799A59ED5AAFA4",
+      "dimensoes": { "largura": 1024, "altura": 1536 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 254 },
+      "versao": "V2_fonte_estagio_2",
+      "estado_aprovacao": "aparencia_aprovada_recorte_executado",
+      "origem": "arquivo fornecido para a Floresta V2; não rastreado",
+      "evidencia": "DEC-2026-10-26-FLO-018"
+    },
+    {
+      "id": "ART-ROMAR-V2-FONTE-3",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "romar-v2-aprovado-3.png",
+      "sha256": "95AA7959841323F53DD578859D0CFFDB45FBE991B8B670D284CE9178B051336F",
+      "dimensoes": { "largura": 1024, "altura": 1536 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 254 },
+      "versao": "V2_fonte_estagio_3",
+      "estado_aprovacao": "aparencia_aprovada_recorte_executado",
+      "origem": "arquivo fornecido para a Floresta V2; não rastreado",
+      "evidencia": "DEC-2026-10-26-FLO-018"
+    },
+    {
+      "id": "ART-FLORESTA-ROMAR-V2-1",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "assets/images/enemies/forest/romar_v2_estagio1.png",
+      "sha256": "7382D5666C3186CA4849CB9F4E686C0ED628090B516F30627C48AC3B5B178FEE",
+      "dimensoes": { "largura": 1024, "altura": 1536 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 255 },
+      "versao": "V2_integracao_commitada",
+      "estado_aprovacao": "aprovado_qa_publicado",
+      "origem": "recorte RGBA derivado da fonte aprovada; somente o canal alfa foi normalizado",
+      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit cbc50b62f4530d11bfb8c1f4877c6c5b8fadf121; deployment c5618de6-77a3-42d0-9227-af87129c3eb1 (não presente na branch documental)",
+      "evidencia": "DEC-2026-10-26-FLO-018; commit cbc50b6; deployment c5618de6; 192/192 Node e 77/77 Chromium; evidencias/romar-v2/"
+    },
+    {
+      "id": "ART-FLORESTA-ROMAR-V2-2",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "assets/images/enemies/forest/romar_v2_estagio2.png",
+      "sha256": "B9CC5745B42F6BDA46152EAE777C1D21238305F02539150CCA9DD92FB2AA34E7",
+      "dimensoes": { "largura": 1024, "altura": 1536 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 255 },
+      "versao": "V2_integracao_commitada",
+      "estado_aprovacao": "aprovado_qa_publicado",
+      "origem": "recorte RGBA derivado da fonte aprovada; somente o canal alfa foi normalizado",
+      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit cbc50b62f4530d11bfb8c1f4877c6c5b8fadf121; deployment c5618de6-77a3-42d0-9227-af87129c3eb1 (não presente na branch documental)",
+      "evidencia": "DEC-2026-10-26-FLO-018; commit cbc50b6; deployment c5618de6; 192/192 Node e 77/77 Chromium; evidencias/romar-v2/"
+    },
+    {
+      "id": "ART-FLORESTA-ROMAR-V2-3",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "assets/images/enemies/forest/romar_v2_estagio3.png",
+      "sha256": "B3626F3C324967218D2197381431CECF7259886763F0DDB13B681B2521C506A7",
+      "dimensoes": { "largura": 1024, "altura": 1536 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 255 },
+      "versao": "V2_integracao_commitada",
+      "estado_aprovacao": "aprovado_qa_publicado",
+      "origem": "recorte RGBA derivado da fonte aprovada; somente o canal alfa foi normalizado",
+      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit cbc50b62f4530d11bfb8c1f4877c6c5b8fadf121; deployment c5618de6-77a3-42d0-9227-af87129c3eb1 (não presente na branch documental)",
+      "evidencia": "DEC-2026-10-26-FLO-018; commit cbc50b6; deployment c5618de6; 192/192 Node e 77/77 Chromium; evidencias/romar-v2/"
+    },
+    {
       "id": "ART-FLORESTA-ROMAR-ESTAGIO-1",
       "area": "Galeria/Floresta Uivante",
       "caminho": "assets/images/enemies/forest/romar_15.jpg",
@@ -396,9 +494,15 @@
       "modo": "RGB",
       "transparencia": { "presente": false },
       "versao": "atual",
-      "estado_aprovacao": "em_uso_sem_avaliacao_documentada",
+      "estado_aprovacao": "em_uso_no_commit_base_11bff6c_substituido_na_branch_feature",
       "origem": "repositório; src/game.js",
-      "evidencia": "src/game.js:1379; hash recalculado em 2026-10-25"
+      "evidencia": "src/game.js; DEC-2026-10-26-FLO-018",
+      "substituicao": {
+        "branch": "feature/floresta-uivante-v2-etapa1",
+        "asset": "ART-FLORESTA-ROMAR-V2-1",
+        "commit": "cbc50b62f4530d11bfb8c1f4877c6c5b8fadf121",
+        "estado": "commitado e publicado na branch feature; QA publicado; Safari pendente"
+      }
     },
     {
       "id": "ART-FLORESTA-ROMAR-ESTAGIO-2",
@@ -410,9 +514,15 @@
       "modo": "RGB",
       "transparencia": { "presente": false },
       "versao": "atual",
-      "estado_aprovacao": "em_uso_sem_avaliacao_documentada",
+      "estado_aprovacao": "em_uso_no_commit_base_11bff6c_substituido_na_branch_feature",
       "origem": "repositório; src/game.js",
-      "evidencia": "src/game.js:1453; hash recalculado em 2026-10-25"
+      "evidencia": "src/game.js; DEC-2026-10-26-FLO-018",
+      "substituicao": {
+        "branch": "feature/floresta-uivante-v2-etapa1",
+        "asset": "ART-FLORESTA-ROMAR-V2-2",
+        "commit": "cbc50b62f4530d11bfb8c1f4877c6c5b8fadf121",
+        "estado": "commitado e publicado na branch feature; QA publicado; Safari pendente"
+      }
     },
     {
       "id": "ART-FLORESTA-ROMAR-ESTAGIO-3",
@@ -424,9 +534,15 @@
       "modo": "RGB",
       "transparencia": { "presente": false },
       "versao": "atual",
-      "estado_aprovacao": "em_uso_sem_avaliacao_documentada",
+      "estado_aprovacao": "em_uso_no_commit_base_11bff6c_substituido_na_branch_feature",
       "origem": "repositório; src/game.js",
-      "evidencia": "src/game.js:1458; hash recalculado em 2026-10-25"
+      "evidencia": "src/game.js; DEC-2026-10-26-FLO-018",
+      "substituicao": {
+        "branch": "feature/floresta-uivante-v2-etapa1",
+        "asset": "ART-FLORESTA-ROMAR-V2-3",
+        "commit": "cbc50b62f4530d11bfb8c1f4877c6c5b8fadf121",
+        "estado": "commitado e publicado na branch feature; QA publicado; Safari pendente"
+      }
     },
     {
       "id": "ART-T3-ARENA",

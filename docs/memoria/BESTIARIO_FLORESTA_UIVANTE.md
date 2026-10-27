@@ -28,7 +28,7 @@ Fontes: `src/game.js` (checkout `081fce4` para mecânica histórica; worktree `f
 | 4 | Lobisomem Feroz | Lobisomem Feroz | `lobisomem_feroz` | comum, tier 3 | JPEG | **preservar** |
 | 5 | Uivante das Sombras | Uivante das Sombras | `uivante_sombras` | mini-chefe | JPEG legado + PNG V2 | **aprovado** (V2), QA e Safari confirmados |
 | 6 | Alfa da Matilha | Alfa da Matilha | `alfa_matilha` | chefe | JPEG | **preservar** |
-| 7 | Romar | Romar | `romar` | especial não letal, 3 estágios | 3 JPEG | em uso sem avaliação documentada |
+| 7 | Romar | Romar | `romar` | especial não letal, 3 estágios | 3 JPEG legado + 3 PNG V2 | **aprovado** (V2), QA publicado |
 | 8 | Lobo da Matilha | Lobo da Matilha | *sem ID próprio* | invocação do Alfa | **sem arte** | não se aplica; sem arte |
 
 ## Modelo de encontro
@@ -71,7 +71,7 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 - **Transparência real:** o asset V2 é RGBA; os quatro cantos têm alpha 0 e 3,81% dos pixels são borda suave. O xadrez não está incrustado no asset final.
 - **Comportamento:** a cada 3ª ação de IA prepara **Bote** (×1.55). O golpe pode ser interrompido por um impacto ≥ max(8, 12% do HP máximo), consumindo a preparação também em esquiva.
 - **Estado:** arte legada preservada; nova arte e recorte **aprovados** (`DEC-2026-10-25-FLO-014`). Integração commitada e publicada na branch `feature/...` em `83eb677`. QA isolado `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` publicado e funcionamento confirmado no Safari/iPhone (`DEC-2026-10-25-QLT-015`). Produção pendente. Atributos, Bote, recompensas e progressão inalterados.
-- **Pendência:** o escopo do Cinzento em `FLO-013` foi resolvido por `FLO-014`; `FLO-013` permanece como registro histórico proposto para Uivante, Romar e Lobo da Matilha. Falta apenas promoção à produção, não autorizada.
+- **Pendência:** o escopo do Cinzento em `FLO-013` foi resolvido por `FLO-014`; `FLO-013` permanece como registro histórico proposto apenas para o Lobo da Matilha. Falta apenas promoção à produção, não autorizada.
 - **Evidência:** `src/game.js:176`, `:2000-2004`, `:2045`, `:1687-1693`; commits `83eb677`; QA `45362c1d`; 189/189 Node e 68/68 Chromium; `evidencias/lobo-cinzento-v2/`; manifesto.
 
 ## 3. Lobisomem Jovem — `lobisomem_jovem`
@@ -129,11 +129,14 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 
 - **Papel:** inimigo especial **não letal**, fora de `MAPS[].monsters` e de `defeatedBosses`. Não conta para a caçada da Floresta.
 - **Stats:** base 300 HP · 24 ATQ · 12 DEF, com faixa por nível: até 5 → 300/24/12; níveis 6–7 → 324/25/13; nível 8+ → 345/26/13. Não recebe os multiplicadores de perigo nem o buff da Onda Sombria.
-- **Artes:** `romar_15.jpg` (1024×1536, SHA-256 `3A90FFD9…83244`), `romar_30.jpg` (1254×1254, SHA-256 `721CC6F9…C23E2`) e `romar_45.jpg` (1254×1254, SHA-256 `AD2AB773…A110`). Os hashes completos estão no manifesto.
+- **Artes legadas preservadas:** `romar_15.jpg` (1024×1536, SHA-256 `3A90FFD9…83244`), `romar_30.jpg` (1254×1254, SHA-256 `721CC6F9…C23E2`) e `romar_45.jpg` (1254×1254, SHA-256 `AD2AB773…A110`). Os hashes completos estão no manifesto.
+- **Artes V2 (branch feature, commit `cbc50b6`):** `romar_v2_estagio1.png`, `romar_v2_estagio2.png` e `romar_v2_estagio3.png` — 1024×1536, PNG RGBA, transparência real (cantos alpha 0); SHA-256 `7382D566…8FEE`, `B9CC5745…34E7` e `B3626F3C…C506A7`. Somente o canal alfa foi normalizado; nenhum redesenho.
+- **Progressão visual:** estágio 1 conserva o rosto e marca apenas os braços manuseados na runa; estágio 2 mostra a corrupção avançando em veios e rachaduras; estágio 3 mantém Romar humano, com olhos vermelhos e postura agressiva.
+- **Apresentação V2:** `portraitLayout:'natural'`, entrada própria em `COMBAT_PRESENTATION` (`x:0.70`, `w:0.46`, `h:0.92`), `contain` ancorado na base e fallback em emoji apenas quando a imagem falha. Romar fica mais alto que o Mago e não sobrepõe a silhueta dele.
 - **Encontro:** exige Alfa derrotado (`defeatedBosses` contém 0), escolha final ainda não feita, nenhuma cena pendente e **três descobertas vistas incluindo `runa`**. A chance cresce por tentativa (6% → 100%). Na base `11bff6c`, a primeira pista (`massacre`) é entregue após o primeiro combate comum posterior ao Alfa, com a batalha adiada até **CONTINUAR**; no checkout `081fce4`, as pistas vêm apenas da exploração.
 - **Comportamento:** três estágios por HP (65% e 35%); HP travado em 20% no golpe final; escolha **poupar** ou **atacar**. Atacar rende o **Fragmento de Ferro Rúnico**; poupar não rende item. Em ambos os casos, Romar permanece vivo.
-- **Estado:** artes em uso **sem avaliação documentada**; agora listadas no manifesto, mas sem decisão de aprovação V2. `FLO-013` cobre a decisão de escopo.
-- **Evidência:** `src/game.js:1372-1384`, `:1412-1431`, `:1452-1459`, `:952-996`; `src/persistence.js:233-257`; `tests/romar-*.test.cjs`.
+- **Estado:** artes, recorte e integração **aprovados** (`DEC-2026-10-26-FLO-018`); commit `cbc50b6` publicado na branch feature; QA isolado `c5618de6-77a3-42d0-9227-af87129c3eb1`, com transições reais por ataque verificadas em 320/375/390. Mecânica, escolha final e recompensa inalteradas. Safari/iPhone e produção pendentes.
+- **Evidência:** `src/game.js:533`, `:1433-1435`, `:1506-1515`, `:26`; `styles/game.css:655-659`; commit `cbc50b6`; deployment `c5618de6`; 192/192 Node e 77/77 Chromium; `evidencias/romar-v2/`; `tests/romar-*.test.cjs`, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`; manifesto.
 
 ## 8. Lobo da Matilha — sem ID próprio
 
@@ -160,17 +163,17 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 | Lobisomem Feroz | preservar | `FLO-007` | nenhum |
 | Uivante das Sombras | aprovado (V2), QA e Safari | `FLO-017`, `QLT-018` | commit e QA publicados; Safari confirmado; produção pendente |
 | Alfa da Matilha | preservar | `FLO-007` | nenhum |
-| Romar | sem avaliação documentada | `FLO-013` (proposto) | decidir escopo e avaliar artes |
+| Romar | aprovado (V2), QA publicado | `FLO-018` | commit e QA publicados; Safari e produção pendentes |
 | Lobo da Matilha | sem arte | `FLO-013` (proposto) | decidir se terá arte própria |
 
 ## NÃO VERIFICADO
 
-- Execução nesta missão: **191 Node e 74 Chromium** (Chromium 151 do Playwright 1.62.1). Safari/iPhone de Lobo Comum, Lobo Cinzento, Lobisomem Jovem e Uivante das Sombras confirmados por declaração humana; sem captura ou log dos dispositivos.
-- Validação Safari/iPhone: declaração humana (`FLO-010`, `QLT-018`), sem captura ou log do dispositivo no repositório. `FLO-017` sozinho não inclui esse nível de evidência; `QLT-018` complementa.
-- Julgamento artístico de Romar e das artes legadas: não há registro de avaliação.
-- Paridade SHA-256 entre o deployment público e `_qa-dist`: conferida binariamente para o Uivante V2 (`7e466fdf` e `f6b00e93`); nos deployments anteriores o conteúdo público foi conferido por leitura.
+- Execução nesta missão: **192 Node e 77 Chromium** (Chromium 151 do Playwright 1.62.1). Safari/iPhone de Lobo Comum, Lobo Cinzento, Lobisomem Jovem e Uivante das Sombras confirmados por declaração humana; sem captura ou log dos dispositivos. O Romar V2 **não** foi testado em Safari/iPhone.
+- Validação Safari/iPhone: declaração humana (`FLO-010`, `QLT-018`), sem captura ou log do dispositivo no repositório. `FLO-018` não inclui esse nível de evidência.
+- Julgamento artístico das artes legadas: não há registro de avaliação; as V2 aprovadas cobrem Lobo Comum, Lobo Cinzento, Lobisomem Jovem, Uivante das Sombras e Romar.
+- Paridade SHA-256 entre o deployment público e `_qa-dist`: conferida binariamente para o Uivante V2 (`7e466fdf` e `f6b00e93`) e para o Romar V2 (`c5618de6`); nos deployments anteriores o conteúdo público foi conferido por leitura.
 - Comportamento em WebKit: não executado.
 
 ## Evidências consultadas
 
-`src/game.js` (linhas citadas), `src/persistence.js`, `styles/game.css`, `docs/memoria/MANIFESTO_ARTES.json`, `docs/memoria/DECISOES_APROVADAS.md`, commits `4236b84`, `16f4c9c`, `83eb677`, `25ae3fb` e `bb7197a`, deployments `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d`, `860aa1d1-a3cf-4715-a89e-2a07d7e0126b` e `7e466fdf-248b-4dd2-b8e7-0230ea425e06`, `tests/miniboss-progression.test.cjs`, `tests/romar-combat.test.cjs`, `tests/romar-discoveries.test.cjs`, `tests/romar-playtest-quest.test.cjs`, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`; hashes e dimensões recalculados em 2026-10-25/26.
+`src/game.js` (linhas citadas), `src/persistence.js`, `styles/game.css`, `docs/memoria/MANIFESTO_ARTES.json`, `docs/memoria/DECISOES_APROVADAS.md`, commits `4236b84`, `16f4c9c`, `83eb677`, `25ae3fb`, `bb7197a`, `385bdf5` e `cbc50b6`, deployments `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d`, `860aa1d1-a3cf-4715-a89e-2a07d7e0126b`, `7e466fdf-248b-4dd2-b8e7-0230ea425e06` e `c5618de6-77a3-42d0-9227-af87129c3eb1`, `tests/miniboss-progression.test.cjs`, `tests/romar-combat.test.cjs`, `tests/romar-discoveries.test.cjs`, `tests/romar-playtest-quest.test.cjs`, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`; hashes e dimensões recalculados em 2026-10-25/26.

@@ -144,6 +144,7 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Resolução parcial (2026-10-25):** o escopo do Lobo Cinzento foi resolvido por `DEC-2026-10-25-FLO-014`; Uivante das Sombras, Romar e Lobo da Matilha permanecem pendentes.
 - **Nota posterior (2026-10-26):** o Lobisomem Jovem foi substituído por `DEC-2026-10-26-FLO-016`; Lobisomem Feroz e Alfa permanecem preservados.
 - **Nota posterior (2026-10-26):** o escopo do Uivante das Sombras foi resolvido por `DEC-2026-10-26-FLO-017`; Romar e Lobo da Matilha permanecem pendentes.
+- **Nota posterior (2026-10-26):** o escopo do Romar foi resolvido por `DEC-2026-10-26-FLO-018`; resta apenas o Lobo da Matilha.
 
 ## DEC-2026-10-25-FLO-014 — Aprovação do Lobo Cinzento V2
 
@@ -203,6 +204,18 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Limite:** a validação é declaração humana; não há captura nem log do iPhone anexado ao repositório. Não cobre promoção à produção.
 - **Relação:** complementa `DEC-2026-10-26-FLO-017`; não autoriza promoção à produção.
 
+## DEC-2026-10-26-FLO-018 — Aprovação do Romar V2 em três estágios
+
+- **Área:** Galeria / Oficina
+- **Estado:** aprovado
+- **Data:** 2026-10-26
+- **Descrição:** aprovar as três novas artes do Romar (estágio 1 com marcas rúnicas nos braços; estágio 2 com a corrupção da runa avançando em veios e rachaduras; estágio 3 ainda humano, com olhos vermelhos e postura agressiva), o recorte RGBA derivado dos arquivos fornecidos e a integração na Arena V2. A integração preserva ID, atributos (300/24/12 e faixas por nível), golpes, Guarda de Ferro, Golpe Pesado, Surto, Fratura, encontro não letal, escolha final e recompensa; altera somente imagem, enquadramento e posição. Aprovado pelo responsável também o rosto resultante, mantido próximo da arte anterior.
+- **Justificativa:** o Romar aparecia como retângulo de JPEG com fundo embutido, menor que um lobo comum, apesar de ser um duelo de fim de território. As três artes dão progressão visual legível e ancoragem no chão, sem tocar em combate.
+- **Evidência:** autorização do responsável; fontes `romar-v2-aprovado-1.png` (SHA-256 `7569EDFEC5CD630BDE1E6CEF59782A991246F4FA7763912057DF944913BF1F0B`), `-2.png` (`F93D92A36F4862A0990F92EA268817AEB0873D7EFCAFFC41FF799A59ED5AAFA4`) e `-3.png` (`95AA7959841323F53DD578859D0CFFDB45FBE991B8B670D284CE9178B051336F`), todas 1024×1536 RGBA com transparência real e cantos alpha 0; assets `romar_v2_estagio1.png` (`7382D5666C3186CA4849CB9F4E686C0ED628090B516F30627C48AC3B5B178FEE`), `estagio2` (`B9CC5745B42F6BDA46152EAE777C1D21238305F02539150CCA9DD92FB2AA34E7`) e `estagio3` (`B3626F3C324967218D2197381431CECF7259886763F0DDB13B681B2521C506A7`); commit `cbc50b62f4530d11bfb8c1f4877c6c5b8fadf121`; deployment `c5618de6-77a3-42d0-9227-af87129c3eb1`; 192/192 Node e 77/77 Chromium; transições reais por ataque verificadas no QA público em 320/375/390; capturas em `evidencias/romar-v2/`.
+- **Limite:** não houve teste em Safari/iPhone. A regra de baseline do combate passou a neutralizar apenas as linhas de retrato do Romar; o restante do bloco permanece idêntico ao baseline `bff8a72`.
+- **Arquivos conhecidos:** `src/game.js`, `styles/game.css`, três assets novos, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`, `tests/romar-playtest-quest.test.cjs`.
+- **Relação:** resolve o escopo do Romar em `DEC-2026-10-25-FLO-013`, que passa a cobrir somente o Lobo da Matilha; preserva as três artes JPEG antigas; não autoriza promoção à produção.
+
 ## Rejeitado ou não autorizado
 
 - **DEC-2026-10-16-VIS-R01 — Respiração/idle por escala da imagem inteira:** rejeitado. O efeito foi percebido como zoom artificial. Não integrar sem nova decisão e novas artes adequadas.
@@ -216,10 +229,11 @@ Este índice é navegação; não altera o texto nem o estado original dos regis
 - `DEC-2026-10-25-FLO-009` — o item “Safari/iPhone pendente” foi complementado por `DEC-2026-10-25-FLO-010`; o item “não autoriza deploy” permanece válido e é delimitado por `DEC-2026-10-25-QLT-011`; commit, push e produção continuam não autorizados.
 - `DEC-2026-10-20-FIX-006` — promoção à produção segue pendente.
 - `DEC-ND-FLO-007` — preservação mantida para Mago, Lobisomem Feroz e Alfa; o Lobisomem Jovem foi substituído por `DEC-2026-10-26-FLO-016`; o Lobo Comum foi executado em `FLO-009`/`FLO-010`.
-- `DEC-2026-10-25-FLO-013` — permanece `proposto`; Lobo Cinzento, Lobisomem Jovem e Uivante das Sombras foram resolvidos por `DEC-2026-10-25-FLO-014`, `DEC-2026-10-26-FLO-016` e `DEC-2026-10-26-FLO-017`; Romar e Lobo da Matilha seguem pendentes.
+- `DEC-2026-10-25-FLO-013` — permanece `proposto`; Lobo Cinzento, Lobisomem Jovem, Uivante das Sombras e Romar foram resolvidos por `DEC-2026-10-25-FLO-014`, `DEC-2026-10-26-FLO-016`, `DEC-2026-10-26-FLO-017` e `DEC-2026-10-26-FLO-018`; resta o Lobo da Matilha.
 - `DEC-2026-10-25-FLO-014` — `aprovado` em 2026-10-25; integração commitada e publicada na branch feature; QA isolado e Safari complementados por `QLT-015`; produção não autorizada.
 - `DEC-2026-10-25-QLT-015` — `aprovado`; complementa `FLO-014` com o QA isolado publicado e a confirmação Safari; produção não autorizada.
 - `DEC-2026-10-26-FLO-016` — `aprovado`; nova arte e integração do Lobisomem Jovem, com QA isolado e Safari confirmados; produção não autorizada.
 - `DEC-2026-10-26-FLO-017` — `aprovado`; nova arte e integração do Uivante das Sombras, com QA isolado publicado e conferido por hash; Safari complementado por `QLT-018`; produção não autorizada.
 - `DEC-2026-10-26-QLT-018` — `aprovado`; validação física do Uivante no Safari/iPhone sobre o deployment `f6b00e93`; produção não autorizada.
+- `DEC-2026-10-26-FLO-018` — `aprovado`; três artes e integração do Romar, com QA isolado e transições reais verificadas; Safari e produção não autorizados.
 - `DEC-2026-10-25-DOC-012` — `aprovado` em 2026-10-25; a aprovação cobre a reconciliação documental, não push ou deploy.
