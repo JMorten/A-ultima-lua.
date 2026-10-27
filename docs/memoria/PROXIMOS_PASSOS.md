@@ -19,11 +19,13 @@
 
 ## Pendente — exige decisão humana
 
-1. **Validação física do Lobo da Matilha V2 — concluída:** aberto no Safari/iPhone (`?v=a92987ce`), fluxo QA → Debug → CONTINUAR → **ALFA · COM LOBO DA MATILHA**. Ator, barra sem nome, chip `MATILHA ATIVA · CAÇADA COORDENADA` e reação de impacto confirmados. Produção pendente.
-2. **Validação física do Romar V2 — concluída:** aberto no Safari/iPhone (`?v=a92987ce`), botões **ROMAR · ESTÁGIO 1/2/3**. Transições e reação de impacto confirmadas. Produção pendente.
+1. **Validação física do Lobo da Matilha V2 — concluída:** aberto no Safari/iPhone (`?v=a92987ce`), fluxo QA → Debug → CONTINUAR → **ALFA · COM LOBO DA MATILHA**. Ator, barra sem nome, chip `MATILHA ATIVA · CAÇADA COORDENADA` e reação de impacto confirmados. Promovido à produção em `30df194c`.
+2. **Validação física do Romar V2 — concluída:** aberto no Safari/iPhone (`?v=a92987ce`), botões **ROMAR · ESTÁGIO 1/2/3**. Transições e reação de impacto confirmadas. Promovido à produção em `30df194c`.
 3. **Reconciliação de linhas Git:** decidir como unir `081fce4` (`qa-preview`) com `origin/qa-preview` (`11bff6c`).
-4. **Promoção à produção:** não autorizada para a Floresta V2.
-5. **Cobertura documental:** manter bestiário e manifesto sincronizados quando arte ou entidade mudar.
+4. **Promoção à produção — concluída:** deploy direto do `_qa-dist` (build `9544043`) em `a-ultima-lua-qa` → `30df194c-a4be-4299-876d-1841d0c3eea0`. URL: https://a-ultima-lua-qa.pages.dev/. Paridade verificada; smoke em WebKit OK.
+5. **Sincronizar `main` com a produção:** a promoção foi por deploy direto; o `main` segue em `f7e25ef` e não contém os 23 commits da feature. Decidir merge ou cherry-pick antes de trabalhar no Alfa.
+6. **Trabalho no Alfa:** próximo escopo combinado, a ser detalhado.
+7. **Cobertura documental:** manter bestiário e manifesto sincronizados quando arte ou entidade mudar.
 
 ## Fora de escopo até nova decisão
 
