@@ -78,7 +78,7 @@ test('Romar V2 usa três artes recortadas e preserva estágios e escolha final',
   assert.match(game, /portrait:'assets\/images\/enemies\/forest\/romar_v2_estagio1\.png',portraitLayout:'natural'/);
   assert.match(game, /m\.romarStage=2; m\.portrait='assets\/images\/enemies\/forest\/romar_v2_estagio2\.png'/);
   assert.match(game, /m\.romarStage=3; m\.portrait='assets\/images\/enemies\/forest\/romar_v2_estagio3\.png'/);
-  assert.match(game, /romar:\{ x:0\.70, ground:0, w:0\.46, h:0\.92, ax:-0\.5, ay:0 \}/);
+  assert.match(game, /romar:\{ x:0\.70, ground:0, w:0\.46, h:0\.78, ax:-0\.5, ay:0 \}/);
   // Mecânica preservada: faixas dos estágios e escolha final.
   assert.match(game, /m\.hp<=m\.hpMax\*0\.65/);
   assert.match(game, /m\.hp<=m\.hpMax\*0\.35/);
