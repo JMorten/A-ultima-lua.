@@ -763,3 +763,38 @@
 .arena-actor[data-actor="orc_xama"] > .combatant-artwork > .avatar-img-circle{
   transform:scaleX(-1);
 }
+
+/* Post-playtest: keep the stage and essential controls together; details scroll. */
+.combat-secondary summary{min-height:44px;padding:12px;cursor:pointer;color:var(--bone-dim);}
+.death-budget-note{font-size:14px;line-height:1.45;}
+@media(max-width:700px){
+  #game-screen.combat-active{height:100vh;height:100dvh;min-height:0;overflow:hidden;}
+  .combat-active #hud{display:none;} /* HP/MP remain visible in the arena HUD. */
+  .combat-active .hud-name,.combat-active .hud-coins{display:none;}
+  .combat-active .hud-bars{gap:3px;}
+  .combat-active #tabs{position:static;flex-shrink:0;}
+  .combat-active #event-bar{padding:3px 12px;flex-shrink:0;}
+  .combat-active #content{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:6px 10px max(8px,env(safe-area-inset-bottom));}
+  .combat-active .battle-arena.arena-battlefield{--stage-height:clamp(140px,29vh,250px);--stage-height:clamp(140px,29dvh,250px);margin-bottom:6px;padding-bottom:4px;}
+  .combat-active .arena-hud-grid{margin-top:3px;gap:4px;}
+  .combat-active .arena-buffs{margin-top:2px;}
+  .combat-active .battle-actions,.combat-active .skills-row,.combat-active .consumable-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:6px;}
+  .combat-active .action-btn,.combat-active .skill-btn,.combat-active .consumable-btn{min-height:44px;padding:7px 8px;letter-spacing:0;}
+  .combat-active .skill-btn{font-size:14px;justify-content:center;}
+  .combat-active .skill-btn small{font-size:12px;line-height:1.2;}
+  .combat-active .skill-detail:not(.skill-state){display:none;}
+  .combat-active .skill-btn:disabled{opacity:.65;}
+  .combat-active .ritual-target-actions{gap:6px;margin:4px 0;}
+  .combat-active .ritual-target-actions .action-btn{min-height:44px;padding:5px;}
+  .combat-active .battle-log{height:130px;}
+  .combat-active .battle-arena,.combat-active .ritual-target-actions,.combat-active #content > .status-card{flex-shrink:0;}
+  .combat-active .combat-controls{min-height:88px;overflow-y:auto;overscroll-behavior:contain;}
+  .combat-active .combat-secondary{flex-shrink:0;max-height:25dvh;overflow:auto;}
+  .combat-active #content > .status-card{padding:5px 8px;margin:0 0 4px;font-size:13px;}
+  .combat-active #content > .status-card h3{font-size:13px;}
+  .combat-active #content > .status-card p{margin:2px 0;}
+}
+
+@media(max-width:700px) and (max-height:650px){
+ .combat-active .battle-arena.arena-battlefield{--stage-height:clamp(110px,22vh,145px);--stage-height:clamp(110px,22dvh,145px);}
+}

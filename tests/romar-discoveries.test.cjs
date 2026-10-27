@@ -15,11 +15,11 @@ function sequence(run,values){run('var rolls='+JSON.stringify(values)+'; Math.ra
 test('pre-Alfa blocked; post-Alfa exploration can discover without changing progress',()=>{
   const run=game();
   assert.equal(run('discoverRomarClue()'),false);
-  run('player.defeatedBosses=[0];getForestProgress().discoveries=3');
+  run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().seen=["massacre"]');
   const before=run('JSON.stringify([player.forestProgress,player.swampProgress,player.defeatedBosses,player.coins,player.totalXp])');
   sequence(run,[0.99,0.99,0.01,0,0]);
   run('explorarMapa(0)');
-  assert.equal(run('getRomarDiscoveries().pending'),'massacre');
+  assert.equal(run('getRomarDiscoveries().pending'),'marcas');
   assert.equal(run('JSON.stringify([player.forestProgress,player.swampProgress,player.defeatedBosses,player.coins,player.totalXp])'),before);
 });
 test('unique discoveries, variable order and exhausted pool',()=>{
@@ -93,7 +93,7 @@ test('existing interactive event blocks new discoveries and exploration',()=>{
 });
 test('two explorations after scene cannot produce another special event',()=>{
   const run=game();
-  run('player.defeatedBosses=[0];getForestProgress().discoveries=3;discoverRomarClue();finishRomarDiscovery()');
+  run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().seen=["massacre"];discoverRomarClue();finishRomarDiscovery()');
   for(let i=0;i<2;i++){
     sequence(run,[0.99,0.01,0.99]);
     run('explorarMapa(0)');
@@ -133,7 +133,7 @@ for(const encounter of [false,true]){
       for(const success of [false,true]){
         if(chance===1&&!success)continue;
         const run=game();
-        run('player.defeatedBosses=[0];getForestProgress().discoveries=3;');
+        run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().seen=["massacre"];');
         if(encounter)run('getRomarDiscoveries().seen=["massacre","marcas","runa"]');
         const key=encounter?'encounterAttempts':'clueAttempts';
         run('getRomarDiscoveries().'+key+'='+index);
@@ -147,7 +147,7 @@ for(const encounter of [false,true]){
 }
 test('sixth real clue attempt guaranteed, next clue starts fresh, independent counters',()=>{
   const run=game();
-  run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().encounterAttempts=4');
+  run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().seen=["massacre"];getRomarDiscoveries().encounterAttempts=4');
   for(let cycle=0;cycle<2;cycle++){
     for(let n=1;n<=6;n++){
       sequence(run,[.99,.99,.99,.999999,0]);
@@ -156,7 +156,7 @@ test('sixth real clue attempt guaranteed, next clue starts fresh, independent co
       assert.equal(run('getRomarDiscoveries().encounterAttempts'),4);
       if(n<6)run('fleeBattle()');
     }
-    assert.equal(run('getRomarDiscoveries().seen.length'),cycle+1);
+    assert.equal(run('getRomarDiscoveries().seen.length'),cycle+2);
     run('finishRomarDiscovery();getRomarDiscoveries().cooldown=0;forestEventCooldown=0');
   }
 });
@@ -189,7 +189,7 @@ test('accepted explorations count even when occupied; blocked clicks do not',()=
   ];
   for(const [name,rolls,setup] of scenarios){
     const run=game();
-    run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().clueAttempts=2;getRomarDiscoveries().encounterAttempts=3;'+setup);
+    run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().seen=["massacre"];getRomarDiscoveries().clueAttempts=2;getRomarDiscoveries().encounterAttempts=3;'+setup);
     sequence(run,rolls);run('explorarMapa('+(name==='other territory'?1:0)+')');
     assert.equal(run('getRomarDiscoveries().clueAttempts'),['trap','normal event','territorial discovery','shared cooldown','clue cooldown'].includes(name)?3:2,name);
     assert.equal(run('getRomarDiscoveries().encounterAttempts'),3,name);
@@ -209,7 +209,7 @@ test('counter migration and serialization survive combat entry',()=>{
 for(const encounter of [false,true]){
   test('pending guarantee survives occupied clicks and serialization: '+(encounter?'encounter':'clue'),()=>{
     const run=game();
-    run('player.defeatedBosses=[0];getForestProgress().discoveries=3;');
+    run('player.defeatedBosses=[0];getForestProgress().discoveries=3;getRomarDiscoveries().seen=["massacre"];');
     if(encounter)run('getRomarDiscoveries().seen=["massacre","marcas","runa"]');
     const key=encounter?'encounterAttempts':'clueAttempts',limit=encounter?8:6;
     run('getRomarDiscoveries().'+key+'='+(limit-1));

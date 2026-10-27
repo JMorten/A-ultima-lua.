@@ -63,3 +63,37 @@ Execução: 14 testes Playwright em Chromium, além da suíte Node existente. We
 ## Artefatos
 
 Relatórios Playwright, traces e screenshot ficam em `tests/browser/artifacts/`. São artefatos novos da PoC e não são saves do jogo.
+
+
+## Candidata pós-playtest V1 (20/10/2026)
+
+O runner aceita filtros adicionais do Playwright, sem instalar ferramentas:
+
+```powershell
+node tests/browser/run.cjs chromium post-playtest.spec.cjs
+node tests/browser/run.cjs chromium
+node --test (Get-ChildItem tests -Filter '*.test.cjs' | Sort-Object Name | ForEach-Object FullName)
+```
+
+O novo arquivo cobre derrota por ataques reais, remoção de pontos, confirmação para Mapa, vitória pendente/reload sem duplicação, primeira pista de Romar antes do combate e sua confirmação após reload. As pré-condições são criadas somente em armazenamento descartável; os resultados usam os handlers reais. Os testes anteriores que usam atributos arbitrários pelo QA Debug continuam úteis em memória; ao recarregar, qualquer orçamento excedente é reconciliado pela mesma proteção dos saves normais, sem bypass de produção.
+
+Layouts: 320×568, 375×667, 390×664, 390×844 e 1366×768; ritual com MP insuficiente em 320×568 e 320×664. Os controles têm área mínima de 44px. Em alturas curtas ou encontros com mais opções, a região de comandos pode rolar internamente mantendo o palco visível. Descrições completas de habilidades continuam na aba Status; custo e motivo da indisponibilidade permanecem no botão. O teste de estabilidade de posição aguarda a animação finita de entrada já existente. O histórico está em uma seção expansível; as asserções de conteúdo leem textContent para continuar verificando todos os ataques e fases mesmo quando ela está recolhida.
+
+As capturas ficam em artifacts/post-playtest-*.png. Chromium em viewport mobile não comprova Safari físico. WebKit só é usado quando já instalado; nenhuma dependência deve ser baixada automaticamente.
+
+### Playtest local da candidata
+
+Abra PowerShell na raiz deste checkout candidato. Crie uma cópia QA única no TEMP, nunca execute o builder contra o checkout:
+
+```powershell
+$qaPreviewRoot = Join-Path $env:TEMP ('ultima-lua-playtest-' + [guid]::NewGuid().ToString('N'))
+New-Item -ItemType Directory -Path $qaPreviewRoot
+foreach ($entry in @('index.html','src','styles','assets','_qa')) { Copy-Item -LiteralPath $entry -Destination $qaPreviewRoot -Recurse }
+node -e "require(process.argv[1]).build(process.argv[2])" (Join-Path $qaPreviewRoot '_qa/build.cjs') $qaPreviewRoot
+$env:AUL_QA_DIST = Join-Path $qaPreviewRoot '_qa-dist'
+node tests/browser/server.cjs
+```
+
+Acesse http://127.0.0.1:4179 em um perfil descartável, sem importar saves reais. Finalize o servidor com Ctrl+C. Não execute ao mesmo tempo que a suíte usa a porta 4179. A publicação HTTPS para iPhone exige autorização posterior.
+
+Checklist humano: provocar derrota com pontos livres e distribuídos; confirmar o nível e a remoção informados; recuperar níveis sem exceder 5×(nível−1); confirmar vitória e derrota para o Mapa; derrotar o Alfa e iniciar um combate comum na Floresta para ver a primeira pista; recarregar durante essa cena; testar magias/MP baixo/Totens/Gorthak com barras do Safari abertas e fechadas. Verificar toque, rolagem interna, textos e enquadramento sem reduzir a escala do sistema.

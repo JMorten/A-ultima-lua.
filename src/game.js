@@ -362,12 +362,59 @@ function totalXpForLevel(level){
   return sum;
 }
 
+// The budget is derived from earned XP, never from historical level-up events.
+const ATTRIBUTE_KEYS=['forca','defesa','vitalidade','espirito','magia','agilidade'];
+function progressionFromXp(totalXp){
+  let level=1,remaining=totalXp;
+  while(remaining>=xpToNext(level)){remaining-=xpToNext(level);level++;}
+  return {level,xp:remaining};
+}
+function reconcileAttributeBudget(p,grantMissing=false){
+  const budget=Math.max(0,(p.level-1)*5);
+  const spent=ATTRIBUTE_KEYS.reduce((sum,key)=>sum+p.allocated[key],0);
+  const before=spent+p.statPoints;
+  let excess=Math.max(0,before-budget);
+  const freeRemoved=Math.min(p.statPoints,excess);p.statPoints-=freeRemoved;excess-=freeRemoved;
+  // No investment history exists in legacy saves. Retain the build's proportions,
+  // using largest remainders and a stable key order to remove only the excess.
+  if(excess>0 && spent>0){
+    const keep=Math.max(0,spent-excess);
+    const parts=ATTRIBUTE_KEYS.map((key,index)=>{const exact=p.allocated[key]*keep/spent;return {key,index,n:Math.floor(exact),fraction:exact-Math.floor(exact)};});
+    let remaining=keep-parts.reduce((sum,x)=>sum+x.n,0);
+    for(const part of [...parts].sort((a,b)=>b.fraction-a.fraction||a.index-b.index))if(remaining-->0)part.n++;
+    for(const part of parts)p.allocated[part.key]=part.n;
+  }
+  const after=ATTRIBUTE_KEYS.reduce((sum,key)=>sum+p.allocated[key],0)+p.statPoints;
+  const granted=grantMissing ? Math.max(0,budget-after) : 0;
+  p.statPoints+=granted;
+  return {removed:Math.max(0,before-budget),freeRemoved,investedRemoved:excess,granted};
+}
 function recomputeLevelFromXp(){
-  let level = 1;
-  while(player.totalXp >= totalXpForLevel(level+1)) level++;
-  while(level > 1 && player.totalXp < totalXpForLevel(level)) level--;
-  player.level = level;
-  player.xp = player.totalXp - totalXpForLevel(level);
+  const previous=player.level;
+  Object.assign(player,progressionFromXp(player.totalXp));
+  const result=reconcileAttributeBudget(player,player.level>previous);
+  if(player.level<previous || result.removed){
+    for(const key of ATTRIBUTE_KEYS)ui.pendingAlloc[key]=0;
+    refreshProgressionDependencies();
+  }
+  return result;
+}
+function refreshProgressionDependencies(){
+  recomputeStats();
+  // Removing an invalid item may invalidate another one. Never destroy an item.
+  let changed;
+  do{
+    changed=false;
+    for(const slot of SLOT_ORDER){
+      const item=player.equipment[slot];
+      if(item && !itemMeetsRequirements(item)){
+        player.equipment[slot]=null;player.inventory.push(item);changed=true;recomputeStats();
+      }
+    }
+  }while(changed);
+  if(!hasMagMilestone(100)){player.magDomain=null;player.overchargeNext=false;}
+  for(const skill of SKILLS[player.classKey]||[])if(player.level<skill.unlockLevel)delete ui.skillCooldowns[skill.id];
+  recomputeStats();
 }
 
 function newPlayer(classKey){
@@ -650,7 +697,7 @@ function itemMeetsRequirements(item){
 /* =========================================================
    NOTIFICAÇÕES (level up / item / poção)
    ========================================================= */
-function popNotif({eyebrow, title, sub, levelup, image, trap, persist}){
+function popNotif({eyebrow, title, sub, levelup, image, trap, persist, returnToMap}){
   const layer = document.getElementById('notif-layer');
   const card = document.createElement('div');
   const interactive = !!(trap || persist);
@@ -659,7 +706,7 @@ function popNotif({eyebrow, title, sub, levelup, image, trap, persist}){
   layer.appendChild(card);
   if(interactive){
     const btn=card.querySelector('.notif-continue');
-    btn.addEventListener('click',()=>card.remove(),{once:true});
+    btn.addEventListener('click',()=>{card.remove();if(returnToMap && !ui.inBattle && !ui.monster && !hasPendingRomarDiscovery() && !pendingForestEvent && !document.querySelectorAll('.interactive-card').length){ui.tab='mapa';render();}},{once:true});
   }else{
     setTimeout(()=>{ if(card.isConnected) card.remove(); }, 5600);
   }
@@ -983,6 +1030,7 @@ function advanceRomarExploration(){
 function tryRomarExploration(){
   if(!player || ui.inBattle || player.hp<=0 || !player.defeatedBosses.includes(0) || player.romar_first_choice || ui.romarResult || (ui.monster && ui.monster.romarChoice)) return false;
   const state=getRomarDiscoveries();
+  if(!state.seen.length)return false; // First clue belongs to the next common battle.
   if(state.pending || state.cooldown>0 || forestEventCooldown>0 || pendingForestEvent || document.querySelectorAll('.interactive-card').length) return false;
   const encounter=canEncounterRomar();
   if(!encounter && !ROMAR_DISCOVERIES.some(scene=>!state.seen.includes(scene.id))) return false;
@@ -997,6 +1045,7 @@ function tryRomarExploration(){
 function finishRomarDiscovery(){
   const state=getRomarDiscoveries();
   if(!state.pending) return;
+  if(ui.firstRomarBattle){finishFirstRomarDiscovery();return;}
   state.pending=null; ui.mapIndex=0; ui.tab='mapa'; render();
 }
 function renderRomarDiscovery(){
@@ -1304,6 +1353,7 @@ function startBattle(mapIndex, monsterTemplate, isBoss){
   if(ui.lucasScene)return;
   if(hasPendingRomarDiscovery()) return;
   if(ui.romarResult || (ui.monster && ui.monster.romarChoice)) return;
+  if(typeof beginFirstRomarDiscovery==='function' && beginFirstRomarDiscovery(mapIndex,monsterTemplate,isBoss))return;
   ui.mapIndex = mapIndex;
   const map = MAPS[mapIndex];
   const eventOn = isMonsterEventActive();
@@ -2331,12 +2381,12 @@ function handleDefeat(){
   const oldLevel = player.level;
   const lost = Math.round(player.totalXp * DEATH_XP_PENALTY);
   player.totalXp = Math.max(0, player.totalXp - lost);
-  recomputeLevelFromXp();
-  recomputeStats();
+  const reconciliation=recomputeLevelFromXp();
+  refreshProgressionDependencies();
   player.hp = Math.round(player.hpMax*0.5);
   const deleveled = player.level < oldLevel;
   logPush(`<span class="log-bad">Você caiu em batalha e perdeu ${lost} de experiência${deleveled?` — voltando ao nível ${player.level}`:''}.</span>`);
-  popNotif({ eyebrow:'DERROTA', title: deleveled ? `Nível reduzido para ${player.level}` : `-${lost} XP`, sub: deleveled ? 'A escuridão consumiu seu progresso' : 'A escuridão cobra um preço alto', persist:true });
+  popNotif({ eyebrow:'DERROTA', title: deleveled ? `Nível reduzido para ${player.level}` : `-${lost} XP`, sub: deleveled ? `Nível ${oldLevel} → ${player.level}. ${reconciliation.removed} pontos de atributos removidos (${reconciliation.freeRemoved} livres e ${reconciliation.investedRemoved} distribuídos).` : 'A escuridão cobra um preço alto', persist:true, returnToMap:true });
   ui.monster = null;
   ui.locked = false;
 }
@@ -2368,18 +2418,15 @@ function handleVictory(m){
   if(xpEventOn) popNotif({ eyebrow:'EVENTO ATIVO', title:'Bênção da Lua Cheia', sub:'XP e drops em dobro' });
 
   const oldLevel = player.level;
-  recomputeLevelFromXp();
+  const progression=recomputeLevelFromXp();
   const levelsGained = player.level - oldLevel;
   const leveledUp = levelsGained > 0;
-  if(leveledUp){
-    player.statPoints += levelsGained * 5;
-  }
   recomputeStats();
   if(leveledUp){
     player.hp = player.hpMax;
     player.mp = player.mpMax;
     logPush(`<b>Você subiu para o nível ${player.level}!</b> HP e MP restaurados. +${levelsGained*5} pontos de status disponíveis.`);
-    popNotif({ eyebrow:'NÍVEL ALCANÇADO', title:`Nível ${player.level}`, sub:`+${levelsGained*5} pontos de status para distribuir`, levelup:true });
+    popNotif({ eyebrow:'NÍVEL ALCANÇADO', title:`Nível ${player.level}`, sub:`+${progression.granted} pontos de status para distribuir`, levelup:true });
   }
 
   // Progressão experimental da Floresta Uivante (Vertical Slice 1.2)
@@ -2488,7 +2535,7 @@ function handleVictory(m){
     }
   }
 
-  const xpBuffDropChance = Math.min(1, (m.isBoss ? 0.12 : m.isMiniBoss ? 0.08 : 0.03) * dropMult);
+  const xpBuffDropChance = Math.min(1, (m.isBoss ? 0.024 : m.isMiniBoss ? 0.016 : 0.006) * dropMult);
   if(Math.random() < xpBuffDropChance){
     player.consumables.xpbuff++;
     logPush(`<span class="log-drop">Drop raro: Tônico da Fúria da Caçada 📜</span>`);
@@ -2500,7 +2547,7 @@ function handleVictory(m){
     eyebrow:'VITÓRIA',
     title:`${m.name} derrotado`,
     sub:`+${xpGain} XP conquistados. Resultado concluído.`,
-    persist:true
+    persist:true, returnToMap:true
   });
   ui.monster = null;
 }
@@ -2881,13 +2928,14 @@ function renderBatalhaTab(){
     const cooldown = ui.skillCooldowns[s.id]||0;
     const onCooldown = cooldown > 0;
     const disabled = locked || noMp || onCooldown || ui.locked;
-    let statusText = s.desc;
+    let statusText = ui.locked ? 'Resolvendo turno…' : s.desc;
+    if(noMp) statusText = 'MP insuficiente';
     if(locked) statusText = `Desbloqueia no nível ${s.unlockLevel}`;
     else if(onCooldown) statusText = `Recarregando · ${cooldown} turno${cooldown>1?'s':''}`;
     return `
       <button class="skill-btn" ${disabled?'disabled':''} onclick="usarSkill('${s.id}')">
         <span>${s.icon} ${s.name} <small>(${shownMpCost} MP)</small></span>
-        <small>${statusText}</small>
+        <small class="skill-detail ${disabled?'skill-state':''}">${statusText}</small>
       </button>`;
   }).join('');
 
@@ -2950,7 +2998,7 @@ function renderBatalhaTab(){
       </div>
     </div>
     ${renderShamanTargetButtons(m)}
-    <div class="battle-actions">
+    <div class="combat-controls"><div class="battle-actions">
       <button class="action-btn" ${ui.locked?'disabled':''} onclick="playerAttack()">Atacar</button>
       ${isSwampLord() && m.submerged ? `<button class="action-btn" ${ui.locked?'disabled':''} onclick="waitForSwampLord()">AGUARDAR</button>` : ''}
       <button class="action-btn secondary" ${fleeDisabled?'disabled':''} ${fleeBlocked?'data-force-disabled="1"':''} onclick="fleeBattle()">Fugir</button>
@@ -2965,7 +3013,7 @@ function renderBatalhaTab(){
       ].filter(([key]) => (player.consumables[key]||0) > 0);
       return owned.length ? `<div class="consumable-row">${owned.map(([key,label])=>`<button class="consumable-btn" onclick="usarConsumivelBatalha('${key}')">${label} (${player.consumables[key]||0})</button>`).join('')}</div>` : '';
     })()}
-    <div class="battle-log" id="battle-log">${battleLog.slice().reverse().map(l=>`<p>${l}</p>`).join('')}</div>
+    </div><details class="combat-secondary"><summary>Histórico do combate</summary><div class="battle-log" id="battle-log">${battleLog.slice().reverse().map(l=>`<p>${l}</p>`).join('')}</div></details>
   `;
 }
 
@@ -3208,7 +3256,7 @@ function renderStatusTab(){
           ['defesa','DEF · Defesa', player.allocated.defesa, '+1 DEF por ponto; mitigação e requisitos de armaduras/escudos.'],
         ];
         return `<p style="font-size:12.5px;color:var(--bone-dim);margin:0 0 8px;">Você recebe <b style="color:var(--gold)">5 pontos por nível</b>. Disponíveis agora: <b style="color:${available>0?'var(--gold)':'var(--bone-dim)'}">${available}</b>.</p>
-        <p style="font-size:11.5px;color:var(--bone-dim);margin:0 0 14px;">Use +/− para planejar. Nada é aplicado antes de <b style="color:var(--bone)">Confirmar distribuição</b>.</p>
+        <p class="death-budget-note" style="color:var(--bone-dim);margin:0 0 14px;">A morte remove 35% da experiência total e pode reduzir seu nível e os pontos correspondentes. Primeiro são retirados os pontos livres; investimentos excedentes são reduzidos proporcionalmente. Use +/− para planejar. Nada é aplicado antes de <b style="color:var(--bone)">Confirmar distribuição</b>.</p>
         <div class="alloc-grid">
           ${defs.map(([key,label,val,desc])=>{
             const pend = ui.pendingAlloc[key]||0;
@@ -3250,6 +3298,7 @@ function renderStatusTab(){
 function render(){
   if(typeof EnemyCombatVisual!=='undefined')EnemyCombatVisual.destroy();
   renderHUD();
+  document.getElementById('game-screen').classList[ui.inBattle && ui.tab==='batalha'?'add':'remove']('combat-active');
   const content = document.getElementById('content');
   if(ui.tab==='mapa') content.innerHTML = renderMapaTab();
   else if(ui.tab==='batalha') content.innerHTML = renderBatalhaTab();

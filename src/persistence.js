@@ -1,6 +1,7 @@
 /* Persistência local de checkpoints. Script clássico, carregado após game.js. */
 const SAVE_KEY='a-ultima-lua.checkpoint';
 const SAVE_SCHEMA_VERSION=5;
+const ATTRIBUTE_BACKUP_KEY=SAVE_KEY+'.before-attribute-reconciliation-v1';
 let saveNotice='';
 let saveActionDepth=0;
 let saveReplacementApproved=false;
@@ -67,6 +68,11 @@ function normalizeCheckpoint(input){
   if(data.pendingVictory){
     if(!Array.isArray(data.pendingVictory.notices) || data.pendingVictory.notices.some(n=>!n || typeof n.title!=='string' || typeof n.eyebrow!=='string' || (n.sub!==undefined && typeof n.sub!=='string')))throw new Error('Vitória inválida');
     result.pendingVictory={notices:data.pendingVictory.notices};
+  }
+  if(data.firstRomarBattle){
+    const intro=data.firstRomarBattle;
+    if(intro.sceneId!=='massacre' || !MAPS[0].monsters.some(m=>m.id===intro.enemyId) || !p.defeatedBosses.includes(0) || !p.romarDiscoveries?.seen?.includes('massacre'))throw new Error('Introdução inválida');
+    result.firstRomarBattle={sceneId:'massacre',enemyId:intro.enemyId};
   }
   return result;
 }
@@ -169,7 +175,7 @@ function confirmPendingVictory(){
   delete settled.pendingVictory;
   if(!writeVictoryCheckpoint(settled))return false;
   player=settled.player;ui.itemSeq=settled.itemSeq;
-  ui.pendingVictory=null;
+  ui.pendingVictory=null;ui.tab='mapa';
   if(pendingVictoryCard){pendingVictoryCard.remove();pendingVictoryCard=null;}
   render();return true;
 }
@@ -193,20 +199,63 @@ function continueSavedGame(){
   if(player)return false;
   const checkpoint=readCheckpoint();
   if(!checkpoint){renderSaveEntry();return false;}
-  player=checkpoint.player;
+  const originalPlayer=JSON.stringify(checkpoint.player);
+  const candidate=checkpoint.player;
+  Object.assign(candidate,progressionFromXp(candidate.totalXp));
+  const reconciliation=reconcileAttributeBudget(candidate);
+  if(JSON.stringify(candidate)!==originalPlayer){
+    try{
+      const raw=localStorage.getItem(SAVE_KEY);
+      let key=ATTRIBUTE_BACKUP_KEY,index=0,existing;
+      while((existing=localStorage.getItem(key))!==null && existing!==raw)key=ATTRIBUTE_BACKUP_KEY+'.'+(++index);
+      if(existing===null)localStorage.setItem(key,raw);
+    }catch(error){saveNotice='Não foi possível preservar uma cópia do save antes de ajustar os atributos. Libere espaço e tente novamente.';showToast(saveNotice);return false;}
+  }
+  player=candidate;
   Object.assign(ui,{tab:'mapa',mapIndex:null,monster:null,inBattle:false,locked:false,skillCooldowns:{},buffs:{},
     salvageConfirmation:null,lucasScene:null,romarResult:null,selectedEquipSlot:null,itemSeq:checkpoint.itemSeq,gameStart:Date.now(),
     pendingAlloc:{forca:0,defesa:0,vitalidade:0,espirito:0,magia:0,agilidade:0}});
   pendingForestEvent=null;forestEventCooldown=checkpoint.world.forestEventCooldown;
   lastForestEventId=checkpoint.world.lastForestEventId;
   battleLog=[];
+  if(JSON.stringify(candidate)!==originalPlayer)refreshProgressionDependencies();
   document.getElementById('title-screen').classList.add('hidden');
   document.getElementById('game-screen').classList.remove('hidden');
   lastSavedPayload=null;
   render();
   if(checkpoint.pendingVictory){ui.pendingVictory=checkpoint;showPendingVictory();}
-  else requestCheckpoint();return true;
+  else if(checkpoint.firstRomarBattle){restoreFirstRomarDiscovery(checkpoint.firstRomarBattle);}
+  else requestCheckpoint();
+  if(reconciliation.removed)showToast(reconciliation.removed+' pontos excedentes reconciliados. Cópia anterior preservada neste navegador.');
+  return true;
 }
+
+// Durable first clue: the scene is pending in the envelope, never a restored fight.
+function beginFirstRomarDiscovery(mapIndex,monster,isBoss){
+  if(mapIndex!==0 || isBoss || monster.isBoss || monster.isMiniBoss || !MAPS[0].monsters.some(m=>m.id===monster.id) || !player.defeatedBosses.includes(0) || player.romar_first_choice)return false;
+  const state=getRomarDiscoveries();
+  if(state.seen.length)return false;
+  const p=JSON.parse(JSON.stringify(player));
+  p.romarDiscoveries={...state,seen:['massacre'],pending:null,cooldown:2,clueAttempts:0};
+  const intro={sceneId:'massacre',enemyId:monster.id};
+  const checkpoint=normalizeCheckpoint({schemaVersion:SAVE_SCHEMA_VERSION,player:p,itemSeq:ui.itemSeq,world:{forestEventCooldown:2,lastForestEventId},firstRomarBattle:intro});
+  try{const payload=JSON.stringify(checkpoint);localStorage.setItem(SAVE_KEY,payload);lastSavedPayload=payload;}
+  catch(error){showToast('Não foi possível salvar a descoberta de Romar. Tente explorar novamente.');return true;}
+  player=checkpoint.player;forestEventCooldown=2;restoreFirstRomarDiscovery(intro);return true;
+}
+function restoreFirstRomarDiscovery(intro){
+  ui.firstRomarBattle=intro;getRomarDiscoveries().pending=intro.sceneId;ui.tab='mapa';ui.mapIndex=0;render();
+}
+function finishFirstRomarDiscovery(){
+  const intro=ui.firstRomarBattle;if(!intro)return;
+  const p=JSON.parse(JSON.stringify(player));p.romarDiscoveries.pending=null;
+  const settled=normalizeCheckpoint({schemaVersion:SAVE_SCHEMA_VERSION,player:p,itemSeq:ui.itemSeq,world:{forestEventCooldown,lastForestEventId}});
+  try{const payload=JSON.stringify(settled);localStorage.setItem(SAVE_KEY,payload);lastSavedPayload=payload;}
+  catch(error){showToast('Não foi possível confirmar a descoberta. Tente CONTINUAR novamente.');return;}
+  player=settled.player;ui.firstRomarBattle=null;
+  startBattle(0,MAPS[0].monsters.find(m=>m.id===intro.enemyId),false);
+}
+
 function renderSaveEntry(){
   const saved=readCheckpoint();
   if(!saved){renderClassSelect();if(saveNotice)document.getElementById('class-select').insertAdjacentHTML('beforeend','<p>'+saveNotice+'</p>');return;}
