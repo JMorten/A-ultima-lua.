@@ -74,13 +74,12 @@ Não confundir os seis níveis abaixo; cada registro deve dizer a qual pertence.
 1. `qa-preview` local (`081fce4`) e `origin/qa-preview` (`11bff6c`) continuam divergentes; reconciliação não decidida.
 2. Produção do jogo permanece inalterada; promoção não autorizada.
 3. Escopo visual encerrado: o Lobo da Matilha foi resolvido por `FLO-019` em 2026-10-27, último item de `FLO-013`; Lobo Cinzento, Lobisomem Jovem, Uivante das Sombras e Romar foram resolvidos por `FLO-014`, `FLO-016`, `FLO-017` e `FLO-018`.
-4. `PROJECT-CHECKPOINT.md` continua descrevendo um estado de 2026-10-13 e `main`.
-5. Contagens de teste antigas continuam citadas em documentos históricos e não devem ser somadas.
-6. Laboratórios podem conter propostas ou resultados locais; presença em `laboratorios/` não significa integração ou aprovação.
-7. O log de Frenesi foi corrigido para nome dinâmico em `16f4c9c` (D5 resolvido).
-8. O commit documental desta atualização é local até autorização de push.
+4. Contagens de teste antigas continuam citadas em documentos históricos e não devem ser somadas.
+5. Laboratórios podem conter propostas ou resultados locais; presença em `laboratorios/` não significa integração ou aprovação.
+6. O log de Frenesi foi corrigido para nome dinâmico em `16f4c9c` (D5 resolvido).
+7. O commit documental desta atualização é local até autorização de push.
 
-**Resolvidas nesta reconciliação:** o Palácio mais recente passou a estar versionado na linha documental (D1); `ARQUITETURA` distingue implementação local, deploy QA e produção (D2); o deploy isolado tem autorização registrada em `QLT-011` (D3); estado atual e snapshots históricos estão separados (D4); a branch ativa foi corrigida (D6); o manifesto deixou de tratar o JPEG antigo do lobo como arte em uso na branch feature (D8).
+**Resolvidas nesta reconciliação:** o Palácio mais recente passou a estar versionado na linha documental (D1); `ARQUITETURA` distingue implementação local, deploy QA e produção (D2); o deploy isolado tem autorização registrada em `QLT-011` (D3); estado atual e snapshots históricos estão separados (D4); a branch ativa foi corrigida (D6); o manifesto deixou de tratar o JPEG antigo do lobo como arte em uso na branch feature (D8); o `PROJECT-CHECKPOINT.md` foi reescrito em 2026-10-27 (commit `8e12333`) como ponto de entrada para este Palácio, encerrando a divergência que ele mesmo registrava.
 
 ## Snapshots anteriores — preservado, não representa o estado atual
 
