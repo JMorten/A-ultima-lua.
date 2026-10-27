@@ -51,7 +51,7 @@ test('actual apply listener updates HUD, investment, XP, points, local success a
  assert.equal(e.document.getElementById('hud-level').textContent,10);
  const message=e.document.getElementById('qa-apply-message');assert.match(message.textContent,/Checkpoint gravado.*Nível 10.*Pontos disponíveis 37.*MAG investida 75/);assert.equal(message.focused,true);
  assert.match(e.document.body.panel.innerHTML,/APLICAR NÍVEL, ATRIBUTOS E PONTOS<\/button><p id="qa-apply-message"/);
- const loaded=boot(e.storage);loaded.run('continueSavedGame()');assert.equal(loaded.run('player.level'),10);assert.equal(loaded.run('player.allocated.magia'),75);assert.equal(loaded.run('player.statPoints'),37);assert.equal(loaded.run('player.magia'),e.run('player.magia'));
+ const loaded=boot(e.storage);loaded.run('continueSavedGame()');assert.equal(loaded.run('player.level'),10);assert.equal(loaded.run('player.allocated.magia'),45);assert.equal(loaded.run('player.statPoints'),0);assert.ok(loaded.storage.has('a-ultima-lua.checkpoint.before-attribute-reconciliation-v1'));
 });
 test('empty and out-of-range inputs identify the field locally without mutating player',()=>{
  const e=fresh(),before=e.run('JSON.stringify(player)');
@@ -83,13 +83,13 @@ test('QA uses real classes, requires confirmation and persists fresh schema 5 ch
   assert.equal(e.run('readCheckpoint().player.level'),1);assert.equal(e.run('QADebug.confirmNew()'),false);
  }
 });
-test('level, six investments and points are independent; real formulas and resources round trip',()=>{
+test('QA edits stay independent in memory; reloading reconciles an excessive synthetic budget',()=>{
  const e=fresh();e.run('QADebug.apply({level:7,statPoints:123,forca:4,agilidade:5,magia:6,espirito:7,vitalidade:8,defesa:9})');
  assert.equal(e.run('player.totalXp===totalXpForLevel(7)&&player.xp===0'),true);
  assert.equal(e.run('player.statPoints'),123);
  const before=e.run('JSON.stringify(player)');e.run('recomputeStats()');assert.equal(e.run('JSON.stringify(player)'),before);
  e.run('player.hp=1;player.mp=0;QADebug.restore()');assert.equal(e.run('player.hp===player.hpMax&&player.mp===player.mpMax'),true);
- const loaded=boot(e.storage);loaded.run('continueSavedGame()');assert.equal(loaded.run('player.allocated.espirito'),7);assert.equal(loaded.run('player.statPoints'),123);
+ const loaded=boot(e.storage);loaded.run('continueSavedGame()');assert.equal(loaded.run('player.allocated.espirito'),5);assert.equal(loaded.run('player.statPoints'),0);assert.equal(loaded.run('Object.values(player.allocated).reduce((a,b)=>a+b,0)'),30);
  assert.throws(()=>e.run('QADebug.apply({level:99999})'));assert.equal(e.run('player.level'),7);
 });
 test('all MAG presets edit investment, clear domains/overcharge, preserve points and use real domain gates',()=>{

@@ -32,5 +32,9 @@ test('legacy quest flag renders without modifying existing state',()=>{
 test('entire Romar combat implementation matches requested bff8a72 baseline',()=>{
  const old=execFileSync('git',['show','bff8a72ab1ccb0be7122a2d9d3c7f8ae6b3260cd:src/game.js'],{cwd:root,encoding:'utf8'});
  const segment=s=>s.slice(s.indexOf('function startRomarEncounter(){'),s.indexOf('function tickCooldowns(){')).replace(/\r\n/g,'\n');
- assert.equal(segment(source),segment(old));
+ // A etapa Romar V2 trocou apenas os retratos e ligou o layout natural; o combate deve seguir idêntico.
+ const artNeutral=s=>segment(s)
+   .replace(/assets\/images\/enemies\/forest\/romar[^']*/g,'<romar-art>')
+   .replace(/,portraitLayout:'natural'/g,'');
+ assert.equal(artNeutral(source),artNeutral(old));
 });

@@ -19,16 +19,27 @@ const COMBAT_PRESENTATION = {
   defaultPlayer:{ x:0.28, ground:0, w:0.34, h:0.62, ax:-0.5, ay:0 },
   defaultEnemy:{ x:0.72, ground:0, w:0.34, h:0.62, ax:-0.5, ay:0 },
   classes:{
-    mago:{ x:0.25, ground:0, w:0.62, h:0.96, ax:-0.5, ay:0 },
+    mago:{ x:0.25, ground:0, w:0.44, h:0.72, ax:-0.5, ay:0 },
   },
   enemies:{
-    orc_batedor:{ x:0.75, ground:0, w:0.58, h:0.76, ax:-0.5, ay:0 },
+    lobo_selvagem:{ x:0.73, ground:0, w:0.50, h:0.60, ax:-0.5, ay:0 },
+    lobo_cinzento:{ x:0.73, ground:0, w:0.50, h:0.60, ax:-0.5, ay:0 },
+    lobisomem_jovem:{ x:0.73, ground:0, w:0.50, h:0.70, ax:-0.5, ay:0 },
+    uivante_sombras:{ x:0.70, ground:0, w:0.58, h:0.95, ax:-0.5, ay:0 },
+    romar:{ x:0.70, ground:0, w:0.46, h:0.78, ax:-0.5, ay:0 },
+    orc_batedor:{ x:0.68, ground:0, w:0.46, h:0.76, ax:-0.5, ay:0 },
+    orc_guerreiro:{ x:0.69, ground:0, w:0.378, h:0.702, ax:-0.5, ay:0 },
+    orc_capitao:{ x:0.69, ground:0, w:0.42, h:0.78, ax:-0.5, ay:0 },
+    acougueiro_trincheira:{ x:0.72, ground:0, w:0.52, h:0.82, ax:-0.5, ay:0 },
     orc_xama:{ x:0.72, ground:0, w:0.44, h:0.70, ax:-0.5, ay:0 },
-    warlord_gorthak:{ x:0.76, ground:0, w:0.50, h:0.94, ax:-0.5, ay:0 },
+    warlord_gorthak:{ x:0.72, ground:0, w:0.44, h:0.88, ax:-0.5, ay:0 },
   },
   ritualTargets:{
     totem_sangue:{ x:0.55, ground:0.02, w:0.34, h:0.72, ax:-0.5, ay:0 },
     totem_sifao:{ x:0.89, ground:0.02, w:0.34, h:0.72, ax:-0.5, ay:0 },
+  },
+  summons:{
+    packWolf:{ x:0.56, ground:0, w:0.31, h:0.44, ax:-0.5, ay:0 },
   },
 };
 
@@ -165,16 +176,16 @@ const SLOT_BASE_STATS = {
 
 const MAPS = [
   {
-    name:'Floresta Uivante', sub:'Território dos lobos e lobisomens', theme:'🐺', fam:'fam-lobo',
+    arenaBackground:'assets/images/backgrounds/floresta_uivante_arena_v2.jpeg', name:'Floresta Uivante', sub:'Território dos lobos e lobisomens', theme:'🐺', fam:'fam-lobo',
     unlockLevel:1,
     monsters:[
-      { id:'lobo_selvagem', name:'Lobo Selvagem', emoji:'🐺', portrait:'assets/images/enemies/forest/lobo_selvagem.jpg', hp:30, atk:6,  def:2, xp:12, coinMin:4,  coinMax:8,  tier:0 },
-      { id:'lobo_cinzento',  name:'Lobo Cinzento', emoji:'🐺', portrait:'assets/images/enemies/forest/lobo_cinzento.jpg', hp:42, atk:8,  def:3, xp:18, coinMin:6,  coinMax:10, tier:1 },
-      { id:'lobisomem_jovem',name:'Lobisomem Jovem', emoji:'🐾', portrait:'assets/images/enemies/forest/lobisomem_jovem.jpg', hp:58, atk:11, def:4, xp:26, coinMin:8,  coinMax:14, tier:2 },
+      { id:'lobo_selvagem', name:'Lobo Comum', emoji:'🐺', portrait:'assets/images/enemies/forest/lobo_comum_combat_v2.png', portraitLayout:'natural', hp:30, atk:6,  def:2, xp:12, coinMin:4,  coinMax:8,  tier:0 },
+      { id:'lobo_cinzento',  name:'Lobo Cinzento', emoji:'🐺', portrait:'assets/images/enemies/forest/lobo_cinzento_combat_v2.png', portraitLayout:'natural', hp:42, atk:8,  def:3, xp:18, coinMin:6,  coinMax:10, tier:1 },
+      { id:'lobisomem_jovem',name:'Lobisomem Jovem', emoji:'🐾', portrait:'assets/images/enemies/forest/lobisomem_jovem_combat_v2.png', portraitLayout:'natural', hp:58, atk:11, def:4, xp:26, coinMin:8,  coinMax:14, tier:2 },
       { id:'lobisomem_feroz', name:'Lobisomem Feroz', emoji:'🐾', portrait:'assets/images/enemies/forest/lobisomem_feroz.jpg', hp:75, atk:14, def:6, xp:35, coinMin:10, coinMax:18, tier:3 },
     ],
     boss:{ id:'alfa_matilha', name:'Alfa da Matilha', emoji:'🐺', portrait:'assets/images/enemies/forest/alfa_matilha.jpg', hp:300, atk:30, def:14, xp:130, coinMin:40, coinMax:60, isBoss:true },
-    miniBoss:{ id:'uivante_sombras', name:'Uivante das Sombras', emoji:'🐺', portrait:'assets/images/enemies/forest/uivante_sombras.jpg', hp:190, atk:25, def:12, xp:85, coinMin:20, coinMax:30, isMiniBoss:true },
+    miniBoss:{ id:'uivante_sombras', name:'Uivante das Sombras', emoji:'🐺', portrait:'assets/images/enemies/forest/uivante_sombras_combat_v2.png', portraitLayout:'natural', hp:190, atk:25, def:12, xp:85, coinMin:20, coinMax:30, isMiniBoss:true },
   },
   {
     name:'Pântano Podre', sub:'Domínio dos trolls e ogros', theme:'🧌', fam:'fam-troll',
@@ -193,9 +204,9 @@ const MAPS = [
     unlockLevel:9,
     monsters:[
       { id:'orc_batedor',  name:'Orc Batedor', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_batedor_combat.png', portraitLayout:'natural', hp:190, atk:30, def:14, xp:95,  coinMin:30, coinMax:45, tier:0 },
-      { id:'orc_guerreiro',name:'Orc Guerreiro', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_guerreiro.jpg', hp:220, atk:35, def:16, xp:110, coinMin:35, coinMax:50, tier:1 },
-      { id:'orc_capitao',  name:'Orc Capitão', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_capitao.jpg', hp:260, atk:44, def:19, xp:135, coinMin:44, coinMax:64, tier:2 },
-      { id:'acougueiro_trincheira', name:'Açougueiro da Trincheira', emoji:'👺', portrait:'assets/images/enemies/trenches/acougueiro_trincheira.jpg', hp:460, atk:68, def:30, xp:240, coinMin:75, coinMax:105, tier:3 },
+      { id:'orc_guerreiro',name:'Orc Guerreiro', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_guerreiro_combat_v2.png', portraitLayout:'natural', hp:220, atk:35, def:16, xp:110, coinMin:35, coinMax:50, tier:1 },
+      { id:'orc_capitao',  name:'Orc Capitão', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_capitao_combat_v2.png', portraitLayout:'natural', hp:260, atk:44, def:19, xp:135, coinMin:44, coinMax:64, tier:2 },
+      { id:'acougueiro_trincheira', name:'Açougueiro da Trincheira', emoji:'👺', portrait:'assets/images/enemies/trenches/orc_acougueiro_combat_v2.png', hp:460, atk:68, def:30, xp:240, coinMin:75, coinMax:105, tier:3 },
     ],
     boss:{ id:'warlord_gorthak', name:'Warlord Gorthak', emoji:'👺', portrait:'assets/images/enemies/trenches/warlord_gorthak_combat.png', portraitLayout:'natural', hp:740, atk:72, def:30, xp:300, coinMin:150, coinMax:220, isBoss:true },
     miniBoss:{ id:'orc_xama', name:'Orc Xamã', emoji:'💀', portrait:'assets/images/enemies/trenches/orc_xama_transe.png', portraitLayout:'natural', hp:360, atk:48, def:20, xp:240, coinMin:75, coinMax:105, isMiniBoss:true },
@@ -359,12 +370,59 @@ function totalXpForLevel(level){
   return sum;
 }
 
+// The budget is derived from earned XP, never from historical level-up events.
+const ATTRIBUTE_KEYS=['forca','defesa','vitalidade','espirito','magia','agilidade'];
+function progressionFromXp(totalXp){
+  let level=1,remaining=totalXp;
+  while(remaining>=xpToNext(level)){remaining-=xpToNext(level);level++;}
+  return {level,xp:remaining};
+}
+function reconcileAttributeBudget(p,grantMissing=false){
+  const budget=Math.max(0,(p.level-1)*5);
+  const spent=ATTRIBUTE_KEYS.reduce((sum,key)=>sum+p.allocated[key],0);
+  const before=spent+p.statPoints;
+  let excess=Math.max(0,before-budget);
+  const freeRemoved=Math.min(p.statPoints,excess);p.statPoints-=freeRemoved;excess-=freeRemoved;
+  // No investment history exists in legacy saves. Retain the build's proportions,
+  // using largest remainders and a stable key order to remove only the excess.
+  if(excess>0 && spent>0){
+    const keep=Math.max(0,spent-excess);
+    const parts=ATTRIBUTE_KEYS.map((key,index)=>{const exact=p.allocated[key]*keep/spent;return {key,index,n:Math.floor(exact),fraction:exact-Math.floor(exact)};});
+    let remaining=keep-parts.reduce((sum,x)=>sum+x.n,0);
+    for(const part of [...parts].sort((a,b)=>b.fraction-a.fraction||a.index-b.index))if(remaining-->0)part.n++;
+    for(const part of parts)p.allocated[part.key]=part.n;
+  }
+  const after=ATTRIBUTE_KEYS.reduce((sum,key)=>sum+p.allocated[key],0)+p.statPoints;
+  const granted=grantMissing ? Math.max(0,budget-after) : 0;
+  p.statPoints+=granted;
+  return {removed:Math.max(0,before-budget),freeRemoved,investedRemoved:excess,granted};
+}
 function recomputeLevelFromXp(){
-  let level = 1;
-  while(player.totalXp >= totalXpForLevel(level+1)) level++;
-  while(level > 1 && player.totalXp < totalXpForLevel(level)) level--;
-  player.level = level;
-  player.xp = player.totalXp - totalXpForLevel(level);
+  const previous=player.level;
+  Object.assign(player,progressionFromXp(player.totalXp));
+  const result=reconcileAttributeBudget(player,player.level>previous);
+  if(player.level<previous || result.removed){
+    for(const key of ATTRIBUTE_KEYS)ui.pendingAlloc[key]=0;
+    refreshProgressionDependencies();
+  }
+  return result;
+}
+function refreshProgressionDependencies(){
+  recomputeStats();
+  // Removing an invalid item may invalidate another one. Never destroy an item.
+  let changed;
+  do{
+    changed=false;
+    for(const slot of SLOT_ORDER){
+      const item=player.equipment[slot];
+      if(item && !itemMeetsRequirements(item)){
+        player.equipment[slot]=null;player.inventory.push(item);changed=true;recomputeStats();
+      }
+    }
+  }while(changed);
+  if(!hasMagMilestone(100)){player.magDomain=null;player.overchargeNext=false;}
+  for(const skill of SKILLS[player.classKey]||[])if(player.level<skill.unlockLevel)delete ui.skillCooldowns[skill.id];
+  recomputeStats();
 }
 
 function newPlayer(classKey){
@@ -476,7 +534,7 @@ function classCombatAvatarHtml(classKey){
 function monsterAvatarHtml(monster, cssClass){
   // A arte normal do Batedor é transparente para Arena V2.3; o chifre ainda usa o asset de estado aprovado anteriormente.
   const imageSize=monster.id==='orc_batedor' && monster.portraitLayout==='natural' ? (monster.scoutHornVisual ? ' width="1254" height="1254"' : ' width="1427" height="1102"') : '';
-  if(monster.id==='romar') return `<span class="romar-avatar ${monster.romarTransform?'romar-transform':''}"><span aria-label="Romar">⚔️</span><img src="${monster.portrait}" class="${cssClass}" alt="Romar" onerror="this.style.display='none'"></span>`;
+  if(monster.id==='romar') return `<span class="romar-avatar ${monster.romarTransform?'romar-transform':''}"><span aria-label="Romar">⚔️</span><img src="${monster.portrait}" class="${cssClass}" alt="Romar" onload="this.parentElement.classList.add('romar-loaded')" onerror="this.style.display='none'"></span>`;
   if(monster.id==='orc_batedor' && monster.scoutHornVisual) return `<img src="assets/images/enemies/trenches/orc_batedor_alerta_combat.png" class="${cssClass}" alt="Orc Batedor tocando o chifre"${imageSize}>`;
   if(monster.portrait) return `<img src="${monster.portrait}" class="${cssClass}" alt="${monster.name}"${imageSize}>`;
   return monster.emoji;
@@ -492,6 +550,10 @@ function combatPresentationStyle(side, key){
 }
 function ritualTargetPresentationStyle(key){
   const p = Object.assign({}, COMBAT_PRESENTATION.defaultEnemy, (COMBAT_PRESENTATION.ritualTargets && COMBAT_PRESENTATION.ritualTargets[key]) || {});
+  return combatPresentationVars(p);
+}
+function packWolfPresentationStyle(){
+  const p = Object.assign({}, COMBAT_PRESENTATION.defaultEnemy, (COMBAT_PRESENTATION.summons && COMBAT_PRESENTATION.summons.packWolf) || {});
   return combatPresentationVars(p);
 }
 function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
@@ -647,7 +709,7 @@ function itemMeetsRequirements(item){
 /* =========================================================
    NOTIFICAÇÕES (level up / item / poção)
    ========================================================= */
-function popNotif({eyebrow, title, sub, levelup, image, trap, persist}){
+function popNotif({eyebrow, title, sub, levelup, image, trap, persist, returnToMap}){
   const layer = document.getElementById('notif-layer');
   const card = document.createElement('div');
   const interactive = !!(trap || persist);
@@ -656,7 +718,7 @@ function popNotif({eyebrow, title, sub, levelup, image, trap, persist}){
   layer.appendChild(card);
   if(interactive){
     const btn=card.querySelector('.notif-continue');
-    btn.addEventListener('click',()=>card.remove(),{once:true});
+    btn.addEventListener('click',()=>{card.remove();if(returnToMap && !ui.inBattle && !ui.monster && !hasPendingRomarDiscovery() && !pendingForestEvent && !document.querySelectorAll('.interactive-card').length){ui.tab='mapa';render();}},{once:true});
   }else{
     setTimeout(()=>{ if(card.isConnected) card.remove(); }, 5600);
   }
@@ -980,6 +1042,7 @@ function advanceRomarExploration(){
 function tryRomarExploration(){
   if(!player || ui.inBattle || player.hp<=0 || !player.defeatedBosses.includes(0) || player.romar_first_choice || ui.romarResult || (ui.monster && ui.monster.romarChoice)) return false;
   const state=getRomarDiscoveries();
+  if(!state.seen.length)return false; // First clue belongs to the next common battle.
   if(state.pending || state.cooldown>0 || forestEventCooldown>0 || pendingForestEvent || document.querySelectorAll('.interactive-card').length) return false;
   const encounter=canEncounterRomar();
   if(!encounter && !ROMAR_DISCOVERIES.some(scene=>!state.seen.includes(scene.id))) return false;
@@ -994,6 +1057,7 @@ function tryRomarExploration(){
 function finishRomarDiscovery(){
   const state=getRomarDiscoveries();
   if(!state.pending) return;
+  if(ui.firstRomarBattle){finishFirstRomarDiscovery();return;}
   state.pending=null; ui.mapIndex=0; ui.tab='mapa'; render();
 }
 function renderRomarDiscovery(){
@@ -1301,6 +1365,7 @@ function startBattle(mapIndex, monsterTemplate, isBoss){
   if(ui.lucasScene)return;
   if(hasPendingRomarDiscovery()) return;
   if(ui.romarResult || (ui.monster && ui.monster.romarChoice)) return;
+  if(typeof beginFirstRomarDiscovery==='function' && beginFirstRomarDiscovery(mapIndex,monsterTemplate,isBoss))return;
   ui.mapIndex = mapIndex;
   const map = MAPS[mapIndex];
   const eventOn = isMonsterEventActive();
@@ -1373,7 +1438,7 @@ function startRomarEncounter(){
   const band=player.level>=8 ? [1.15,1.10,1.08] : player.level>=6 ? [1.08,1.05,1.05] : [1,1,1];
   const hp=Math.round(300*band[0]), atk=24*band[1], def=12*band[2];
   ui.monster={id:'romar',name:'Romar',emoji:'⚔️',hp,hpMax:hp,atk,def,
-    battleBaseDef:def,portrait:'assets/images/enemies/forest/romar_15.jpg',
+    battleBaseDef:def,portrait:'assets/images/enemies/forest/romar_v2_estagio1.png',portraitLayout:'natural',
     romarStage:1,romarHistory:[],romarPrepared:null,romarSurgePending:false,
     romarChoice:false,romarTransform:false,romarLastMove:null};
   ui.inBattle=true; ui.locked=false; ui.skillCooldowns={}; ui.buffs={}; ui.tab='batalha';
@@ -1447,12 +1512,12 @@ function resolveRomarAction(kind,damage=0){
   }
   let transitioned=false;
   if(m.romarStage<2 && m.hp<=m.hpMax*0.65){
-    m.romarStage=2; m.portrait='assets/images/enemies/forest/romar_30.jpg';
+    m.romarStage=2; m.portrait='assets/images/enemies/forest/romar_v2_estagio2.png';
     m.romarPrepared=null; m.romarTransform=true; transitioned=true;
     logPush('<b>“Não... agora não.”</b> As runas pulsam. Romar perde a ação enquanto luta pelo controle.');
   }
   if(m.romarStage<3 && m.hp<=m.hpMax*0.35){
-    m.romarStage=3; m.portrait='assets/images/enemies/forest/romar_45.jpg';
+    m.romarStage=3; m.portrait='assets/images/enemies/forest/romar_v2_estagio3.png';
     m.romarTransform=true; transitioned=true; m.romarPrepared='rupture';
     logPush('Romar cai sobre um joelho; as marcas avançam. <b>“Fique... longe de mim.”</b>');
     logPush('<b>Ruptura da Marca preparada!</b> As runas concentram poder na arma. Uma ação de '+Math.ceil(m.hpMax*0.12)+' de dano pode interromper o golpe.');
@@ -1545,12 +1610,14 @@ function logPush(html){ battleLog.push(html); if(battleLog.length>40) battleLog.
 
 function combatEffectId(side){
   if(side==='player')return 'effects-player';
+  if(side==='packWolf')return 'effects-pack-wolf';
   if(side==='target-blood')return 'effects-target-blood';
   if(side==='target-siphon')return 'effects-target-siphon';
   return 'effects-enemy';
 }
 function combatPortraitId(side){
   if(side==='player')return 'portrait-player';
+  if(side==='packWolf')return 'portrait-pack-wolf';
   if(side==='target-blood')return 'portrait-target-blood';
   if(side==='target-siphon')return 'portrait-target-siphon';
   return 'portrait-enemy';
@@ -1565,10 +1632,18 @@ function floatNumber(side, text, cls){
   setTimeout(()=>span.remove(), 1000);
 }
 
-function shakeSide(side){
-  const el = document.getElementById(combatPortraitId(side));
+function shakeSide(side, isCrit=false){
+  if(side==='enemy' && (isGorthak() || (ui.mapIndex===2 && ['orc_batedor','orc_guerreiro','orc_capitao','acougueiro_trincheira'].includes(ui.monster?.id)) || (ui.mapIndex===2 && ui.monster?.id==='orc_xama' && ui.monster.shamanAwake)) && typeof EnemyCombatVisual!=='undefined' && EnemyCombatVisual.hit(ui.monster,isCrit))return;
+  const id = combatPortraitId(side);
+  const el = document.getElementById(id);
   if(!el) return;
   el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  /* Romar redesenha a arena na mesma acao do golpe; o retrato antigo some antes de animar.
+     Reaplica no no novo para o impacto continuar visivel. */
+  if(typeof requestAnimationFrame==='function') requestAnimationFrame(()=>{
+    const fresh = document.getElementById(id);
+    if(fresh && fresh!==el) fresh.classList.add('shake');
+  });
 }
 
 function updateArenaBarsOnly(){
@@ -1763,6 +1838,22 @@ function renderShamanRitualActors(m){
     </div>`;
   }).join('');
 }
+/* Lobo da Matilha: segundo ator do Alfa, com arte e barra proprios.
+   O nome fica no rotulo acessivel e no botao de ataque, nao sobre a arte.
+   Somente apresentacao: HP, dano, esquiva e a Cacada Coordenada continuam no Alfa. */
+let packWolfPaint = { monster:null, active:false };
+function renderPackWolfActor(m){
+  const shown = !!(m && ui.inBattle && ui.mapIndex===0 && m.id==='alfa_matilha' && m.bossPhase===0 && m.packWolfActive && m.packWolfHp>0);
+  const entering = shown && (packWolfPaint.monster!==m || !packWolfPaint.active);
+  packWolfPaint = { monster:m, active:shown };
+  if(!shown) return '';
+  const pct = Math.max(0, Math.min(100, (m.packWolfHp/m.packWolfHpMax)*100)).toFixed(1);
+  return `<div class="arena-actor actor-pack-wolf${entering?' pack-wolf-enter':''}" ${packWolfPresentationStyle()} role="group" aria-label="Lobo da Matilha, ${m.packWolfHp} de ${m.packWolfHpMax} pontos de vida">
+        <div class="pack-wolf-tag"><span class="pack-wolf-bar"><i style="width:${pct}%"></i></span><span class="pack-wolf-hp">${m.packWolfHp}/${m.packWolfHpMax} HP</span></div>
+        <div class="combatant-artwork portrait-ring portrait-natural" id="portrait-pack-wolf"><img src="assets/images/enemies/forest/lobo_matilha_combat_v2.png" class="avatar-img-circle" alt="Lobo da Matilha"></div>
+        <div class="combatant-effects" id="effects-pack-wolf" aria-hidden="true"></div>
+      </div>`;
+}
 function renderShamanTargetButtons(m){
   if(!m || !m.shamanRitual || !m.shamanTargets)return '';
   return `<div class="ritual-target-actions">${Object.entries(m.shamanTargets).map(([key,t])=>{
@@ -1909,7 +2000,7 @@ function enemyBehaviorChip(m){
     if(m.alphaMoonPrepared) return '<span class="arena-enemy-chip warning">LUA DA CAÇADA PREPARADA</span>';
     if(m.alphaCounterStance) return '<span class="arena-enemy-chip warning">O ALFA OBSERVA SEU ATAQUE</span>';
     if(m.alphaChargePrepared) return '<span class="arena-enemy-chip warning">INVESTIDA DO ALFA PREPARADA</span>';
-    if(m.packWolfActive) return `<span class="arena-enemy-chip danger">MATILHA ATIVA · Lobo ${m.packWolfHp}/${m.packWolfHpMax} HP</span>`;
+    if(m.packWolfActive) return `<span class="arena-enemy-chip danger">MATILHA ATIVA · CAÇADA COORDENADA</span>`;
     return `<span class="arena-enemy-chip">${['COMANDANTE DA MATILHA','O PREDADOR','INSTINTO DO ALFA'][m.bossPhase]}</span>`;
   }
   return '';
@@ -1924,7 +2015,7 @@ function updateEnemyBehaviorBeforeCounter(){
     m.frenzyTriggered=true;
     m.atk=Math.round(m.atk*1.25);
     m.def=Math.max(0,Math.round(m.def*0.70));
-    logPush('<span class="log-bad"><b>Frenesi!</b> Ferido, o Lobo Selvagem ataca com mais força, mas abandona a cautela e fica mais vulnerável.</span>');
+    logPush(`<span class="log-bad"><b>Frenesi!</b> Ferido, o ${m.name} ataca com mais força, mas abandona a cautela e fica mais vulnerável.</span>`);
   }
 }
 
@@ -2046,6 +2137,8 @@ function attackPackWolf(){
   }
   monsterCounterTurn(false);
   render();
+  floatNumber('packWolf','-'+hit.dmg,hit.isCrit?'crit':'dmg');
+  shakeSide('packWolf', hit.isCrit);
 }
 
 /* Executa uma rodada: dano do jogador no monstro, depois (se vivo) contra-ataque do monstro */
@@ -2065,7 +2158,7 @@ function resolvePlayerHit(dmg, isCrit, impacts=[dmg]){
     if(player.hp>before) logPush(`<span class="log-good">🩸 Equipamento drena ${player.hp-before} HP.</span>`);
   }
   floatNumber('enemy', (isCrit?'CRÍTICO -':'-')+dmg, isCrit?'crit':'dmg');
-  shakeSide('enemy');
+  shakeSide('enemy', isCrit);
   updateArenaBarsOnly();
 
   // A retaliação substitui o contra-ataque desta rodada; golpe letal não a dispara.
@@ -2321,22 +2414,24 @@ function fleeBattle(){
 }
 
 function handleDefeat(){
+  if(typeof EnemyCombatVisual!=='undefined')EnemyCombatVisual.destroy();
   if(ui.monster && ui.monster.id==='romar'){ romarNonlethalDefeat(); return; }
   ui.inBattle = false;
   const oldLevel = player.level;
   const lost = Math.round(player.totalXp * DEATH_XP_PENALTY);
   player.totalXp = Math.max(0, player.totalXp - lost);
-  recomputeLevelFromXp();
-  recomputeStats();
+  const reconciliation=recomputeLevelFromXp();
+  refreshProgressionDependencies();
   player.hp = Math.round(player.hpMax*0.5);
   const deleveled = player.level < oldLevel;
   logPush(`<span class="log-bad">Você caiu em batalha e perdeu ${lost} de experiência${deleveled?` — voltando ao nível ${player.level}`:''}.</span>`);
-  popNotif({ eyebrow:'DERROTA', title: deleveled ? `Nível reduzido para ${player.level}` : `-${lost} XP`, sub: deleveled ? 'A escuridão consumiu seu progresso' : 'A escuridão cobra um preço alto', persist:true });
+  popNotif({ eyebrow:'DERROTA', title: deleveled ? `Nível reduzido para ${player.level}` : `-${lost} XP`, sub: deleveled ? `Nível ${oldLevel} → ${player.level}. ${reconciliation.removed} pontos de atributos removidos (${reconciliation.freeRemoved} livres e ${reconciliation.investedRemoved} distribuídos).` : 'A escuridão cobra um preço alto', persist:true, returnToMap:true });
   ui.monster = null;
   ui.locked = false;
 }
 
 function handleVictory(m){
+  if(typeof EnemyCombatVisual!=='undefined')EnemyCombatVisual.destroy();
   if(m.id==='romar'){ romarFinalChoice(m); return; }
   ui.inBattle = false;
   ui.locked = false;
@@ -2362,18 +2457,15 @@ function handleVictory(m){
   if(xpEventOn) popNotif({ eyebrow:'EVENTO ATIVO', title:'Bênção da Lua Cheia', sub:'XP e drops em dobro' });
 
   const oldLevel = player.level;
-  recomputeLevelFromXp();
+  const progression=recomputeLevelFromXp();
   const levelsGained = player.level - oldLevel;
   const leveledUp = levelsGained > 0;
-  if(leveledUp){
-    player.statPoints += levelsGained * 5;
-  }
   recomputeStats();
   if(leveledUp){
     player.hp = player.hpMax;
     player.mp = player.mpMax;
     logPush(`<b>Você subiu para o nível ${player.level}!</b> HP e MP restaurados. +${levelsGained*5} pontos de status disponíveis.`);
-    popNotif({ eyebrow:'NÍVEL ALCANÇADO', title:`Nível ${player.level}`, sub:`+${levelsGained*5} pontos de status para distribuir`, levelup:true });
+    popNotif({ eyebrow:'NÍVEL ALCANÇADO', title:`Nível ${player.level}`, sub:`+${progression.granted} pontos de status para distribuir`, levelup:true });
   }
 
   // Progressão experimental da Floresta Uivante (Vertical Slice 1.2)
@@ -2482,7 +2574,7 @@ function handleVictory(m){
     }
   }
 
-  const xpBuffDropChance = Math.min(1, (m.isBoss ? 0.12 : m.isMiniBoss ? 0.08 : 0.03) * dropMult);
+  const xpBuffDropChance = Math.min(1, (m.isBoss ? 0.024 : m.isMiniBoss ? 0.016 : 0.006) * dropMult);
   if(Math.random() < xpBuffDropChance){
     player.consumables.xpbuff++;
     logPush(`<span class="log-drop">Drop raro: Tônico da Fúria da Caçada 📜</span>`);
@@ -2494,7 +2586,7 @@ function handleVictory(m){
     eyebrow:'VITÓRIA',
     title:`${m.name} derrotado`,
     sub:`+${xpGain} XP conquistados. Resultado concluído.`,
-    persist:true
+    persist:true, returnToMap:true
   });
   ui.monster = null;
 }
@@ -2875,13 +2967,14 @@ function renderBatalhaTab(){
     const cooldown = ui.skillCooldowns[s.id]||0;
     const onCooldown = cooldown > 0;
     const disabled = locked || noMp || onCooldown || ui.locked;
-    let statusText = s.desc;
+    let statusText = ui.locked ? 'Resolvendo turno…' : s.desc;
+    if(noMp) statusText = 'MP insuficiente';
     if(locked) statusText = `Desbloqueia no nível ${s.unlockLevel}`;
     else if(onCooldown) statusText = `Recarregando · ${cooldown} turno${cooldown>1?'s':''}`;
     return `
       <button class="skill-btn" ${disabled?'disabled':''} onclick="usarSkill('${s.id}')">
         <span>${s.icon} ${s.name} <small>(${shownMpCost} MP)</small></span>
-        <small>${statusText}</small>
+        <small class="skill-detail ${disabled?'skill-state':''}">${statusText}</small>
       </button>`;
   }).join('');
 
@@ -2911,15 +3004,16 @@ function renderBatalhaTab(){
     <div class="battle-arena arena-battlefield">
       <div class="arena-stage">
         <div class="battlefield-background" aria-hidden="true"${map.arenaBackground ? ` style="background-image:url('${map.arenaBackground}')"` : ''}></div>
-        <div class="arena-actor actor-player ${CLASSES[player.classKey].combatPortrait?'art-natural':'art-legacy'}" ${combatPresentationStyle('player',player.classKey)}>
+        <div data-actor="${player.classKey}" class="arena-actor actor-player ${CLASSES[player.classKey].combatPortrait?'art-natural':'art-legacy'}" ${combatPresentationStyle('player',player.classKey)}>
           <div class="combatant-artwork portrait-ring player" id="portrait-player">${classCombatAvatarHtml(player.classKey)}</div>
           <div class="combatant-effects" id="effects-player" aria-hidden="true"></div>
         </div>
         ${renderShamanRitualActors(m)}
-        <div class="arena-actor actor-enemy ${m.portraitLayout==='natural'?'art-natural':'art-legacy'}" ${combatPresentationStyle('enemy',m.id)}>
+        <div data-actor="${m.id}" class="arena-actor actor-enemy ${m.portraitLayout==='natural'?'art-natural':'art-legacy'}" ${combatPresentationStyle('enemy',m.id)}>
           <div class="combatant-artwork portrait-ring ${m.portraitLayout==='natural'?'portrait-natural':''} ${map.fam} ${(m.isBoss||m.isMiniBoss)?'fam-boss':''}" id="portrait-enemy">${monsterAvatarHtml(m,'avatar-img-circle')}</div>
           <div class="combatant-effects" id="effects-enemy" aria-hidden="true"></div>
         </div>
+        ${renderPackWolfActor(m)}
         <div class="arena-global-effects" aria-hidden="true"></div>
       </div>
       <div class="arena-hud-grid">
@@ -2944,11 +3038,11 @@ function renderBatalhaTab(){
       </div>
     </div>
     ${renderShamanTargetButtons(m)}
-    <div class="battle-actions">
+    <div class="combat-controls"><div class="battle-actions">
       <button class="action-btn" ${ui.locked?'disabled':''} onclick="playerAttack()">Atacar</button>
       ${isSwampLord() && m.submerged ? `<button class="action-btn" ${ui.locked?'disabled':''} onclick="waitForSwampLord()">AGUARDAR</button>` : ''}
       <button class="action-btn secondary" ${fleeDisabled?'disabled':''} ${fleeBlocked?'data-force-disabled="1"':''} onclick="fleeBattle()">Fugir</button>
-      ${ui.mapIndex===0 && m.id==='alfa_matilha' && m.bossPhase===0 && m.packWolfActive ? `<button class="action-btn secondary" ${ui.locked?'disabled':''} onclick="attackPackWolf()">🐺 Atacar Lobo da Matilha · ${m.packWolfHp}/${m.packWolfHpMax} HP</button>` : ''}
+      ${ui.mapIndex===0 && m.id==='alfa_matilha' && m.bossPhase===0 && m.packWolfActive ? `<button class="action-btn secondary" ${ui.locked?'disabled':''} onclick="attackPackWolf()">🐺 Atacar Lobo da Matilha</button>` : ''}
     </div>
     ${player.classKey==='mago' && hasMagMilestone(100) && getMagDomain()==='destruidor' ? `<button class="action-btn secondary" style="width:100%;margin:0 0 8px;" onclick="player.overchargeNext=!player.overchargeNext;render()">🔥 Sobrecarga: ${player.overchargeNext?'ATIVA':'DESATIVADA'}</button>` : ''}
     <div class="skills-row">${skills}</div>
@@ -2959,7 +3053,7 @@ function renderBatalhaTab(){
       ].filter(([key]) => (player.consumables[key]||0) > 0);
       return owned.length ? `<div class="consumable-row">${owned.map(([key,label])=>`<button class="consumable-btn" onclick="usarConsumivelBatalha('${key}')">${label} (${player.consumables[key]||0})</button>`).join('')}</div>` : '';
     })()}
-    <div class="battle-log" id="battle-log">${battleLog.slice().reverse().map(l=>`<p>${l}</p>`).join('')}</div>
+    </div><details class="combat-secondary"><summary>Histórico do combate</summary><div class="battle-log" id="battle-log">${battleLog.slice().reverse().map(l=>`<p>${l}</p>`).join('')}</div></details>
   `;
 }
 
@@ -3202,7 +3296,7 @@ function renderStatusTab(){
           ['defesa','DEF · Defesa', player.allocated.defesa, '+1 DEF por ponto; mitigação e requisitos de armaduras/escudos.'],
         ];
         return `<p style="font-size:12.5px;color:var(--bone-dim);margin:0 0 8px;">Você recebe <b style="color:var(--gold)">5 pontos por nível</b>. Disponíveis agora: <b style="color:${available>0?'var(--gold)':'var(--bone-dim)'}">${available}</b>.</p>
-        <p style="font-size:11.5px;color:var(--bone-dim);margin:0 0 14px;">Use +/− para planejar. Nada é aplicado antes de <b style="color:var(--bone)">Confirmar distribuição</b>.</p>
+        <p class="death-budget-note" style="color:var(--bone-dim);margin:0 0 14px;">A morte remove 35% da experiência total e pode reduzir seu nível e os pontos correspondentes. Primeiro são retirados os pontos livres; investimentos excedentes são reduzidos proporcionalmente. Use +/− para planejar. Nada é aplicado antes de <b style="color:var(--bone)">Confirmar distribuição</b>.</p>
         <div class="alloc-grid">
           ${defs.map(([key,label,val,desc])=>{
             const pend = ui.pendingAlloc[key]||0;
@@ -3242,7 +3336,9 @@ function renderStatusTab(){
 }
 
 function render(){
+  if(typeof EnemyCombatVisual!=='undefined')EnemyCombatVisual.destroy();
   renderHUD();
+  document.getElementById('game-screen').classList[ui.inBattle && ui.tab==='batalha'?'add':'remove']('combat-active');
   const content = document.getElementById('content');
   if(ui.tab==='mapa') content.innerHTML = renderMapaTab();
   else if(ui.tab==='batalha') content.innerHTML = renderBatalhaTab();
@@ -3250,6 +3346,7 @@ function render(){
   else if(ui.tab==='loja') content.innerHTML = renderLojaTab();
   else if(ui.tab==='status') content.innerHTML = renderStatusTab();
   if(ui.inBattle && ui.locked) setActionsLocked(true);
+  if(typeof EnemyCombatVisual!=='undefined' && ui.inBattle && ui.tab==='batalha' && (isGorthak() || (ui.mapIndex===2 && ['orc_batedor','orc_guerreiro','orc_capitao','acougueiro_trincheira'].includes(ui.monster?.id)) || (ui.mapIndex===2 && ui.monster?.id==='orc_xama' && ui.monster.shamanAwake)))EnemyCombatVisual.mount(ui.monster);
 }
 
 document.querySelectorAll('.tab-btn').forEach(b=>{

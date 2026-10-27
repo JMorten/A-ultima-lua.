@@ -654,7 +654,8 @@
 @keyframes enemyWarn{from{box-shadow:0 0 0 rgba(201,162,78,0)}to{box-shadow:0 0 12px rgba(201,162,78,.28)}}
 /* Romar: fallback permanece visível caso uma das artes ainda não exista. */
 .romar-avatar { position:relative; display:grid; place-items:center; width:100%; height:100%; }
-.romar-avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.romar-avatar img { position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center bottom; }
+.romar-avatar.romar-loaded > span { display:none; }
 .romar-transform { animation:romar-rune-pulse .65s ease-out; }
 @keyframes romar-rune-pulse {
   25% { transform:translateX(-2px); filter:brightness(1.5); }
@@ -722,6 +723,27 @@
 .ritual-target-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;}
 .ritual-target-actions .action-btn{font-size:12px;line-height:1.25;white-space:normal;min-height:48px;}
 .ritual-target-actions .action-btn.selected{border-color:var(--gold);box-shadow:0 0 0 1px rgba(200,168,92,.38);}
+/* Lobo da Matilha: segundo ator do Alfa, com barra propria e sem nome sobreposto.
+   A altura vem da largura (aspect-ratio) para a barra encostar no topo da arte
+   em qualquer tela, sem depender da altura do palco. */
+.arena-actor.actor-pack-wolf{z-index:4;pointer-events:none;height:auto;aspect-ratio:1000/758;}
+.arena-actor.actor-pack-wolf > .combatant-artwork{overflow:visible;}
+.pack-wolf-tag{
+  position:absolute;left:50%;bottom:100%;transform:translateX(-50%);
+  display:grid;gap:2px;justify-items:center;width:max-content;max-width:46vw;margin-bottom:3px;
+  padding:2px 5px 3px;text-align:center;line-height:1.1;
+  background:rgba(12,9,7,.58);border:1px solid rgba(126,100,62,.5);border-radius:8px;
+  box-shadow:0 2px 6px rgba(0,0,0,.4);
+}
+.pack-wolf-bar{display:block;width:100%;min-width:52px;height:4px;border:1px solid #6b5638;border-radius:999px;background:#150f0b;overflow:hidden;}
+.pack-wolf-bar i{display:block;height:100%;background:linear-gradient(#d08a4a,#8d3f22);transition:width .25s ease-out;}
+.pack-wolf-hp{font-size:7px;letter-spacing:.06em;color:#b0a18c;text-shadow:0 1px 2px #000;}
+.actor-pack-wolf.pack-wolf-enter{animation:packWolfEnter .42s cubic-bezier(.2,.7,.35,1);}
+@keyframes packWolfEnter{
+  from{opacity:0;transform:translate(var(--actor-anchor-x),calc(var(--actor-anchor-y) + 10px)) scale(.94);}
+  to{opacity:1;transform:translate(var(--actor-anchor-x),var(--actor-anchor-y)) scale(1);}
+}
+@media (prefers-reduced-motion:reduce){.actor-pack-wolf.pack-wolf-enter{animation:none;}}
 .arena-hud-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 12px;margin-top:8px;}
 .arena-hud-grid .combatant-ui{text-align:center;min-width:0;}
 .arena-battlefield .combatant-heading h4{font-size:14px;line-height:1.25;margin:0;overflow-wrap:anywhere;}
@@ -735,3 +757,70 @@
   .battle-arena.arena-battlefield{--stage-height:clamp(330px,84vw,390px);}
 }
 @media(min-width:701px){.battle-arena.arena-battlefield{max-width:640px;margin-left:auto;margin-right:auto;}}
+
+/* Approved reaction actors only: no idle animation and no transforms on the positioning layer. */
+.gorthak-reaction-surface,.scout-reaction-surface,.warrior-reaction-surface,.captain-reaction-surface,.butcher-reaction-surface,.shaman-reaction-surface{transform-origin:50% 97%;}
+.gorthak-reaction-surface[data-reaction],.scout-reaction-surface[data-reaction],.warrior-reaction-surface[data-reaction],.captain-reaction-surface[data-reaction],.butcher-reaction-surface[data-reaction],.shaman-reaction-surface[data-reaction]{will-change:transform;}
+.gorthak-impact-glow,.scout-impact-glow,.warrior-impact-glow,.captain-impact-glow,.gorthak-impact-flash,.scout-impact-flash,.warrior-impact-flash,.captain-impact-flash,.butcher-impact-glow,.butcher-impact-flash,.shaman-impact-glow,.shaman-impact-flash{position:absolute;inset:0;opacity:0;pointer-events:none;}
+.gorthak-impact-glow,.scout-impact-glow,.warrior-impact-glow,.captain-impact-glow,.butcher-impact-glow,.shaman-impact-glow{background:radial-gradient(ellipse,rgba(255,194,132,.5),rgba(165,48,30,.18) 44%,transparent 72%);}
+.gorthak-impact-flash,.scout-impact-flash,.warrior-impact-flash,.captain-impact-flash,.butcher-impact-flash,.shaman-impact-flash{background:rgba(230,167,105,.16);}
+.gorthak-reaction-surface[data-reaction-static],.scout-reaction-surface[data-reaction-static],.warrior-reaction-surface[data-reaction-static],.captain-reaction-surface[data-reaction-static],.butcher-reaction-surface[data-reaction-static],.shaman-reaction-surface[data-reaction-static]{will-change:auto;outline:2px solid var(--gold);outline-offset:-2px;}
+@media(prefers-reduced-motion:reduce){
+  .gorthak-reaction-surface[data-reaction],.scout-reaction-surface[data-reaction],.warrior-reaction-surface[data-reaction],.captain-reaction-surface[data-reaction],.butcher-reaction-surface[data-reaction],.shaman-reaction-surface[data-reaction]{will-change:auto;outline:2px solid var(--gold);outline-offset:-2px;}
+}
+
+/* Full-art fit for the reviewed actors. Override legacy natural-portrait auto height.
+   Keep ground positioning on the outer actor and reaction transforms on the artwork. */
+.arena-actor[data-actor="orc_guerreiro"] > .combatant-artwork > .avatar-img-circle,
+.arena-actor[data-actor="orc_batedor"] > .combatant-artwork > .avatar-img-circle,
+.arena-actor[data-actor="lobo_selvagem"] > .combatant-artwork > .avatar-img-circle,
+.arena-actor[data-actor="lobo_cinzento"] > .combatant-artwork > .avatar-img-circle,
+.arena-actor[data-actor="lobisomem_jovem"] > .combatant-artwork > .avatar-img-circle,
+.arena-actor[data-actor="uivante_sombras"] > .combatant-artwork > .avatar-img-circle,
+.arena-actor[data-actor="orc_capitao"] > .combatant-artwork > .avatar-img-circle,
+.arena-actor[data-actor="acougueiro_trincheira"] > .combatant-artwork > .avatar-img-circle,.arena-actor[data-actor="orc_xama"] > .combatant-artwork > .avatar-img-circle,.arena-actor[data-actor="mago"] > .combatant-artwork > .avatar-img-circle,
+.arena-actor[data-actor="warlord_gorthak"] > .combatant-artwork > .avatar-img-circle{
+  width:100%;height:100%;max-width:100%;max-height:100%;
+  object-fit:contain;object-position:center bottom;
+}
+
+/* Face the opponent by mirroring only the image, never the reaction surface. */
+.arena-actor[data-actor="orc_guerreiro"] > .combatant-artwork > .avatar-img-circle,
+.arena-actor[data-actor="orc_xama"] > .combatant-artwork > .avatar-img-circle{
+  transform:scaleX(-1);
+}
+
+/* Post-playtest: keep the stage and essential controls together; details scroll. */
+.combat-secondary summary{min-height:44px;padding:12px;cursor:pointer;color:var(--bone-dim);}
+.death-budget-note{font-size:14px;line-height:1.45;}
+@media(max-width:700px){
+  #game-screen.combat-active{height:100vh;height:100dvh;min-height:0;overflow:hidden;}
+  .combat-active #hud{display:none;} /* HP/MP remain visible in the arena HUD. */
+  .combat-active .hud-name,.combat-active .hud-coins{display:none;}
+  .combat-active .hud-bars{gap:3px;}
+  .combat-active #tabs{position:static;flex-shrink:0;}
+  .combat-active #event-bar{padding:3px 12px;flex-shrink:0;}
+  .combat-active #content{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;padding:6px 10px max(8px,env(safe-area-inset-bottom));}
+  .combat-active .battle-arena.arena-battlefield{--stage-height:clamp(140px,29vh,250px);--stage-height:clamp(140px,29dvh,250px);margin-bottom:6px;padding-bottom:4px;}
+  .combat-active .arena-hud-grid{margin-top:3px;gap:4px;}
+  .combat-active .arena-buffs{margin-top:2px;}
+  .combat-active .battle-actions,.combat-active .skills-row,.combat-active .consumable-row{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:6px;}
+  .combat-active .action-btn,.combat-active .skill-btn,.combat-active .consumable-btn{min-height:44px;padding:7px 8px;letter-spacing:0;}
+  .combat-active .skill-btn{font-size:14px;justify-content:center;}
+  .combat-active .skill-btn small{font-size:12px;line-height:1.2;}
+  .combat-active .skill-detail:not(.skill-state){display:none;}
+  .combat-active .skill-btn:disabled{opacity:.65;}
+  .combat-active .ritual-target-actions{gap:6px;margin:4px 0;}
+  .combat-active .ritual-target-actions .action-btn{min-height:44px;padding:5px;}
+  .combat-active .battle-log{height:130px;}
+  .combat-active .battle-arena,.combat-active .ritual-target-actions,.combat-active #content > .status-card{flex-shrink:0;}
+  .combat-active .combat-controls{min-height:88px;overflow-y:auto;overscroll-behavior:contain;}
+  .combat-active .combat-secondary{flex-shrink:0;max-height:25dvh;overflow:auto;}
+  .combat-active #content > .status-card{padding:5px 8px;margin:0 0 4px;font-size:13px;}
+  .combat-active #content > .status-card h3{font-size:13px;}
+  .combat-active #content > .status-card p{margin:2px 0;}
+}
+
+@media(max-width:700px) and (max-height:650px){
+ .combat-active .battle-arena.arena-battlefield{--stage-height:clamp(110px,22vh,145px);--stage-height:clamp(110px,22dvh,145px);}
+}

@@ -68,7 +68,7 @@ try {
         ...(localChrome ? { AUL_CHROME_EXECUTABLE: localChrome } : {})
       };
       const cli = path.join(pw.root, 'cli.js');
-      const args = [cli, 'test', '--config', path.join(__dirname, 'playwright.config.cjs'), `--project=${engine}`, '--workers=1'];
+      const args = [cli, 'test', '--config', path.join(__dirname, 'playwright.config.cjs'), `--project=${engine}`, '--workers=1',...process.argv.slice(3)];
       console.log(`\nRunning ${engine} against disposable QA build: ${pathToFileURL(qaDist).href}`);
       const result = spawnSync(process.execPath, args, { cwd: __dirname, env, stdio: 'inherit' });
       if (result.error) throw result.error;

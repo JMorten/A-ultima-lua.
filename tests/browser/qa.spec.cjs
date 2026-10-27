@@ -193,7 +193,7 @@ test('QA inicia Xamã pelo fluxo real; totem selecionado recebe ataque e Xamã p
   await page.locator('#game-screen').screenshot({ path: `${process.env.AUL_PW_ARTIFACTS}/ritual-xama-totens-ativos.png` });
 
   await hitSelectedTotem(page);
-  const log = await page.locator('#battle-log').innerText();
+  const log = await page.locator('#battle-log').textContent();
   expect(log).toContain('Você atinge Totem de Sangue e causa');
   expect(currentHp(await page.locator('#arena-hp-enemy-text').innerText()).current).toBe(xamaBefore);
   await expect(page.locator('.ritual-target-actions button').filter({ hasText: 'Totem de Sangue' })).toBeVisible();
@@ -208,7 +208,7 @@ test('Essência sofre retaliação de 20% efetivo e reload não restaura combate
   const hpBefore = currentHp(await page.locator('#hud-hp-text').innerText()).current;
   await hitSelectedTotem(page);
 
-  const log = await page.locator('#battle-log').innerText();
+  const log = await page.locator('#battle-log').textContent();
   const effective = damageFromLog(log, 'Totem da Essência');
   const reflectedMatch = /RETALIAÇÃO DO SANGUE\s+(\d+) de dano retorna para você\./.exec(log);
   expect(reflectedMatch, log).not.toBeNull();
@@ -243,7 +243,7 @@ test('Essência ativa armazena energia ao destruir Sangue; destruir ambos desper
   await page.locator('.ritual-target-actions button').filter({ hasText: 'Totem de Sangue' }).click();
   await destroySelectedTotem(page, 'Totem de Sangue');
 
-  const bloodLog = await page.locator('#battle-log').innerText();
+  const bloodLog = await page.locator('#battle-log').textContent();
   const bloodHits = [...bloodLog.matchAll(/Você atinge Totem de Sangue e causa (\d+) de dano efetivo\./g)].map(match => Number(match[1]));
   expect(bloodHits.length).toBeGreaterThan(0);
   const stored = Math.min(54, bloodHits.reduce((total, effective) => total + Math.floor(effective * 0.20), 0));
@@ -273,7 +273,7 @@ test('ação de cura não aciona retaliação nem danifica Totem da Essência', 
   await page.locator('.ritual-target-actions button').filter({ hasText: 'Totem da Essência' }).click();
   await hitSelectedTotem(page);
 
-  const beforeLog = await page.locator('#battle-log').innerText();
+  const beforeLog = await page.locator('#battle-log').textContent();
   const retaliationsBefore = (beforeLog.match(/RETALIAÇÃO DO SANGUE/g) || []).length;
   const hpBeforeHeal = currentHp(await page.locator('#hud-hp-text').innerText()).current;
   const essenceButton = page.locator('.ritual-target-actions button').filter({ hasText: 'Totem da Essência' });
@@ -286,7 +286,7 @@ test('ação de cura não aciona retaliação nem danifica Totem da Essência', 
   await expect(page.locator('#battle-log')).toContainText('recupera');
   const hpAfterHeal = currentHp(await page.locator('#hud-hp-text').innerText()).current;
   expect(hpAfterHeal).toBeGreaterThan(hpBeforeHeal);
-  const afterLog = await page.locator('#battle-log').innerText();
+  const afterLog = await page.locator('#battle-log').textContent();
   expect((afterLog.match(/RETALIAÇÃO DO SANGUE/g) || []).length).toBe(retaliationsBefore);
   const essenceAfter = Number(/(\d+)\/150 HP/.exec(await essenceButton.innerText())[1]);
   expect(essenceAfter).toBe(essenceBefore);
@@ -358,7 +358,7 @@ test('Gorthak percorre Comandante, Fúria de Guerra e Último Avanço sem estado
   await expect(page.locator('.status-card[role="status"] h3')).toContainText('GOLPE DEMOLIDOR');
   expect(currentHp(await page.locator('#arena-hp-player-text').innerText()).current).toBe(hpBeforeTelegraph);
   await gorthakAttack(page);
-  const commanderResolution = await page.locator('#battle-log').innerText();
+  const commanderResolution = await page.locator('#battle-log').textContent();
   expect(commanderResolution).toMatch(/GOLPE DEMOLIDOR! Warlord Gorthak causa \d+ de dano em você\.|Você esquiva do ataque de Warlord Gorthak/);
   await expect(page.locator('.arena-enemy-chip')).not.toContainText('PREPARANDO');
 
@@ -374,15 +374,15 @@ test('Gorthak percorre Comandante, Fúria de Guerra e Último Avanço sem estado
   expect(phaseTwoHp.ratio).toBeLessThanOrEqual(0.65);
   expect(phaseTwoHp.ratio).toBeGreaterThan(0.30);
   await page.locator('#game-screen').screenshot({ path: `${process.env.AUL_PW_ARTIFACTS}/gorthak-furia-de-guerra.png` });
-  const phaseTwoLog = await page.locator('#battle-log').innerText();
+  const phaseTwoLog = await page.locator('#battle-log').textContent();
   expect(phaseTwoLog.match(/FÚRIA DE GUERRA/g) || []).toHaveLength(1);
 
   // Fase II: o golpe pesado é anunciado no registro; o Demolidor também telegrapha
   // uma ação sem dano antes da resolução, como descrito pela implementação real.
-  let log = await page.locator('#battle-log').innerText();
+  let log = await page.locator('#battle-log').textContent();
   for (let turn = 0; !log.includes('GOLPE PESADO!') && turn < 4; turn++) {
     await gorthakAttack(page);
-    log = await page.locator('#battle-log').innerText();
+    log = await page.locator('#battle-log').textContent();
     if ((await page.locator('.arena-enemy-chip').innerText()).includes('ÚLTIMO AVANÇO')) break;
   }
   expect(log).toMatch(/GOLPE PESADO! Warlord Gorthak causa \d+ de dano em você\.|Você esquiva do ataque de Warlord Gorthak/);
@@ -393,10 +393,10 @@ test('Gorthak percorre Comandante, Fúria de Guerra e Último Avanço sem estado
     prepared = (await page.locator('.arena-enemy-chip').innerText()).includes('PREPARANDO');
     if ((await page.locator('.arena-enemy-chip').innerText()).includes('ÚLTIMO AVANÇO')) break;
   }
-  expect(prepared, await page.locator('#battle-log').innerText()).toBe(true);
+  expect(prepared, await page.locator('#battle-log').textContent()).toBe(true);
   expect(currentHp(await page.locator('#arena-hp-player-text').innerText()).current).toBe(hpBeforePhaseTwoTelegraph);
   await gorthakAttack(page);
-  log = await page.locator('#battle-log').innerText();
+  log = await page.locator('#battle-log').textContent();
   expect(log).toMatch(/GOLPE DEMOLIDOR! Warlord Gorthak causa \d+ de dano em você\.|Você esquiva do ataque de Warlord Gorthak/);
 
   phase = await page.locator('.arena-enemy-chip').innerText();
@@ -408,21 +408,21 @@ test('Gorthak percorre Comandante, Fúria de Guerra e Último Avanço sem estado
   const phaseThreeHp = await hpRatio(page);
   expect(phaseThreeHp.ratio).toBeLessThanOrEqual(0.30);
   await page.locator('#game-screen').screenshot({ path: `${process.env.AUL_PW_ARTIFACTS}/gorthak-ultimo-avanco.png` });
-  const finalLog = await page.locator('#battle-log').innerText();
+  const finalLog = await page.locator('#battle-log').textContent();
   expect(finalLog.match(/ÚLTIMO AVANÇO Ferido e encurralado/g) || []).toHaveLength(1);
   expect(finalLog.match(/FÚRIA DE GUERRA Gorthak abandona a disciplina/g) || []).toHaveLength(1);
   await expect(page.locator('.status-card[role="status"] h3')).toHaveCount(0);
   await expect(page.locator('.arena-enemy-chip')).not.toContainText('PREPARANDO');
 
   await gorthakAttack(page);
-  log = await page.locator('#battle-log').innerText();
+  log = await page.locator('#battle-log').textContent();
   expect(log).toMatch(/Último Avanço! Warlord Gorthak causa \d+ de dano em você\.|Você esquiva do ataque de Warlord Gorthak/);
   await assertNoClientErrors(errors);
 });
 
 test('reload durante Gorthak preserva apenas os recursos do checkpoint, sem restaurar combate', async ({ page }) => {
   const errors = [];
-  await startGorthak(page, errors, { level: 1, forca: 0, vitalidade: 100 });
+  await startGorthak(page, errors, { level: 21, forca: 0, vitalidade: 100 });
   await gorthakAttack(page);
   const checkpointDuringFight = await page.evaluate(() => JSON.parse(localStorage.getItem('a-ultima-lua.checkpoint')));
   expect(checkpointDuringFight.schemaVersion).toBe(5);
@@ -493,4 +493,54 @@ test('vitória pendente de Gorthak sobrevive ao reload e confirma recompensas um
   expect(afterSecondReload.player.coins).toBe(rewardedCoins);
   expect(afterSecondReload).not.toHaveProperty('pendingVictory');
   await assertNoClientErrors(errors);
+});
+
+
+test('Xamã V2: orientação, corpo inteiro e pé ancorado antes/depois do despertar em larguras mobile e desktop', async ({ page }) => {
+  const errors=[];
+  await page.addInitScript(()=>{window.__shamanReactions=[];document.addEventListener('DOMContentLoaded',()=>new MutationObserver(records=>{for(const r of records)if(r.target.id==='portrait-enemy'&&r.target.dataset.reaction)window.__shamanReactions.push(r.target.dataset.reaction);}).observe(document.body,{subtree:true,attributes:true,attributeFilter:['data-reaction']}));});
+  await startShaman(page,errors,{level:100,forca:10000,vitalidade:10000});
+  await expect(page.locator('#portrait-enemy')).not.toHaveClass(/shaman-reaction-surface/);
+  await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src',/orc_xama_transe\.png/);
+  await page.locator('#game-screen').screenshot({path:process.env.AUL_PW_ARTIFACTS+'/orc-xama-v2-antes-despertar-390.png'});
+  await destroySelectedTotem(page,'Totem de Sangue');
+  await destroySelectedTotem(page,'Totem da Essência');
+  await expect(page.locator('.ritual-target-actions')).toHaveCount(0);
+  await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src',/orc_xama_combat\.png/);
+  await expect(page.locator('#portrait-enemy')).toHaveClass(/shaman-reaction-surface/);
+  await page.waitForFunction(()=>{const i=document.querySelector('#portrait-enemy img');return i?.complete&&i.naturalWidth===1024&&i.naturalHeight===1536;});
+  for(const width of [320,375,390,1366]){
+    await page.setViewportSize({width,height:width>1000?768:844});
+    const frame=await page.locator('.arena-actor[data-actor="orc_xama"]').evaluate(actor=>{const stage=actor.closest('.arena-stage').getBoundingClientRect(),r=actor.getBoundingClientRect(),img=actor.querySelector('img'),style=getComputedStyle(img),matrix=new DOMMatrix(style.transform);return{width:innerWidth,naturalWidth:img.naturalWidth,naturalHeight:img.naturalHeight,fit:style.objectFit,position:style.objectPosition,scaleX:matrix.a,scaleY:matrix.d,boxWidthRatio:r.width/stage.width,boxHeightRatio:r.height/stage.height,centerError:r.x+r.width/2-stage.x-stage.width*.72,groundError:r.bottom-stage.bottom,overflow:document.documentElement.scrollWidth-innerWidth};});
+    expect(frame.naturalWidth).toBe(1024);expect(frame.naturalHeight).toBe(1536);expect(frame.fit).toBe('contain');expect(frame.position).toBe('50% 100%');expect(frame.scaleX).toBe(-1);expect(frame.scaleY).toBe(1);expect(frame.boxWidthRatio).toBeCloseTo(.44,3);expect(frame.boxHeightRatio).toBeCloseTo(.70,3);expect(Math.abs(frame.centerError)).toBeLessThan(1);expect(Math.abs(frame.groundError)).toBeLessThan(1);expect(frame.overflow).toBeLessThanOrEqual(1);
+    await page.locator('#game-screen').screenshot({path:process.env.AUL_PW_ARTIFACTS+'/orc-xama-v2-desperto-'+width+'.png'});
+  }
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.evaluate(()=>EnemyCombatVisual.hit(ui.monster,true));
+  expect(await page.locator('#portrait-enemy').getAttribute('data-reaction-static')).toBe('true');
+  expect(await page.locator('#portrait-enemy').evaluate(e=>e.getAnimations().length)).toBe(0);
+  expect(errors).toEqual([]);
+});
+
+test('Xamã V2: ataques reais acionam dano e crítico após o despertar, sem resíduos ao sair',async({page})=>{
+  test.setTimeout(120000);const errors=[];
+  await page.addInitScript(()=>{window.__shamanReactions=[];document.addEventListener('DOMContentLoaded',()=>new MutationObserver(records=>{for(const r of records)if(r.target.id==='portrait-enemy'&&r.target.dataset.reaction)window.__shamanReactions.push(r.target.dataset.reaction);}).observe(document.body,{subtree:true,attributes:true,attributeFilter:['data-reaction']}));});
+  await startShaman(page,errors,{level:3,forca:10,vitalidade:10000});
+  await destroySelectedTotem(page,'Totem de Sangue');await destroySelectedTotem(page,'Totem da Essência');
+  await expect(page.locator('.shaman-reaction-surface')).toBeVisible();
+  for(let n=0;n<60;n++){
+    await attackButton(page).then(b=>b.click());
+    await page.waitForFunction(()=>{const b=[...document.querySelectorAll('.battle-actions button.action-btn')].find(x=>x.textContent.trim()==='Atacar');return !b||!b.disabled||document.querySelector('.notif-card.interactive-card');},null,{timeout:10000});
+    const seen=await page.evaluate(()=>window.__shamanReactions||[]);
+    if(seen.includes('damage')&&seen.includes('critical'))break;
+    if(await page.locator('.battle-arena').count()===0)break;
+  }
+  const seen=await page.evaluate(()=>window.__shamanReactions||[]);expect(seen).toContain('damage');expect(seen).toContain('critical');
+  await expect(page.locator('#portrait-enemy')).not.toHaveAttribute('data-reaction',/./);
+  expect(await page.locator('#portrait-enemy').evaluate(e=>getComputedStyle(e).transform)).toBe('none');
+  await page.evaluate(()=>{EnemyCombatVisual.hit(ui.monster,true);window.__oldShaman=document.getElementById('portrait-enemy');});
+  await page.locator('.tab-btn[data-tab="mapa"]').click();
+  expect(await page.evaluate(()=>window.__oldShaman.getAnimations().length)).toBe(0);
+  await expect(page.locator('.shaman-impact-glow')).toHaveCount(0);
+  expect(errors).toEqual([]);
 });

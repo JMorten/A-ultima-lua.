@@ -35,6 +35,36 @@ const QADebug=(()=>{
   }
   function encounters(index){const map=MAPS[index];if(!map)return [];return [...map.monsters.map(template=>({template,isBoss:false,label:'Criatura'})),...(map.miniBoss?[{template:map.miniBoss,isBoss:false,label:'Miniboss'}]:[]),...(map.boss?[{template:map.boss,isBoss:true,label:'Boss'}]:[])];}
   function battle(mapIndex,entryIndex){requireIdle();if(!player||player.hp<=0)throw Error('Crie um personagem e restaure HP.');const entry=encounters(mapIndex)[entryIndex];if(!entry)throw Error('Encontro inválido.');startBattle(mapIndex,entry.template,entry.isBoss);}
+  function romar(stage){
+    requireIdle();if(!player||player.hp<=0)throw Error('Crie um personagem e restaure HP.');
+    player.defeatedBosses=player.defeatedBosses||[];
+    if(!player.defeatedBosses.includes(0))player.defeatedBosses.push(0);
+    delete player.romar_first_choice;
+    if(player.romarDiscoveries)delete player.romarDiscoveries.pending;
+    ui.romarResult=null;
+    if(!startRomarEncounter())throw Error('Não foi possível abrir o encontro do Romar.');
+    const monster=ui.monster;
+    if(stage>1){
+      monster.romarStage=stage;
+      monster.hp=Math.ceil(monster.hpMax*(stage===2?0.60:0.30));
+      monster.portrait=stage===2?'assets/images/enemies/forest/romar_v2_estagio2.png':'assets/images/enemies/forest/romar_v2_estagio3.png';
+      if(stage===3)monster.romarPrepared='rupture';
+      render();
+    }
+    return 'Romar no estágio '+stage+' — '+monster.hp+'/'+monster.hpMax+' HP.';
+  }
+  function matilha(){
+    requireIdle();if(!player||player.hp<=0)throw Error('Crie um personagem e restaure HP.');
+    const index=encounters(0).findIndex(entry=>entry.template.id==='alfa_matilha');
+    if(index<0)throw Error('Alfa da Matilha indisponível.');
+    battle(0,index);
+    const monster=ui.monster;
+    monster.aiTurns=Math.max(1,monster.aiTurns);
+    monster.packWolfActive=true;
+    monster.packWolfHp=monster.packWolfHpMax;
+    render();
+    return 'Alfa na fase '+monster.bossPhase+' com lobo '+monster.packWolfHp+'/'+monster.packWolfHpMax+' HP.';
+  }
   const panel=document.createElement('section');panel.id='qa-panel';
   panel.innerHTML=`<strong>MODO QA — PROGRESSÃO NÃO É VÁLIDA</strong><details><summary>Debug V1 — abrir controles</summary>
     <p>Laboratório descartável. Alterações somente fora de combates e cenas. Limites técnicos: nível 1–100; investimentos/pontos 0–10000.</p>
@@ -42,7 +72,7 @@ const QADebug=(()=>{
     <div id="qa-confirm" hidden><p>Descartar o personagem e todo o progresso deste laboratório? Esta operação não pode ser desfeita.</p><button id="qa-confirm-new">CONFIRMAR NOVO PERSONAGEM QA</button><button id="qa-cancel">CANCELAR</button></div>
     <fieldset><legend>Personagem — controles independentes</legend><p id="qa-player-notice" role="status"></p><div class="qa-grid">${['level','statPoints',...stats].map(key=>`<label>${({level:'Nível',statPoints:'Pontos disponíveis',forca:'FOR',agilidade:'AGI',magia:'MAG investida',espirito:'ESP',vitalidade:'VIT',defesa:'DEF'})[key]}<input id="qa-${key}" type="number" inputmode="numeric" min="${key==='level'?1:0}" max="${key==='level'?100:10000}" step="1"></label>`).join('')}</div><button id="qa-apply">APLICAR NÍVEL, ATRIBUTOS E PONTOS</button><p id="qa-apply-message" role="status" aria-live="polite" aria-atomic="true" tabindex="-1"></p><button id="qa-read">LER VALORES ATUAIS</button><button id="qa-restore">RESTAURAR HP / MP</button></fieldset>
     <fieldset><legend>Marcos de MAG</legend><p>Presets alteram somente MAG investida e limpam Domínio/Sobrecarga. Não alteram pontos disponíveis.</p><div class="qa-presets">${[24,25,49,50,74,75,99,100].map(n=>`<button id="qa-mag-${n}">${n}</button>`).join('')}</div><button id="qa-magic-reset">LIMPAR DOMÍNIO E SOBRECARGA</button><button id="qa-domain-destruidor">DOMÍNIO: ARCANO DESTRUIDOR</button><button id="qa-domain-proibido">DOMÍNIO: ARCANO PROIBIDO</button></fieldset>
-    <fieldset><legend>Batalha real — acesso sem requisitos territoriais</legend><label>Território<select id="qa-map"></select></label><label>Inimigo<select id="qa-enemy"></select></label><button id="qa-battle">INICIAR BATALHA</button></fieldset><p id="qa-state"></p><p id="qa-message" role="status" aria-live="polite"></p></details>`;
+    <fieldset><legend>Batalha real — acesso sem requisitos territoriais</legend><label>Território<select id="qa-map"></select></label><label>Inimigo<select id="qa-enemy"></select></label><button id="qa-battle">INICIAR BATALHA</button><button id="qa-matilha">ALFA · COM LOBO DA MATILHA</button><p>O botão da matilha abre o Alfa na fase 0 já com o lobo invocado, para ver o ator e a barra de HP sem esperar a invocação.</p></fieldset><fieldset><legend>Romar — encontro especial (QA)</legend><p>O Romar não entra na lista de inimigos porque o encontro é especial. Estes botões abrem cada estágio sem exigir Alfa derrotado nem descobertas.</p><button id="qa-romar-1">ROMAR · ESTÁGIO 1</button><button id="qa-romar-2">ROMAR · ESTÁGIO 2</button><button id="qa-romar-3">ROMAR · ESTÁGIO 3</button></fieldset><p id="qa-state"></p><p id="qa-message" role="status" aria-live="polite"></p></details>`;
   document.body.prepend(panel);
   const el=id=>document.getElementById('qa-'+id);
   function options(id,entries){el(id).replaceChildren(...entries.map(([value,text])=>{const option=document.createElement('option');option.value=value;option.textContent=text;return option;}));}
@@ -64,6 +94,8 @@ const QADebug=(()=>{
   for(const n of [24,25,49,50,74,75,99,100])bind('mag-'+n,()=>preset(n));
   bind('magic-reset',resetMagic);for(const name of ['destruidor','proibido'])bind('domain-'+name,()=>domain(name));
   bind('battle',()=>battle(Number(el('map').value),Number(el('enemy').value)));
+  bind('matilha',matilha);
+  for(const stage of [1,2,3])bind('romar-'+stage,()=>romar(stage));
   read();update();setInterval(update,500); // Observation only; never saves or consumes RNG.
-  return {apply,preset,domain,resetMagic,restore,requestNew,cancelNew,confirmNew,encounters,battle,idle};
+  return {apply,preset,domain,resetMagic,restore,requestNew,cancelNew,confirmNew,encounters,battle,romar,matilha,idle};
 })();

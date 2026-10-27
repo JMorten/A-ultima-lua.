@@ -167,7 +167,7 @@ test('reported 34→27 HP / 6 MP survives an actual enemy attack and reload',()=
  assert.equal(r.run('player.forestProgress.commonKills'),0);
 });
 test('skill MP, potion use and healing persist before the asynchronous enemy response',()=>{
- const e=boot();e.run('chooseClass("mago");player.level=3;recomputeStats();player.hp=10;player.mp=40;requestCheckpoint();startBattle(0,MAPS[0].monsters[0],false);usarSkill("toque_sombrio")');
+ const e=boot();e.run('chooseClass("mago");player.level=3;player.totalXp=totalXpForLevel(3);recomputeStats();player.hp=10;player.mp=40;requestCheckpoint();startBattle(0,MAPS[0].monsters[0],false);usarSkill("toque_sombrio")');
  let r=resumed(e);assert.equal(r.run('player.mp'),30);assert.equal(r.run('player.hp'),e.run('player.hp'));
  e.tick();r=resumed(e);assert.equal(r.run('player.hp'),e.run('player.hp'));
  e.tick();e.run('usarConsumivelBatalha("hp")');
@@ -876,10 +876,10 @@ test('Natural portrait layout is opt-in, survives Scout art changes and never ch
   scoutResponse(e);
  }
  assert.equal(e.run('JSON.stringify(MAPS)'),template);
- e.run('fleeBattle();startBattle(2,MAPS[2].monsters[1],false)');assert.ok(!enemy().includes('portrait-natural'));
+ e.run('fleeBattle();startBattle(2,MAPS[2].monsters[3],false)');assert.ok(!enemy().includes('portrait-natural'));
  e.run('ui.monster.portraitLayout="natural"');assert.match(enemy(),/portrait-natural/);
  e.run('delete ui.monster.portraitLayout');assert.ok(!enemy().includes('portrait-natural'));
- assert.equal(e.run('MAPS.flatMap(map=>[...map.monsters,map.boss,map.miniBoss]).filter(m=>m && m.portraitLayout).length'),3);
+ assert.equal(e.run('MAPS.flatMap(map=>[...map.monsters,map.boss,map.miniBoss]).filter(m=>m && m.portraitLayout).length'),9);
  const css=fs.readFileSync(path.join(root,'styles/game.css'),'utf8');
  assert.match(css,/\.portrait-ring\.portrait-natural\{height:auto;max-width:100%;\}/);
  assert.match(css,/\.portrait-ring\.portrait-natural > \.avatar-img-circle\{display:block;width:100%;height:auto;\}/);
@@ -891,7 +891,7 @@ test('Arena foundation separates stage actors, effects, HUD and states with lega
  assert.equal((html.match(/class="arena-actor actor-/g)||[]).length,2);
  assert.match(html,/arena-actor actor-player art-legacy/);assert.match(html,/arena-actor actor-enemy art-natural/);
  assert.match(html,/id="portrait-enemy">[\s\S]*?<\/div>\s*<div class="combatant-effects" id="effects-enemy"/);
- e.run('fleeBattle();startBattle(2,MAPS[2].monsters[1],false)');html=e.run('renderBatalhaTab()');
+ e.run('fleeBattle();startBattle(2,MAPS[2].monsters[3],false)');html=e.run('renderBatalhaTab()');
  assert.equal((html.match(/arena-actor actor-(?:player|enemy) art-legacy/g)||[]).length,2);assert.ok(!html.includes('art-natural'));
 });
 
@@ -942,7 +942,7 @@ test('Arena V2.4 Mage and Scout natural art keeps stable HUD, mechanics and intr
 });
 
 test('Arena V2.4 assets have approved formats and dimensions; stage and effects remain independent of HUD',()=>{
- for(const [file,w,h] of [['characters/combat/mago.png',1323,1189],['enemies/trenches/orc_batedor_combat.png',1427,1102],['enemies/trenches/warlord_gorthak_combat.png',1088,1445],['backgrounds/trincheiras_orc_arena.png',762,1024]]){
+ for(const [file,w,h] of [['characters/combat/mago.png',1323,1189],['enemies/trenches/orc_capitao_combat_v2.png',1145,1337],['enemies/trenches/orc_acougueiro_combat_v2.png',1312,1199],['enemies/trenches/orc_batedor_combat.png',1427,1102],['enemies/trenches/warlord_gorthak_combat.png',1088,1445],['backgrounds/trincheiras_orc_arena.png',762,1024]]){
   const b=fs.readFileSync(path.join(root,'assets/images',file));assert.equal(b.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(b.readUInt32BE(16),w);assert.equal(b.readUInt32BE(20),h);
  }
  const css=fs.readFileSync(path.join(root,'styles/game.css'),'utf8');
@@ -1154,4 +1154,124 @@ test('Ritual persistence: lethal retaliation saves zero before defeat; ordinary 
  v.run('var awarded=player.totalXp;confirmPendingVictory();confirmPendingVictory()');
  assert.equal(v.run('player.totalXp'),v.run('awarded'));
  assert.equal(v.run('getTrenchesProgress().commonKills'),1);
+});
+
+
+test('attribute budget: consecutive multi-level deaths and recovery never duplicate points',()=>{
+ const e=fresh();e.run('player.totalXp=totalXpForLevel(15);recomputeLevelFromXp();recomputeStats();ui.pendingAlloc.forca=25;ui.pendingAlloc.vitalidade=35;confirmAlloc();requestCheckpoint()');
+ for(let n=0;n<6;n++){
+  const before=e.run('player.statPoints+Object.values(player.allocated).reduce((a,b)=>a+b,0)');
+  e.run('startBattle(1,MAPS[1].monsters[0],false);handleDefeat()');
+  assert.equal(e.run('player.statPoints+Object.values(player.allocated).reduce((a,b)=>a+b,0)'),e.run('(player.level-1)*5'));
+  assert.ok(e.run('player.level')<15);assert.ok(e.run('player.statPoints')>=0);
+  assert.ok(before>=e.run('(player.level-1)*5'));e.close();
+  const loaded=boot(e.storage);loaded.run('continueSavedGame()');
+  assert.equal(loaded.run('JSON.stringify(player.allocated)'),e.run('JSON.stringify(player.allocated)'));
+  e.run('player.totalXp=totalXpForLevel(15);recomputeLevelFromXp();recomputeStats();requestCheckpoint()');
+  assert.equal(e.run('player.statPoints+Object.values(player.allocated).reduce((a,b)=>a+b,0)'),70);
+ }
+});
+test('attribute budget removes free points first, then proportional investments deterministically',()=>{
+ const e=fresh();e.run('player.level=3;player.statPoints=10;player.allocated.forca=8;player.allocated.vitalidade=2');
+ assert.equal(e.run('reconcileAttributeBudget(player).removed'),10);
+ assert.equal(e.run('player.allocated.forca'),8);assert.equal(e.run('player.statPoints'),0);
+ e.run('player.level=2;reconcileAttributeBudget(player)');
+ assert.equal(e.run('player.allocated.forca'),4);assert.equal(e.run('player.allocated.vitalidade'),1);
+ assert.equal(e.run('reconcileAttributeBudget(player).removed'),0);
+});
+test('legacy excess: exact backup, no reset, inventory preserved and idempotent reload',()=>{
+ const e=fresh();e.run('player.level=5;player.totalXp=totalXpForLevel(5);player.statPoints=10;player.allocated.forca=20;player.allocated.vitalidade=20;player.coins=777;requestCheckpoint()');
+ const raw=e.storage.get('a-ultima-lua.checkpoint');const loaded=boot(e.storage);
+ assert.equal(e.storage.get('a-ultima-lua.checkpoint'),raw);assert.equal(loaded.run('continueSavedGame()'),true);
+ assert.equal(e.storage.get('a-ultima-lua.checkpoint.before-attribute-reconciliation-v1'),raw);
+ assert.equal(loaded.run('player.allocated.forca'),10);assert.equal(loaded.run('player.allocated.vitalidade'),10);
+ assert.equal(loaded.run('player.statPoints'),0);assert.equal(loaded.run('player.coins'),777);
+ const once=e.storage.get('a-ultima-lua.checkpoint');const again=boot(e.storage);again.run('continueSavedGame()');
+ assert.equal(e.storage.get('a-ultima-lua.checkpoint'),once);assert.equal(e.storage.get('a-ultima-lua.checkpoint.before-attribute-reconciliation-v1'),raw);
+});
+test('legacy backup quota failure blocks reconciliation without touching original bytes',()=>{
+ const e=fresh();e.run('player.allocated.forca=50;requestCheckpoint()');const raw=e.storage.get('a-ultima-lua.checkpoint');
+ const loaded=boot(e.storage);loaded.run('localStorage.setItem=()=>{throw Error("quota")};');
+ assert.equal(loaded.run('continueSavedGame()'),false);assert.equal(loaded.run('player'),null);
+ assert.equal(e.storage.get('a-ultima-lua.checkpoint'),raw);
+});
+test('legitimate old save is not reconciled or backed up unnecessarily',()=>{
+ const e=fresh();e.run('player.totalXp=totalXpForLevel(8);recomputeLevelFromXp();ui.pendingAlloc.espirito=20;confirmAlloc();requestCheckpoint()');
+ const old=e.run('JSON.stringify(readCheckpoint().player)');const loaded=boot(e.storage);loaded.run('continueSavedGame()');
+ assert.equal(loaded.run('JSON.stringify(player)'),old);assert.equal(e.storage.has('a-ultima-lua.checkpoint.before-attribute-reconciliation-v1'),false);
+});
+test('level loss updates gear eligibility, resources, magic milestones and locked skills',()=>{
+ const e=boot();e.run('chooseClass("mago");player.totalXp=totalXpForLevel(25);recomputeLevelFromXp();player.statPoints=0;player.allocated.magia=100;player.allocated.espirito=20;player.magDomain="destruidor";player.overchargeNext=true;player.equipment.weapon={uid:"it900",name:"Cajado",slot:"weapon",levelReq:25,magia:5};recomputeStats();player.hp=player.hpMax;player.mp=player.mpMax;ui.skillCooldowns={toque_sombrio:2};player.totalXp=0;recomputeLevelFromXp()');
+ assert.equal(e.run('player.equipment.weapon'),null);assert.equal(e.run('player.inventory.filter(i=>i.uid==="it900").length'),1);
+ assert.equal(e.run('player.magDomain'),null);assert.equal(e.run('player.overchargeNext'),false);
+ assert.equal(e.run('hasMagMilestone(25)'),false);assert.equal(e.run('ui.skillCooldowns.toque_sombrio'),undefined);
+ assert.equal(e.run('player.mp<=player.mpMax && player.hp<=player.hpMax'),true);
+});
+test('victory and defeat wait for confirmation then return to map; pending victory survives reload',()=>{
+ const e=fresh();e.run('startBattle(0,MAPS[0].monsters[0],false);handleVictory(ui.monster)');
+ assert.equal(e.run('ui.tab'),'batalha');const loaded=boot(e.storage);loaded.run('continueSavedGame()');const coins=loaded.run('player.coins');
+ loaded.close();assert.equal(loaded.run('ui.tab'),'mapa');assert.equal(loaded.run('player.coins'),coins);assert.equal(loaded.run('ui.pendingVictory'),null);
+ e.close();e.run('startBattle(1,MAPS[1].monsters[0],false);handleDefeat()');assert.equal(e.run('ui.tab'),'batalha');e.close();assert.equal(e.run('ui.tab'),'mapa');
+ e.run('startBattle(1,MAPS[1].monsters[0],false);fleeBattle()');assert.equal(e.run('ui.tab'),'mapa');
+});
+test('first Romar clue interrupts next common battle, persists pending scene, and does not repeat',()=>{
+ const e=fresh();e.run('player.defeatedBosses=[0];requestCheckpoint();startBattle(0,MAPS[0].monsters[0],false)');
+ assert.equal(e.run('ui.inBattle'),false);assert.equal(e.run('getRomarDiscoveries().pending'),'massacre');
+ assert.equal(e.run('readCheckpoint().firstRomarBattle.enemyId'),e.run('MAPS[0].monsters[0].id'));
+ const loaded=boot(e.storage);loaded.run('continueSavedGame()');assert.equal(loaded.run('getRomarDiscoveries().pending'),'massacre');
+ loaded.run('finishRomarDiscovery()');assert.equal(loaded.run('ui.inBattle'),true);assert.equal(loaded.run('getRomarDiscoveries().seen.length'),1);
+ const again=boot(e.storage);again.run('continueSavedGame();startBattle(0,MAPS[0].monsters[0],false)');assert.equal(again.run('ui.inBattle'),true);assert.equal(again.run('getRomarDiscoveries().pending'),null);
+});
+test('first Romar clue ignores other maps/bosses; storage failure keeps old save and retries safely',()=>{
+ const e=fresh();e.run('player.defeatedBosses=[0];requestCheckpoint();startBattle(1,MAPS[1].monsters[0],false)');assert.equal(e.run('ui.inBattle'),true);
+ e.run('fleeBattle();startBattle(0,MAPS[0].boss,true)');assert.equal(e.run('ui.inBattle'),true);e.run('fleeBattle()');
+ const raw=e.storage.get('a-ultima-lua.checkpoint');e.run('localStorage.setItem=()=>{throw Error("quota")};startBattle(0,MAPS[0].monsters[0],false)');
+ assert.equal(e.run('ui.inBattle'),false);assert.equal(e.run('getRomarDiscoveries().seen.length'),0);assert.equal(e.storage.get('a-ultima-lua.checkpoint'),raw);
+});
+test('tonic combat drop boundaries and event multiplier; special corpse source unchanged',()=>{
+ for(const [template,chance] of [['MAPS[0].monsters[0]',.006],['MAPS[0].miniBoss',.016],['MAPS[0].boss',.024]])for(const mult of [1,2])for(const success of [false,true]){
+  const e=fresh();e.run('isXpEventActive=()=>'+(mult===2)+';startBattle(0,'+template+','+(template.endsWith('boss'))+');var rolls=[.99,.99,.99,'+((mult===2&&template!=='MAPS[0].monsters[0]')?'.99,':'')+(chance*mult+(success?-.000001:0))+'];Math.random=()=>rolls.length?rolls.shift():.99;generateItem=()=>({uid:"it900",name:"Test",slot:"weapon",rarity:"épico",atk:1});handleVictory(ui.monster)');
+  assert.equal(e.run('player.consumables.xpbuff'),success?1:0,template+' '+mult+' '+success);
+ }
+ const e=fresh();e.run('pendingForestEvent={id:"corpse"};Math.random=()=>.99;resolveForestEvent(true)');assert.equal(e.run('player.consumables.xpbuff'),1);
+});
+
+test('distinct legacy saves each retain an untouched backup without overwriting previous copies',()=>{
+ const e=fresh();e.run('player.allocated.forca=90;requestCheckpoint()');const first=e.storage.get('a-ultima-lua.checkpoint');
+ const a=boot(e.storage);a.run('continueSavedGame()');a.run('player.allocated.magia=80;requestCheckpoint()');const second=e.storage.get('a-ultima-lua.checkpoint');
+ const b=boot(e.storage);b.run('continueSavedGame()');
+ assert.equal(e.storage.get('a-ultima-lua.checkpoint.before-attribute-reconciliation-v1'),first);
+ assert.equal(e.storage.get('a-ultima-lua.checkpoint.before-attribute-reconciliation-v1.1'),second);
+ assert.equal(b.run('player.allocated.magia+player.allocated.forca'),0);
+});
+test('consecutive deaths across several levels keep exact attribute budget and reload is idempotent',()=>{
+ let e=fresh();e.run('player.totalXp=totalXpForLevel(25);recomputeLevelFromXp();player.allocated.forca=80;player.allocated.vitalidade=40;player.statPoints=0;requestCheckpoint()');
+ for(let n=0;n<5;n++){
+  const oldLevel=e.run('player.level');e.run('startBattle(1,MAPS[1].monsters[0],false);handleDefeat()');
+  assert.ok(e.run('player.level')<oldLevel);assert.equal(e.run('ATTRIBUTE_KEYS.reduce((n,k)=>n+player.allocated[k],player.statPoints)'),e.run('(player.level-1)*5'));
+  e.close();const before=e.run('JSON.stringify(player.allocated)');e=boot(e.storage);e.run('continueSavedGame()');assert.equal(e.run('JSON.stringify(player.allocated)'),before);
+ }
+});
+
+test('real victory level grants after repeated loss remain within budget through pending victory reload',()=>{
+ const e=fresh();e.run('player.totalXp=totalXpForLevel(3);recomputeLevelFromXp();player.allocated.forca=10;player.statPoints=0;requestCheckpoint()');
+ for(let n=0;n<3;n++){
+  e.run('startBattle(1,MAPS[1].monsters[0],false);handleDefeat()');e.close();
+  // Use the real reward path and enough unmodified common encounters to regain level 3.
+  for(let i=0;e.run('player.level')<3 && i<40;i++){
+   e.run('startBattle(0,MAPS[0].monsters[0],false);handleVictory(ui.monster)');e.close();
+  }
+  assert.equal(e.run('player.level'),3);assert.equal(e.run('ATTRIBUTE_KEYS.reduce((n,k)=>n+player.allocated[k],player.statPoints)'),10);
+  const r=boot(e.storage);r.run('continueSavedGame()');assert.equal(r.run('ATTRIBUTE_KEYS.reduce((n,k)=>n+player.allocated[k],player.statPoints)'),10);
+ }
+});
+test('reconciliation accepts supported legacy schemas and preserves pending victory exactly once',()=>{
+ for(let schema=0;schema<=5;schema++){
+  const e=fresh();e.run('player.totalXp=totalXpForLevel(4);recomputeLevelFromXp();startBattle(0,MAPS[0].monsters[0],false);handleVictory(ui.monster)');
+  const raw=JSON.parse(e.storage.get('a-ultima-lua.checkpoint'));raw.schemaVersion=schema;raw.player.allocated.forca=80;
+  e.storage.set('a-ultima-lua.checkpoint',JSON.stringify(raw));const r=boot(e.storage);assert.equal(r.run('continueSavedGame()'),true);
+  assert.ok(r.run('ui.pendingVictory'));const coins=r.run('player.coins');r.close();
+  assert.equal(r.run('player.coins'),coins);assert.equal(r.run('ATTRIBUTE_KEYS.reduce((n,k)=>n+player.allocated[k],player.statPoints)'),15);
+  assert.equal(r.run('readCheckpoint().pendingVictory'),undefined);assert.ok(e.storage.get('a-ultima-lua.checkpoint.before-attribute-reconciliation-v1'));
+ }
 });
