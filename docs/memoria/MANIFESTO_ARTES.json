@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "snapshot": "2026-10-26 (Romar V2)",
+  "snapshot": "2026-10-27 (Lobo da Matilha V2)",
   "escopo": "Artes de combate e cenários diretamente relevantes às Trincheiras aprovadas e à Floresta Uivante V2 em andamento. Não é inventário de todas as imagens do jogo.",
   "regras": [
     "A presença de um arquivo não implica aprovação.",
@@ -40,7 +40,8 @@
       "ART-FLORESTA-UIVANTE-SOMBRAS-V2-FONTE",
       "ART-ROMAR-V2-FONTE-1",
       "ART-ROMAR-V2-FONTE-2",
-      "ART-ROMAR-V2-FONTE-3"
+      "ART-ROMAR-V2-FONTE-3",
+      "ART-FLORESTA-MATILHA-V2-FONTE"
     ],
     "laboratorio_ignorado_pelo_git": [
       "ART-LOBO-COMUM-V2-RECORTE"
@@ -53,7 +54,9 @@
       "ART-FLORESTA-UIVANTE-SOMBRAS-V2",
       "ART-FLORESTA-ROMAR-V2-1",
       "ART-FLORESTA-ROMAR-V2-2",
-      "ART-FLORESTA-ROMAR-V2-3"
+      "ART-FLORESTA-ROMAR-V2-3",
+      "ART-FLORESTA-MATILHA-V2-FONTE",
+      "ART-FLORESTA-MATILHA-V2"
     ]
   },
   "classificacao_aprovacao": {
@@ -83,7 +86,9 @@
       "ART-T3-ACOUGUEIRO",
       "ART-T3-XAMA-TRANSE",
       "ART-T3-XAMA-DESPERTO",
-      "ART-T3-GORTHAK"
+      "ART-T3-GORTHAK",
+      "ART-FLORESTA-MATILHA-V2-FONTE",
+      "ART-FLORESTA-MATILHA-V2"
     ],
     "preservacao_explicita_sem_nova_aprovacao_artistica": [
       "ART-MAGO-COMBATE-ORIGINAL",
@@ -107,14 +112,7 @@
     "em_uso_sem_aprovacao_v2_documentada": [],
     "em_uso_sem_avaliacao_documentada": []
   },
-  "entidades_sem_arte": [
-    {
-      "referencia": "packWolf*",
-      "nome": "Lobo da Matilha",
-      "natureza": "invocação do Alfa da Matilha; campos packWolf*; sem ID próprio e sem arte",
-      "evidencia": "src/game.js:2029-2053, 2957"
-    }
-  ],
+  "entidades_sem_arte": [],
   "artes": [
     {
       "id": "ART-MAGO-COMBATE-ORIGINAL",
@@ -483,6 +481,35 @@
       "origem": "recorte RGBA derivado da fonte aprovada; somente o canal alfa foi normalizado",
       "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit cbc50b62f4530d11bfb8c1f4877c6c5b8fadf121; deployment c5618de6-77a3-42d0-9227-af87129c3eb1 (não presente na branch documental)",
       "evidencia": "DEC-2026-10-26-FLO-018; commit cbc50b6; deployment c5618de6; 192/192 Node e 77/77 Chromium; evidencias/romar-v2/"
+    },
+    {
+      "id": "ART-FLORESTA-MATILHA-V2-FONTE",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "pack_wolf_subordinate_cutout.png",
+      "sha256": "73E7E3191A7E389A91341090C20DFAF8D1DC87B720DDBEF6FD43016BCDD79A43",
+      "dimensoes": { "largura": 1920, "altura": 1280 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 255 },
+      "versao": "V2_fonte",
+      "estado_aprovacao": "aparencia_aprovada_recorte_executado",
+      "origem": "arquivo fornecido para a Floresta V2; nao rastreado no checkout; recorte original com franja magenta nas bordas",
+      "evidencia": "DEC-2026-10-27-FLO-019"
+    },
+    {
+      "id": "ART-FLORESTA-MATILHA-V2",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "assets/images/enemies/forest/lobo_matilha_combat_v2.png",
+      "sha256": "A767B072A0ABC72BF3068F693EFDBF59F74B3A9A85C628C21E73A3C956502F8B",
+      "dimensoes": { "largura": 1000, "altura": 758 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 255 },
+      "versao": "V2_integracao_commitada",
+      "estado_aprovacao": "aprovado_qa_publicado",
+      "origem": "recorte RGBA derivado da fonte aprovada; franja magenta removida por despill, pixels transparentes zerados e recorte com margem de 6 px",
+      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit a841181; deployment 34b8ee1a-0ac7-4427-9271-ea64c640117c (nao presente na branch documental)",
+      "evidencia": "DEC-2026-10-27-FLO-019; commit a841181; deployment 34b8ee1a; 194/194 Node e 80/80 Chromium; QA publico com invocacao real em 320/375/390; evidencias/matilha-v2/"
     },
     {
       "id": "ART-FLORESTA-ROMAR-ESTAGIO-1",

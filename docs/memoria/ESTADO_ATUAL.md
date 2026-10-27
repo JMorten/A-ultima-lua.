@@ -1,6 +1,6 @@
 # Estado atual
 
-**Snapshot documental:** 2026-10-26 (Romar V2 — escala final e QA).
+**Snapshot documental:** 2026-10-27 (Lobo da Matilha V2 — ator próprio e QA).
 **Checkout documental:** `D:\Projetos\A-ultima-lua`.
 **Branch:** `docs/palacio-memoria-v1`, base `0c3acc41295a5f3f26c096b4d5fe8a1156f52e5a`. Este documento descreve o estado do worktree; o commit documental desta atualização será o seguinte a essa base.
 **Natureza:** este arquivo descreve estado. Decisões e aprovações ficam em [DECISOES_APROVADAS.md](DECISOES_APROVADAS.md).
@@ -11,20 +11,20 @@
 - **Snapshots anteriores** preserva o texto de inspeções antigas, mesmo quando superado; nada ali descreve o presente.
 - Nome de arquivo, relatório, commit ou deploy não prova, sozinho, aprovação artística ou de game design.
 
-## Linhas de desenvolvimento (inspeção de 2026-10-26)
+## Linhas de desenvolvimento (inspeção de 2026-10-27)
 
 | Branch | HEAD | Worktree | Situação no snapshot |
 |---|---|---|---|
 | `docs/palacio-memoria-v1` | `0c3acc4` | raiz `D:\Projetos\A-ultima-lua` | Linha documental canônica. `origin/docs/palacio-memoria-v1` está no mesmo commit; o registro desta etapa será o commit seguinte. |
 | `qa-preview` | `081fce4` | — | 1 commit à frente e 1 atrás de `origin/qa-preview` (`11bff6c`). |
-| `feature/floresta-uivante-v2-etapa1` | `7a23369` | `laboratorios/floresta-uivante-v2-etapa1/checkout` | Lobo Comum (`4236b84`, `16f4c9c`), Lobo Cinzento (`83eb677`), Lobisomem Jovem (`25ae3fb`), Uivante das Sombras (`bb7197a`, escala `385bdf5`) e Romar (`cbc50b6`, escala final `7a23369`) commitados e publicados em `origin`. |
+| `feature/floresta-uivante-v2-etapa1` | `a841181` | `laboratorios/floresta-uivante-v2-etapa1/checkout` | Lobo Comum (`4236b84`, `16f4c9c`), Lobo Cinzento (`83eb677`), Lobisomem Jovem (`25ae3fb`), Uivante das Sombras (`bb7197a`, escala `385bdf5`), Romar (`cbc50b6`, escala final `7a23369`) e Lobo da Matilha (`a841181`) commitados e publicados em `origin`. |
 | `fix/pos-playtest-v1` | `11bff6c` | `laboratorios/pos-playtest-v1/candidate` | Candidata pós-playtest. |
 | `main` | `f7e25ef` | `laboratorios/protocolo-autonomo-v1/main-integracao` | 8 commits à frente de `origin/main` (`4833b5f`). |
 | `release/trincheiras-rc1` | `e6a965e` | — | 15 commits à frente de `origin/main`. |
 | `docs/protocolo-autonomo-v1` | `990fb38` | `laboratorios/protocolo-autonomo-v1/checkout` | Documentação do protocolo autônomo. |
 
 - A raiz é um **worktree separado**; o código da Floresta V2 não está nela. Evidência de código deve ser lida no worktree da branch `feature/floresta-uivante-v2-etapa1`.
-- Não rastreados preservados no checkout documental: `Imagem do ChatGPT 18 de out. de 2026, 12_30_18.jpg`, `lobo-comum-v2-aprovado.png`, `lobo-cinzento-v2-aprovado.png`, `lobisomem-jovem-v2-aprovado.png`, `uivante-sombras-v2-aprovado.png`, `romar-v2-aprovado-1.png`, `romar-v2-aprovado-2.png`, `romar-v2-aprovado-3.png`, `comparacao-lobisomem-jovem-v2.png` e `pacote-floresta-v2.zip`.
+- Não rastreados preservados no checkout documental: `Imagem do ChatGPT 18 de out. de 2026, 12_30_18.jpg`, `lobo-comum-v2-aprovado.png`, `lobo-cinzento-v2-aprovado.png`, `lobisomem-jovem-v2-aprovado.png`, `uivante-sombras-v2-aprovado.png`, `romar-v2-aprovado-1.png`, `romar-v2-aprovado-2.png`, `romar-v2-aprovado-3.png`, `pack_wolf_subordinate_cutout.png`, `comparacao-lobisomem-jovem-v2.png` e `pacote-floresta-v2.zip`.
 - Esta documentação não sincroniza, não faz merge e não resolve a divergência entre branches.
 
 ## Níveis de evidência
@@ -46,15 +46,16 @@ Não confundir os seis níveis abaixo; cada registro deve dizer a qual pertence.
 - **Lobisomem Jovem V2** (`lobisomem_jovem`): arte, recorte e integração aprovados (`DEC-2026-10-26-FLO-016`); commit `25ae3fb` publicado na branch feature. QA isolado `860aa1d1-a3cf-4715-a89e-2a07d7e0126b` e Safari/iPhone confirmados. Atributos, Instinto de Caça, recompensas e progressão inalterados; arte antiga preservada.
 - **Uivante das Sombras V2** (`uivante_sombras`): arte, recorte e integração aprovados (`DEC-2026-10-26-FLO-017`); escala final `w:0.58`/`h:0.95` aprovada em 2026-10-26. Commits `bb7197a` e `385bdf5` publicados na branch feature. QA isolado `f6b00e93-2405-4cd7-b617-c1efcf5723ca` publicado, conferido por SHA-256 contra `_qa-dist` e **validado no Safari/iPhone** (`DEC-2026-10-26-QLT-018`). Atributos (190/25/12), Presságio Sombrio, Golpe Brutal, Fúria Desesperada, drops e progressão inalterados; arte JPEG antiga preservada. Produção pendente.
 - **Romar V2** (`romar`): três artes, recorte e integração aprovados (`DEC-2026-10-26-FLO-018`); arte em PNG RGBA com transparência real e apresentação natural (`x:0.70`, `w:0.46`, `h:0.78`, escala ajustada após revisão no QA). Commits `cbc50b6` e `7a23369` publicados na branch feature; QA isolado `49331648` com transições reais por ataque verificadas em 320/375/390. Mecânica, escolha final e recompensa inalteradas; três JPEGs antigos preservados. Safari/iPhone e produção pendentes.
-- **QA isolado**: deployments no projeto `a-ultima-lua-floresta-v2-qa`, publicados na branch de produção `floresta-v2-qa` desse projeto: `3e8e9679-2441-46a6-a907-928166b5194e` (Lobo Comum), `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` (Lobo Cinzento), `860aa1d1-a3cf-4715-a89e-2a07d7e0126b` (Lobisomem Jovem), `7e466fdf-248b-4dd2-b8e7-0230ea425e06` e `f6b00e93-2405-4cd7-b617-c1efcf5723ca` (Uivante das Sombras) e `c5618de6-77a3-42d0-9227-af87129c3eb1` e `49331648` (Romar, escala final). Todos são QA isolado; não são produção do jogo e não alteraram `a-ultima-lua-qa`, GitHub Pages, `main` ou `qa-preview`.
+- **Lobo da Matilha V2** (invocação do Alfa, sem ID próprio): arte, ator e apresentação aprovados (`DEC-2026-10-27-FLO-019`). PNG RGBA 1000×758 (`lobo_matilha_combat_v2.png`, SHA-256 `A767B072…502F8B`), com franja magenta removida por despill. O lobo passou a ter **ator próprio no palco**, nome `LOBO DA MATILHA` e barra de HP acima da arte; o dano flutuante ao atacá-lo aponta para o novo ator. Commit `a841181` publicado na branch feature; QA isolado `34b8ee1a` com invocação real em 320/375/390. HP, ataque, esquiva, Caçada Coordenada, intervalo de invocação e o Alfa permanecem inalterados; o lobo continua fora de `MAPS`. Safari/iPhone e produção pendentes.
+- **QA isolado**: deployments no projeto `a-ultima-lua-floresta-v2-qa`, publicados na branch de produção `floresta-v2-qa` desse projeto: `3e8e9679-2441-46a6-a907-928166b5194e` (Lobo Comum), `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` (Lobo Cinzento), `860aa1d1-a3cf-4715-a89e-2a07d7e0126b` (Lobisomem Jovem), `7e466fdf-248b-4dd2-b8e7-0230ea425e06` e `f6b00e93-2405-4cd7-b617-c1efcf5723ca` (Uivante das Sombras), `c5618de6-77a3-42d0-9227-af87129c3eb1` e `49331648` (Romar, escala final) e `34b8ee1a-0ac7-4427-9271-ea64c640117c` (Lobo da Matilha). Todos são QA isolado; não são produção do jogo e não alteraram `a-ultima-lua-qa`, GitHub Pages, `main` ou `qa-preview`.
 - **Produção**: inalterada. Nenhuma promoção autorizada.
 - **Lobisomem Feroz e Alfa da Matilha**: artes atuais preservadas por `DEC-ND-FLO-007`; sem autorização para substituição.
-- **Romar e Lobo da Matilha**: Romar resolvido por `DEC-2026-10-26-FLO-018`; o Lobo da Matilha segue sem arte própria, no escopo histórico de `DEC-2026-10-25-FLO-013` (proposto). Lobo Cinzento, Lobisomem Jovem e Uivante das Sombras foram resolvidos por `FLO-014`, `FLO-016` e `FLO-017`.
+- **Romar e Lobo da Matilha**: ambos resolvidos — Romar por `DEC-2026-10-26-FLO-018` e Lobo da Matilha por `DEC-2026-10-27-FLO-019`, que encerra o escopo histórico de `DEC-2026-10-25-FLO-013`. Lobo Cinzento, Lobisomem Jovem e Uivante das Sombras foram resolvidos por `FLO-014`, `FLO-016` e `FLO-017`.
 - **Reações visuais**: o motor compartilhado cobre somente os atores das Trincheiras; nenhum inimigo da Floresta tem perfil de dano/recuo/crítico.
 
 ## Cartografia
 
-- T1 — Floresta Uivante: implementada; apresentações V2 do Lobo Comum, Lobo Cinzento, Lobisomem Jovem, Uivante das Sombras e Romar aprovadas, commitadas e com QA isolado; as quatro primeiras confirmadas no Safari, Romar aguarda validação física. Produção inalterada.
+- T1 — Floresta Uivante: implementada; apresentações V2 do Lobo Comum, Lobo Cinzento, Lobisomem Jovem, Uivante das Sombras, Romar e Lobo da Matilha aprovadas, commitadas e com QA isolado; as quatro primeiras confirmadas no Safari, Romar e Lobo da Matilha aguardam validação física. Produção inalterada.
 - T2 — Pântano Podre: implementado, incluindo Senhor do Pântano, materiais e fluxo de vitória pendente documentados.
 - T3 — Trincheiras Orc: progressão determinística, Xamã ritualístico, Gorthak e apresentação Arena V2.4 implementados na linha QA/release.
 - T4 — Cripta Sangrenta: definida no código com inimigos, miniboss e boss; sem evidência de revisão visual V2 equivalente às Trincheiras.
@@ -66,13 +67,13 @@ Não confundir os seis níveis abaixo; cada registro deve dizer a qual pertence.
 - Persistência em `localStorage`, chave `a-ultima-lua.checkpoint`, schema 5 no checkout ativo.
 - Arena V2.4 usa cenário, atores, HUD e efeitos em camadas; Trincheiras têm cenário territorial próprio e a Floresta V2 tem cenário próprio na branch feature.
 - QA Debug é produzido por `_qa/build.cjs` para `_qa-dist`; a produção normal não referencia o painel de debug.
-- Testes Node e Playwright existem. A revalidação de 2026-10-26 (Romar) registrou **192/192 Node** e **77/77 Chromium**. Números antigos (171/51, 185/61, 188/65, 189/68, 190/71, 191/74) continuam como snapshots históricos.
+- Testes Node e Playwright existem. A revalidação de 2026-10-27 (Lobo da Matilha) registrou **194/194 Node** e **80/80 Chromium**. Números antigos (171/51, 185/61, 188/65, 189/68, 190/71, 191/74, 192/77) continuam como snapshots históricos.
 
 ## Divergências abertas
 
 1. `qa-preview` local (`081fce4`) e `origin/qa-preview` (`11bff6c`) continuam divergentes; reconciliação não decidida.
 2. Produção do jogo permanece inalterada; promoção não autorizada.
-3. Escopo visual do Lobo da Matilha permanece sem decisão (`FLO-013`, histórico proposto); Lobo Cinzento, Lobisomem Jovem, Uivante das Sombras e Romar foram resolvidos por `FLO-014`, `FLO-016`, `FLO-017` e `FLO-018`.
+3. Escopo visual encerrado: o Lobo da Matilha foi resolvido por `FLO-019` em 2026-10-27, último item de `FLO-013`; Lobo Cinzento, Lobisomem Jovem, Uivante das Sombras e Romar foram resolvidos por `FLO-014`, `FLO-016`, `FLO-017` e `FLO-018`.
 4. `PROJECT-CHECKPOINT.md` continua descrevendo um estado de 2026-10-13 e `main`.
 5. Contagens de teste antigas continuam citadas em documentos históricos e não devem ser somadas.
 6. Laboratórios podem conter propostas ou resultados locais; presença em `laboratorios/` não significa integração ou aprovação.

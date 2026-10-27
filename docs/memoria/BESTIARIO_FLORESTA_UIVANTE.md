@@ -1,11 +1,11 @@
 # Bestiário — Floresta Uivante
 
-**Snapshot:** 2026-10-25 (reconciliação documental).
+**Snapshot:** 2026-10-27 (Lobo da Matilha V2).
 **Território:** `MAPS[0]` — “Floresta Uivante / Território dos lobos e lobisomens”.
 **Natureza:** inventário documental. Não autoriza mudança de arte, mecânica, balanceamento ou progressão.
 **Entidades:** 8 (quatro comuns, um mini-chefe, um chefe, um inimigo especial não letal e uma invocação).
 
-Fontes: `src/game.js` (checkout `081fce4` para mecânica histórica; worktree `feature/floresta-uivante-v2-etapa1`, base `11bff6c`, para a integração V2), `src/persistence.js`, `styles/game.css`, `docs/memoria/MANIFESTO_ARTES.json` e as decisões citadas. Hashes foram recalculados em 2026-10-25.
+Fontes: `src/game.js` (checkout `081fce4` para mecânica histórica; worktree `feature/floresta-uivante-v2-etapa1`, base `11bff6c`, para a integração V2), `src/persistence.js`, `styles/game.css`, `docs/memoria/MANIFESTO_ARTES.json` e as decisões citadas. Hashes foram recalculados em 2026-10-25; o Lobo da Matilha entrou em 2026-10-27.
 
 ## Como interpretar o estado de aprovação
 
@@ -29,7 +29,7 @@ Fontes: `src/game.js` (checkout `081fce4` para mecânica histórica; worktree `f
 | 5 | Uivante das Sombras | Uivante das Sombras | `uivante_sombras` | mini-chefe | JPEG legado + PNG V2 | **aprovado** (V2), QA e Safari confirmados |
 | 6 | Alfa da Matilha | Alfa da Matilha | `alfa_matilha` | chefe | JPEG | **preservar** |
 | 7 | Romar | Romar | `romar` | especial não letal, 3 estágios | 3 JPEG legado + 3 PNG V2 | **aprovado** (V2), QA publicado |
-| 8 | Lobo da Matilha | Lobo da Matilha | *sem ID próprio* | invocação do Alfa | **sem arte** | não se aplica; sem arte |
+| 8 | Lobo da Matilha | Lobo da Matilha | *sem ID próprio* | invocação do Alfa | PNG V2 | **aprovado** (V2), QA publicado |
 
 ## Modelo de encontro
 
@@ -71,7 +71,7 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 - **Transparência real:** o asset V2 é RGBA; os quatro cantos têm alpha 0 e 3,81% dos pixels são borda suave. O xadrez não está incrustado no asset final.
 - **Comportamento:** a cada 3ª ação de IA prepara **Bote** (×1.55). O golpe pode ser interrompido por um impacto ≥ max(8, 12% do HP máximo), consumindo a preparação também em esquiva.
 - **Estado:** arte legada preservada; nova arte e recorte **aprovados** (`DEC-2026-10-25-FLO-014`). Integração commitada e publicada na branch `feature/...` em `83eb677`. QA isolado `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` publicado e funcionamento confirmado no Safari/iPhone (`DEC-2026-10-25-QLT-015`). Produção pendente. Atributos, Bote, recompensas e progressão inalterados.
-- **Pendência:** o escopo do Cinzento em `FLO-013` foi resolvido por `FLO-014`; `FLO-013` permanece como registro histórico proposto apenas para o Lobo da Matilha. Falta apenas promoção à produção, não autorizada.
+- **Pendência:** o escopo do Cinzento em `FLO-013` foi resolvido por `FLO-014`; o último item restante daquele registro, o Lobo da Matilha, foi resolvido por `FLO-019` em 2026-10-27. Falta apenas promoção à produção, não autorizada.
 - **Evidência:** `src/game.js:176`, `:2000-2004`, `:2045`, `:1687-1693`; commits `83eb677`; QA `45362c1d`; 189/189 Node e 68/68 Chromium; `evidencias/lobo-cinzento-v2/`; manifesto.
 
 ## 3. Lobisomem Jovem — `lobisomem_jovem`
@@ -118,7 +118,7 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 - **Arte:** `assets/images/enemies/forest/alfa_matilha.jpg` — 480×719, JPEG, SHA-256 `787FFCC285777A98A97EF93E948D502FAC8B101736B6B19E5F8D30DA1AAA7794`.
 - **Encontro:** botão **Desafiar** liberado após a **primeira vitória sobre o Uivante das Sombras**. Antes disso, o domínio permanece selado na interface e na função de desafio.
 - **Comportamento em três fases:**
-  - **Fase 0 — Comandante (100–60%):** convoca o **Lobo da Matilha** na primeira ação e a cada 4 ações enquanto o lobo estiver ativo; o lobo causa **Caçada Coordenada**.
+  - **Fase 0 — Comandante (100–60%):** convoca o **Lobo da Matilha** na primeira ação e a cada 4 ações enquanto o lobo estiver ativo; o lobo causa **Caçada Coordenada**. Desde a V2 o lobo aparece como ator próprio, com nome e barra acima da arte.
   - **Fase 1 — Fúria da Matilha (≤60%):** prepara **Investida** (×1.65) a cada 3 ações.
   - **Fase 2 — Instinto do Alfa (≤30%):** DEF cai para 82%; ganha **postura de observação** que retalia um ataque precipitado, e uma única **Lua da Caçada** (×2.0).
 - **Estado:** **preservar** (`DEC-ND-FLO-007`). Sem V2 e sem reações de impacto.
@@ -138,13 +138,15 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 - **Estado:** artes, recorte e integração **aprovados** (`DEC-2026-10-26-FLO-018`); commit `cbc50b6` publicado na branch feature; escala final `h:0.78` no commit `7a23369`; QA isolado `49331648`, com transições reais por ataque verificadas em 320/375/390. Mecânica, escolha final e recompensa inalteradas. Safari/iPhone e produção pendentes.
 - **Evidência:** `src/game.js:533`, `:1433-1435`, `:1506-1515`, `:26`; `styles/game.css:655-659`; commit `cbc50b6`; deployment `c5618de6`; 192/192 Node e 77/77 Chromium; `evidencias/romar-v2/`; `tests/romar-*.test.cjs`, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`; manifesto.
 
-## 8. Lobo da Matilha — sem ID próprio
+## 8. Lobo da Matilha — ator próprio como invocação
 
-- **Papel:** invocação do Alfa na fase 0. Não tem retrato, barra própria na arena, entrada em `MAPS` ou ID de inimigo; o estado vive em campos `packWolfActive`, `packWolfHp`, `packWolfHpMax` do Alfa.
+- **Papel:** invocação do Alfa na fase 0. Continua **sem ID de inimigo** e **sem entrada em `MAPS`**: o estado vive em `packWolfActive`, `packWolfHp` e `packWolfHpMax` no Alfa. Desde a V2 ele tem **ator próprio no palco**, com nome e barra flutuantes, renderizados por `renderPackWolfActor()` a partir desses campos.
 - **Stats derivados:** HP máximo = máximo entre 8 e 12% do HP efetivo do Alfa (44 sem Onda Sombria; 57 com Onda Sombria). Ataque = 35% do ATQ-base do Alfa (12,6 antes da defesa do jogador). Pode ser esquivado.
 - **Encontro:** apenas enquanto o Alfa está na fase 0 e o lobo está ativo; o botão “Atacar Lobo da Matilha” aparece nessa condição. Abatê-lo quebra a Caçada Coordenada e adia a próxima invocação.
-- **Estado:** **sem arte**. Aprovação não se aplica. Se ganhar identidade visual, exige decisão própria (`FLO-013`).
-- **Evidência:** `src/game.js:1346`, `:1960-1966`, `:2029-2053`, `:2957`; manifesto (`entidades_sem_arte`).
+- **Arte:** `assets/images/enemies/forest/lobo_matilha_combat_v2.png` — 1000×758, PNG RGBA com transparência real, SHA-256 `A767B072A0ABC72BF3068F693EFDBF59F74B3A9A85C628C21E73A3C956502F8B`. Lobo magro, marrom-acinzentado, olhos âmbar, cicatrizes, contraluz azul; sem magia, coroa ou aura. O recorte original trazia franja magenta, removida por despill antes da entrega.
+- **Apresentação:** caixa `w:0.31` com `aspect-ratio:1000/758` (a altura vem da largura), `x:0.56`, `contain` ancorado na base, `z-index:4` (à frente do Alfa). A etiqueta (`LOBO DA MATILHA` + barra + HP) fica acima da arte, em placa escura translúcida. Entrada animada uma vez por invocação; `prefers-reduced-motion` remove a animação.
+- **Estado:** **aprovado (V2)**, QA publicado em 320/375/390 com invocação real; Safari/iPhone e produção pendentes. Atributos, dano, esquiva e adiamento da invocação **não mudaram**.
+- **Evidência:** `src/game.js` (`COMBAT_PRESENTATION.summons`, `renderPackWolfActor`, `combatEffectId('packWolf')`); `styles/game.css` (`.actor-pack-wolf`, `.pack-wolf-tag`); commit `a841181`; deployment `34b8ee1a`; 194/194 Node e 80/80 Chromium; `evidencias/matilha-v2/`; manifesto.
 
 ## Não são entidades do bestiário
 
@@ -164,7 +166,7 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 | Uivante das Sombras | aprovado (V2), QA e Safari | `FLO-017`, `QLT-018` | commit e QA publicados; Safari confirmado; produção pendente |
 | Alfa da Matilha | preservar | `FLO-007` | nenhum |
 | Romar | aprovado (V2), QA publicado | `FLO-018` | commit e QA publicados; Safari e produção pendentes |
-| Lobo da Matilha | sem arte | `FLO-013` (proposto) | decidir se terá arte própria |
+| Lobo da Matilha | aprovado (V2), QA publicado | `FLO-019` | commit e QA publicados; Safari e produção pendentes |
 
 ## NÃO VERIFICADO
 

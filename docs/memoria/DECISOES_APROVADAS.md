@@ -145,6 +145,7 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Nota posterior (2026-10-26):** o Lobisomem Jovem foi substituído por `DEC-2026-10-26-FLO-016`; Lobisomem Feroz e Alfa permanecem preservados.
 - **Nota posterior (2026-10-26):** o escopo do Uivante das Sombras foi resolvido por `DEC-2026-10-26-FLO-017`; Romar e Lobo da Matilha permanecem pendentes.
 - **Nota posterior (2026-10-26):** o escopo do Romar foi resolvido por `DEC-2026-10-26-FLO-018`; resta apenas o Lobo da Matilha.
+- **Nota posterior (2026-10-27):** o escopo do Lobo da Matilha foi resolvido por `DEC-2026-10-27-FLO-019`. O registro fica encerrado como histórico; nenhuma entidade desta decisão permanece pendente.
 
 ## DEC-2026-10-25-FLO-014 — Aprovação do Lobo Cinzento V2
 
@@ -216,6 +217,21 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Arquivos conhecidos:** `src/game.js`, `styles/game.css`, três assets novos, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`, `tests/romar-playtest-quest.test.cjs`.
 - **Relação:** resolve o escopo do Romar em `DEC-2026-10-25-FLO-013`, que passa a cobrir somente o Lobo da Matilha; preserva as três artes JPEG antigas; não autoriza promoção à produção.
 - **Nota posterior (2026-10-26):** após revisão no QA público, a altura do Romar foi reduzida de `h:0.92` para `h:0.78` (commit `7a23369`, deployment `49331648`), deixando folga no topo do palco sem deixá-lo menor que o Mago. Artes, atributos e comportamento não mudaram.
+- **Nota posterior (2026-10-27):** o último item de `FLO-013`, o Lobo da Matilha, foi resolvido por `DEC-2026-10-27-FLO-019`.
+
+## DEC-2026-10-27-FLO-019 — Lobo da Matilha com identidade visual própria
+
+- **Área:** Galeria / Oficina
+- **Estado:** aprovado
+- **Data:** 2026-10-27
+- **Descrição:** aprovar a arte `lobo_matilha_combat_v2.png` e dar ao Lobo da Matilha **identidade visual própria na arena**: ator separado no palco, nome `LOBO DA MATILHA` e barra de HP flutuante, além do dano flutuante ao ser atacado. O lobo continua **sem ID de inimigo** e **sem entrada em `MAPS`**: a identidade é só de apresentação, lida de `packWolfActive`, `packWolfHp` e `packWolfHpMax` no Alfa.
+- **Justificativa:** era o único “inimigo” do jogo que existia apenas como número — chip de texto e botão, sem retrato, sem nome próprio e sem barra. O responsável escolheu, entre as opções apresentadas, dar identidade visual ao lobo em vez de mantê-lo como recurso invisível do Alfa.
+- **Escopo preservado:** HP máximo (8–12% do Alfa), ataque (35% do ATQ-base), esquiva, dano da Caçada Coordenada, quebra da caçada, adiamento da próxima invocação em 3 turnos e o intervalo de invocação (4 ações) **não mudaram**. O Alfa, sua arte JPEG e suas três fases permanecem intactos.
+- **Ajustes de apresentação aprovados junto:** o chip do Alfa passa a dizer `MATILHA ATIVA · CAÇADA COORDENADA` (o HP agora vive na barra do lobo) e o botão fica `🐺 Atacar Lobo da Matilha`, sem repetir o HP.
+- **Evidência:** autorização do responsável; fonte `pack_wolf_subordinate_cutout.png` (1920×1280 RGBA); asset `lobo_matilha_combat_v2.png` 1000×758 RGBA, SHA-256 `A767B072A0ABC72BF3068F693EFDBF59F74B3A9A85C628C21E73A3C956502F8B`, cantos alpha 0, sem franja magenta após despill; commit `a841181`; deployment `34b8ee1a`; 194/194 Node e 80/80 Chromium; QA público com invocação real em 320/375/390 sem erro nem 404; capturas em `evidencias/matilha-v2/`.
+- **Limite:** não houve teste em Safari/iPhone. A promoção à produção não está autorizada.
+- **Arquivos conhecidos:** `src/game.js`, `styles/game.css`, `assets/images/enemies/forest/lobo_matilha_combat_v2.png`, `_qa/debug.js`, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`, manifesto.
+- **Relação:** resolve o último item de `DEC-2026-10-25-FLO-013`; complementa `DEC-2026-10-26-FLO-018`; não altera `DEC-ND-FLO-007`.
 
 ## Rejeitado ou não autorizado
 
@@ -230,11 +246,12 @@ Este índice é navegação; não altera o texto nem o estado original dos regis
 - `DEC-2026-10-25-FLO-009` — o item “Safari/iPhone pendente” foi complementado por `DEC-2026-10-25-FLO-010`; o item “não autoriza deploy” permanece válido e é delimitado por `DEC-2026-10-25-QLT-011`; commit, push e produção continuam não autorizados.
 - `DEC-2026-10-20-FIX-006` — promoção à produção segue pendente.
 - `DEC-ND-FLO-007` — preservação mantida para Mago, Lobisomem Feroz e Alfa; o Lobisomem Jovem foi substituído por `DEC-2026-10-26-FLO-016`; o Lobo Comum foi executado em `FLO-009`/`FLO-010`.
-- `DEC-2026-10-25-FLO-013` — permanece `proposto`; Lobo Cinzento, Lobisomem Jovem, Uivante das Sombras e Romar foram resolvidos por `DEC-2026-10-25-FLO-014`, `DEC-2026-10-26-FLO-016`, `DEC-2026-10-26-FLO-017` e `DEC-2026-10-26-FLO-018`; resta o Lobo da Matilha.
+- `DEC-2026-10-25-FLO-013` — encerrada como histórico: Lobo Cinzento, Lobisomem Jovem, Uivante das Sombras, Romar e Lobo da Matilha foram resolvidos por `DEC-2026-10-25-FLO-014`, `DEC-2026-10-26-FLO-016`, `DEC-2026-10-26-FLO-017`, `DEC-2026-10-26-FLO-018` e `DEC-2026-10-27-FLO-019`; nenhum item permanece pendente.
 - `DEC-2026-10-25-FLO-014` — `aprovado` em 2026-10-25; integração commitada e publicada na branch feature; QA isolado e Safari complementados por `QLT-015`; produção não autorizada.
 - `DEC-2026-10-25-QLT-015` — `aprovado`; complementa `FLO-014` com o QA isolado publicado e a confirmação Safari; produção não autorizada.
 - `DEC-2026-10-26-FLO-016` — `aprovado`; nova arte e integração do Lobisomem Jovem, com QA isolado e Safari confirmados; produção não autorizada.
 - `DEC-2026-10-26-FLO-017` — `aprovado`; nova arte e integração do Uivante das Sombras, com QA isolado publicado e conferido por hash; Safari complementado por `QLT-018`; produção não autorizada.
 - `DEC-2026-10-26-QLT-018` — `aprovado`; validação física do Uivante no Safari/iPhone sobre o deployment `f6b00e93`; produção não autorizada.
 - `DEC-2026-10-26-FLO-018` — `aprovado`; três artes e integração do Romar, com QA isolado e transições reais verificadas; Safari e produção não autorizados.
+- `DEC-2026-10-27-FLO-019` — `aprovado`; arte, ator, nome e barra próprios do Lobo da Matilha, com QA isolado e invocação real verificada em 320/375/390; Safari e produção não autorizados.
 - `DEC-2026-10-25-DOC-012` — `aprovado` em 2026-10-25; a aprovação cobre a reconciliação documental, não push ou deploy.
