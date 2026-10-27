@@ -517,7 +517,7 @@
       "id": "ART-FLORESTA-ALFA-MATILHA-V2",
       "area": "Galeria/Floresta Uivante",
       "caminho": "assets/images/enemies/forest/alfa_matilha_combat_v2.png",
-      "sha256": "D3A727DF25AC2DE1DDEEA22315BF32B282BFEF894918AE4F92C421D2FD150868",
+      "sha256": "6054B4A6238372BE1B8D5DA1B728ABA5ABBCB2357B179230D5C6E9A93D4FEC62",
       "dimensoes": { "largura": 1024, "altura": 1536 },
       "formato": "PNG",
       "modo": "RGBA",
@@ -525,8 +525,8 @@
       "versao": "V2_integracao_commitada",
       "estado_aprovacao": "aprovado_visual_e_funcional_no_safari_commitado_na_branch_feature",
       "origem": "recorte RGBA derivado da imagem fornecida; espelhamento horizontal para o Alfa olhar para o Mago, fundo branco removido por mascara suavizada e despill, pixels transparentes zerados e recorte com margem de 6 px",
-      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit c66f6e1; deployment 29dfc35c-85e3-4d35-baed-2a1f81d14b84 (nao presente na branch documental)",
-      "evidencia": "DEC-2026-10-27-FLO-020; commit c66f6e1; deployment 29dfc35c; 196/196 Node e 22/22 Chromium (forest-v2, WebKit); QA publico com enquadramento real em 320/375/390; reacao de impacto (shake + flash) verificada; evidencias/alfa-v2/"
+      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit f73cb07; deployment 9489432e-85e3-4d35-baed-2a1f81d14b84 (nao presente na branch documental)",
+      "evidencia": "DEC-2026-10-27-FLO-020; commit f73cb07; deployment 9489432e; 196/196 Node e 22/22 Chromium (forest-v2, WebKit); QA publico com enquadramento real em 320/375/390; reacao de impacto (shake + flash) verificada; evidencias/alfa-v2/"
     },
     {
       "id": "ART-FLORESTA-ROMAR-ESTAGIO-1",
