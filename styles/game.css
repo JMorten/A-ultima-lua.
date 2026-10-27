@@ -326,6 +326,12 @@
     80%{transform:translateX(3px);}
   }
   .flash-hit{filter:brightness(2) saturate(0);}
+.alfa-hit-flash{animation:alfaHitFlash .38s ease;will-change:filter,box-shadow;}
+@keyframes alfaHitFlash{
+  0%{filter:brightness(2.4) saturate(0);box-shadow:0 0 28px 8px rgba(230,167,105,.6);}
+  35%{filter:brightness(1.7) saturate(.35);box-shadow:0 0 18px 5px rgba(230,167,105,.4);}
+  100%{filter:none;box-shadow:none;}
+}
   .float-num{
     position:absolute;left:50%;top:6px;transform:translateX(-50%);
     font-family:'Cinzel',serif;font-size:20px;font-weight:700;

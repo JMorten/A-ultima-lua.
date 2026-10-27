@@ -1646,6 +1646,17 @@ function shakeSide(side, isCrit=false){
   });
 }
 
+function flashAlfaHit(){
+  const id='portrait-enemy';
+  const el=document.getElementById(id);
+  if(!el) return;
+  el.classList.remove('alfa-hit-flash'); void el.offsetWidth; el.classList.add('alfa-hit-flash');
+  if(typeof requestAnimationFrame==='function') requestAnimationFrame(()=>{
+    const fresh=document.getElementById(id);
+    if(fresh && fresh!==el) fresh.classList.add('alfa-hit-flash');
+  });
+  setTimeout(()=>{ const n=document.getElementById(id); if(n) n.classList.remove('alfa-hit-flash'); }, 420);
+}
 function updateArenaBarsOnly(){
   const m = ui.monster;
   const pFill = document.getElementById('arena-hp-player');
@@ -2159,6 +2170,7 @@ function resolvePlayerHit(dmg, isCrit, impacts=[dmg]){
   }
   floatNumber('enemy', (isCrit?'CRÍTICO -':'-')+dmg, isCrit?'crit':'dmg');
   shakeSide('enemy', isCrit);
+  if(m.id==='alfa_matilha') flashAlfaHit();
   updateArenaBarsOnly();
 
   // A retaliação substitui o contra-ataque desta rodada; golpe letal não a dispara.
