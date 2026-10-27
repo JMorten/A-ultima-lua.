@@ -15,12 +15,12 @@
 - Uivante das Sombras V2 aprovado, integrado, publicado e validado no Safari/iPhone: `DEC-2026-10-26-FLO-017` e `DEC-2026-10-26-QLT-018`; commits `bb7197a` (arte) e `385bdf5` (escala final `0.58`/`0.95`); QA `f6b00e93-2405-4cd7-b617-c1efcf5723ca`, com paridade SHA-256 entre site público e `_qa-dist`.
 - Romar V2 aprovado, integrado e publicado: `DEC-2026-10-26-FLO-018`; commits `cbc50b6` (artes e integração) e `7a23369` (altura final `0.78`); QA `49331648` com os três estágios e transições reais em 320/375/390; Safari/iPhone pendente.
 - Lobo da Matilha V2 aprovado, integrado e publicado: `DEC-2026-10-27-FLO-019`; commits `a841181` (ator e placa) e `49f8ed2` (placa sem nome sobre a arte); QA `82ac5393-841f-4a57-afe9-cf54a201421f` com invocação real em 320/375/390; ator e barra próprios, nome só no rótulo acessível e no botão. Safari/iPhone e produção pendentes.
-- Revalidação: **194/194 Node** e **80/80 Chromium** (Chromium 151 do Playwright 1.62.1).
+- Revalidação: **194/194 Node**, **80/80 Chromium** (Chromium 151 do Playwright 1.62.1) e **19/19 WebKit** na suíte `forest-v2`.
 
 ## Pendente — exige decisão humana
 
-1. **Validação física do Lobo da Matilha V2 (prioridade atual):** abrir `https://a-ultima-lua-floresta-v2-qa.pages.dev/?v=82ac5393` no Safari do iPhone, usar QA → Debug → novo personagem → CONTINUAR → reabrir QA → **ALFA · COM LOBO DA MATILHA** e conferir ator, barra de HP sem nome sobre a arte, chip `MATILHA ATIVA · CAÇADA COORDENADA` e ataque ao lobo.
-2. **Validação física do Romar V2:** abrir `https://a-ultima-lua-floresta-v2-qa.pages.dev/?v=49331648` no Safari do iPhone, jogar até os estágios 2 e 3 e registrar aprovação ou defeitos.
+1. **Validação física do Lobo da Matilha V2 (prioridade atual):** abrir `https://a-ultima-lua-floresta-v2-qa.pages.dev/?v=82ac5393` no Safari do iPhone, usar QA → Debug → novo personagem → CONTINUAR → reabrir QA → **ALFA · COM LOBO DA MATILHA** e conferir ator, barra de HP sem nome sobre a arte, chip `MATILHA ATIVA · CAÇADA COORDENADA` e ataque ao lobo. WebKit (motor do Safari) já validado em 320/375/390; falta o aparelho físico.
+2. **Validação física do Romar V2:** abrir `https://a-ultima-lua-floresta-v2-qa.pages.dev/?v=82ac5393` no Safari do iPhone, jogar até os estágios 2 e 3 (ou usar os botões **ROMAR · ESTÁGIO 1/2/3** no painel de QA) e registrar aprovação ou defeitos. WebKit já validado nos três estágios em 320/375/390.
 3. **Reconciliação de linhas Git:** decidir como unir `081fce4` (`qa-preview`) com `origin/qa-preview` (`11bff6c`).
 4. **Promoção à produção:** não autorizada para a Floresta V2.
 5. **Cobertura documental:** manter bestiário e manifesto sincronizados quando arte ou entidade mudar.
