@@ -508,8 +508,8 @@
       "versao": "V2_integracao_commitada",
       "estado_aprovacao": "aprovado_qa_publicado",
       "origem": "recorte RGBA derivado da fonte aprovada; franja magenta removida por despill, pixels transparentes zerados e recorte com margem de 6 px",
-      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit 49f8ed2; deployment 82ac5393-841f-4a57-afe9-cf54a201421f (nao presente na branch documental)",
-      "evidencia": "DEC-2026-10-27-FLO-019; commit 49f8ed2 (placa sem nome sobre a arte); deployment 82ac5393; 194/194 Node e 80/80 Chromium; QA publico com invocacao real em 320/375/390; evidencias/matilha-v2/"
+      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit 49f8ed2; deployment a92987ce-ea10-4e19-a092-96d8949f324a (nao presente na branch documental)",
+      "evidencia": "DEC-2026-10-27-FLO-019; commit 49f8ed2 (placa sem nome sobre a arte) e 9544043 (reacao de impacto); deployment a92987ce; 195/195 Node e 80/80 Chromium; QA publico com invocacao real em 320/375/390; evidencias/matilha-v2/"
     },
     {
       "id": "ART-FLORESTA-ROMAR-ESTAGIO-1",
