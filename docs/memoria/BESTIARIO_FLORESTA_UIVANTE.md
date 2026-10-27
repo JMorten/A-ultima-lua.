@@ -146,7 +146,7 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 - **Arte:** `assets/images/enemies/forest/lobo_matilha_combat_v2.png` — 1000×758, PNG RGBA com transparência real, SHA-256 `A767B072A0ABC72BF3068F693EFDBF59F74B3A9A85C628C21E73A3C956502F8B`. Lobo magro, marrom-acinzentado, olhos âmbar, cicatrizes, contraluz azul; sem magia, coroa ou aura. O recorte original trazia franja magenta, removida por despill antes da entrega.
 - **Apresentação:** caixa `w:0.31` com `aspect-ratio:1000/758` (a altura vem da largura), `x:0.56`, `contain` ancorado na base, `z-index:4` (à frente do Alfa). A placa acima da arte mostra **apenas barra e HP**, sem nome sobreposto; `LOBO DA MATILHA` permanece no rótulo acessível do ator e no botão de ataque. Entrada animada uma vez por invocação; `prefers-reduced-motion` remove a animação.
 - **Estado:** **aprovado (V2)**, QA publicado em 320/375/390 com invocação real; Safari/iPhone e produção pendentes. Atributos, dano, esquiva e adiamento da invocação **não mudaram**.
-- **Evidência:** `src/game.js` (`COMBAT_PRESENTATION.summons`, `renderPackWolfActor`, `combatEffectId('packWolf')`); `styles/game.css` (`.actor-pack-wolf`, `.pack-wolf-tag`); commits `a841181` (ator e placa) e `49f8ed2` (placa sem nome); deployment `26daa4cd`; 194/194 Node e 80/80 Chromium; `evidencias/matilha-v2/`; manifesto.
+- **Evidência:** `src/game.js` (`COMBAT_PRESENTATION.summons`, `renderPackWolfActor`, `combatEffectId('packWolf')`); `styles/game.css` (`.actor-pack-wolf`, `.pack-wolf-tag`); commits `a841181` (ator e placa) e `49f8ed2` (placa sem nome); deployment `82ac5393`; 194/194 Node e 80/80 Chromium; `evidencias/matilha-v2/`; manifesto.
 
 ## Não são entidades do bestiário
 
