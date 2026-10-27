@@ -240,3 +240,83 @@ for (const width of [320, 375, 390]) {
     expect(diagnostics.failedAssets).toEqual([]);
   });
 }
+
+for (const width of [320, 375, 390]) {
+  test(`Lobo da Matilha ganha ator e barra próprios em ${width}px`, async ({page}) => {
+    const diagnostics = await openForestBattle(page, width, 'Alfa da Matilha');
+    // O Alfa revida a cada ataque ao lobo; HP alto evita que o teste termine em derrota.
+    await page.evaluate(() => { player.hpMax = 5000; player.hp = 5000; render(); });
+    // O combate se redesenha a cada efeito; recorte estatico evita disputar estabilidade.
+    const shotArena = async file => {
+      const box = await page.evaluate(() => {
+        const arena = document.querySelector('.battle-arena');
+        arena.scrollIntoView({block:'center'});
+        const rect = arena.getBoundingClientRect();
+        return {x:Math.max(0, rect.x), y:Math.max(0, rect.y), width:rect.width, height:rect.height};
+      });
+      await page.screenshot({path:file, clip:box, animations:'disabled'});
+    };
+
+    // Caminho real: o primeiro contra-ataque do Alfa convoca a matilha.
+    await page.getByRole('button', {name:'Atacar', exact:true}).click();
+    await expect(page.locator('.actor-pack-wolf')).toBeVisible();
+    await expect(page.locator('.pack-wolf-name')).toHaveText('LOBO DA MATILHA');
+    await expect(page.locator('#portrait-pack-wolf img')).toHaveAttribute('src', 'assets/images/enemies/forest/lobo_matilha_combat_v2.png');
+    await page.waitForFunction(() => {
+      const image = document.querySelector('#portrait-pack-wolf img');
+      return image && image.complete && image.naturalWidth > 0;
+    });
+    await expect(page.locator('.arena-enemy-state')).toHaveText('MATILHA ATIVA · CAÇADA COORDENADA');
+    await expect(page.getByRole('button', {name:'🐺 Atacar Lobo da Matilha'})).toBeEnabled();
+
+    const metrics = await page.evaluate(() => {
+      const stage = document.querySelector('.arena-stage').getBoundingClientRect();
+      const actor = document.querySelector('.actor-pack-wolf').getBoundingClientRect();
+      const art = document.querySelector('#portrait-pack-wolf img').getBoundingClientRect();
+      const alfa = document.querySelector('.arena-stage .actor-enemy').getBoundingClientRect();
+      const tag = document.querySelector('.pack-wolf-tag').getBoundingClientRect();
+      return {
+        actor: {left: actor.left, right: actor.right, top: actor.top, bottom: actor.bottom},
+        stage: {left: stage.left, right: stage.right, top: stage.top, bottom: stage.bottom},
+        alfaBottom: alfa.bottom,
+        tagAboveArt: tag.bottom <= art.top + 1,
+        barWidth: document.querySelector('.pack-wolf-bar i').style.width,
+        hp: document.querySelector('.pack-wolf-hp').textContent,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+    expect(parseFloat(metrics.barWidth)).toBe(100);
+    expect(metrics.tagAboveArt).toBe(true);
+    expect(metrics.actor.bottom).toBeGreaterThan(metrics.stage.bottom - 2); // de pé no chão
+    expect(metrics.actor.left).toBeGreaterThanOrEqual(metrics.stage.left - 1);
+    expect(metrics.actor.right).toBeLessThanOrEqual(metrics.stage.right + 1);
+    expect(metrics.actor.top).toBeGreaterThanOrEqual(metrics.stage.top - 1);
+    expect(metrics.overflow).toBeLessThanOrEqual(0);
+    await page.waitForFunction(() => !ui.locked);
+    await page.waitForTimeout(350);
+    await shotArena(`${process.env.AUL_PW_ARTIFACTS}/matilha-${width}-invocada.png`);
+
+    // Ferir o lobo: barra e texto andam juntos.
+    await page.getByRole('button', {name:'🐺 Atacar Lobo da Matilha'}).click();
+    await expect(page.locator('.pack-wolf-hp')).not.toHaveText(metrics.hp);
+    const afterHit = await page.evaluate(() => ({
+      bar: document.querySelector('.pack-wolf-bar i').style.width,
+      hp: document.querySelector('.pack-wolf-hp').textContent,
+      sum: document.querySelector('.arena-enemy-state').textContent,
+    }));
+    expect(parseFloat(afterHit.bar)).toBeLessThan(100);
+    expect(afterHit.hp).not.toBe(metrics.hp);
+    await page.waitForFunction(() => !ui.locked);
+    await page.waitForTimeout(350);
+    await shotArena(`${process.env.AUL_PW_ARTIFACTS}/matilha-${width}-ferida.png`);
+
+    // Abater: o ator e o botão somem, mas o Alfa continua.
+    await page.evaluate(() => { ui.monster.packWolfHp = 1; ui.locked = false; render(); });
+    await page.getByRole('button', {name:'🐺 Atacar Lobo da Matilha'}).click();
+    await expect(page.locator('.actor-pack-wolf')).toHaveCount(0);
+    await expect(page.getByRole('button', {name:'🐺 Atacar Lobo da Matilha'})).toHaveCount(0);
+    await expect(page.locator('.actor-enemy')).toBeVisible();
+    expect(diagnostics.errors).toEqual([]);
+    expect(diagnostics.failedAssets).toEqual([]);
+  });
+}

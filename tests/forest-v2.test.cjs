@@ -100,3 +100,56 @@ test('Romar V2 usa três artes recortadas e preserva estágios e escolha final',
     assert.equal(png[25], 6); // RGBA
   }
 });
+
+test('Lobo da Matilha ganha ator próprio na arena sem mudar a mecânica do Alfa', () => {
+  const asset = 'assets/images/enemies/forest/lobo_matilha_combat_v2.png';
+  assert.equal(sha256(asset), 'A767B072A0ABC72BF3068F693EFDBF59F74B3A9A85C628C21E73A3C956502F8B');
+  const png = fs.readFileSync(path.join(root, asset));
+  assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(png.readUInt32BE(16), 1000);
+  assert.equal(png.readUInt32BE(20), 758);
+  assert.equal(png[25], 6); // RGBA
+  // A arte vive na apresentação: não cria criatura, território nem encontro.
+  assert.ok(!/id:'lobo_matilha'/.test(game));
+  assert.match(game, /summons:\{\s*packWolf:\{ x:0\.56, ground:0, w:0\.31, h:0\.44, ax:-0\.5, ay:0 \},?\s*\}/);
+  assert.match(game, /function renderPackWolfActor\(m\)/);
+  assert.match(game, /id="effects-pack-wolf"/);
+  // Mecânica do Alfa permanece: invocação, dano e adiamento da próxima invocação.
+  assert.match(game, /packWolfHpMax:Math\.max\(8,Math\.round\(hp\*0\.12\)\)/);
+  assert.match(game, /Math\.round\(m\.battleBaseAtk\*0\.35\)/);
+  assert.match(game, /m\.alphaNextActionTurn=m\.aiTurns\+4/);
+  assert.match(game, /m\.alphaNextActionTurn=Math\.max\(m\.alphaNextActionTurn,m\.aiTurns\+3\)/);
+});
+
+test('ator do Lobo da Matilha aparece só na fase 0 e mostra nome e barra', () => {
+  const el = {style:{},dataset:{},classList:{add(){},remove(){}},addEventListener(){},appendChild(){},remove(){}};
+  const c = require('node:vm').createContext({
+    console, Date, Math:Object.create(Math), setTimeout(){}, clearTimeout(){}, setInterval(){}, clearInterval(){},
+    document:{getElementById:()=>el,querySelectorAll:()=>[],createElement:()=>({...el})}
+  });
+  require('node:vm').runInContext(game, c);
+  const run = s => require('node:vm').runInContext(s, c);
+  run('newPlayer("guerreiro");ui.inBattle=true;ui.mapIndex=0;');
+
+  const hidden = run('renderPackWolfActor(null)');
+  assert.equal(hidden, '');
+
+  const active = run(`(() => {
+    const monster={id:'alfa_matilha',bossPhase:0,packWolfActive:true,packWolfHp:30,packWolfHpMax:60};
+    ui.monster=monster;
+    return renderPackWolfActor(monster);
+  })()`);
+  assert.match(active, /LOBO DA MATILHA/);
+  assert.match(active, /30\/60 HP/);
+  assert.match(active, /width:50\.0%/);
+  assert.match(active, /lobo_matilha_combat_v2\.png/);
+  assert.match(active, /aria-label="Lobo da Matilha, 30 de 60 pontos de vida"/);
+
+  const laterPhase = run(`(() => {
+    const monster={id:'alfa_matilha',bossPhase:1,packWolfActive:true,packWolfHp:30,packWolfHpMax:60};
+    ui.monster=monster;
+    return renderPackWolfActor(monster);
+  })()`);
+  assert.equal(laterPhase, '');
+});
+

@@ -38,6 +38,9 @@ const COMBAT_PRESENTATION = {
     totem_sangue:{ x:0.55, ground:0.02, w:0.34, h:0.72, ax:-0.5, ay:0 },
     totem_sifao:{ x:0.89, ground:0.02, w:0.34, h:0.72, ax:-0.5, ay:0 },
   },
+  summons:{
+    packWolf:{ x:0.56, ground:0, w:0.31, h:0.44, ax:-0.5, ay:0 },
+  },
 };
 
 const SKILL_COOLDOWN_TURNS = 2;
@@ -547,6 +550,10 @@ function combatPresentationStyle(side, key){
 }
 function ritualTargetPresentationStyle(key){
   const p = Object.assign({}, COMBAT_PRESENTATION.defaultEnemy, (COMBAT_PRESENTATION.ritualTargets && COMBAT_PRESENTATION.ritualTargets[key]) || {});
+  return combatPresentationVars(p);
+}
+function packWolfPresentationStyle(){
+  const p = Object.assign({}, COMBAT_PRESENTATION.defaultEnemy, (COMBAT_PRESENTATION.summons && COMBAT_PRESENTATION.summons.packWolf) || {});
   return combatPresentationVars(p);
 }
 function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
@@ -1603,6 +1610,7 @@ function logPush(html){ battleLog.push(html); if(battleLog.length>40) battleLog.
 
 function combatEffectId(side){
   if(side==='player')return 'effects-player';
+  if(side==='packWolf')return 'effects-pack-wolf';
   if(side==='target-blood')return 'effects-target-blood';
   if(side==='target-siphon')return 'effects-target-siphon';
   return 'effects-enemy';
@@ -1822,6 +1830,21 @@ function renderShamanRitualActors(m){
     </div>`;
   }).join('');
 }
+/* Lobo da Matilha: segundo ator do Alfa, com arte, nome e barra proprios.
+   Somente apresentacao: HP, dano, esquiva e a Cacada Coordenada continuam no Alfa. */
+let packWolfPaint = { monster:null, active:false };
+function renderPackWolfActor(m){
+  const shown = !!(m && ui.inBattle && ui.mapIndex===0 && m.id==='alfa_matilha' && m.bossPhase===0 && m.packWolfActive && m.packWolfHp>0);
+  const entering = shown && (packWolfPaint.monster!==m || !packWolfPaint.active);
+  packWolfPaint = { monster:m, active:shown };
+  if(!shown) return '';
+  const pct = Math.max(0, Math.min(100, (m.packWolfHp/m.packWolfHpMax)*100)).toFixed(1);
+  return `<div class="arena-actor actor-pack-wolf${entering?' pack-wolf-enter':''}" ${packWolfPresentationStyle()} role="group" aria-label="Lobo da Matilha, ${m.packWolfHp} de ${m.packWolfHpMax} pontos de vida">
+        <div class="pack-wolf-tag"><span class="pack-wolf-name">LOBO DA MATILHA</span><span class="pack-wolf-bar"><i style="width:${pct}%"></i></span><span class="pack-wolf-hp">${m.packWolfHp}/${m.packWolfHpMax} HP</span></div>
+        <div class="combatant-artwork portrait-ring portrait-natural" id="portrait-pack-wolf"><img src="assets/images/enemies/forest/lobo_matilha_combat_v2.png" class="avatar-img-circle" alt="Lobo da Matilha"></div>
+        <div class="combatant-effects" id="effects-pack-wolf" aria-hidden="true"></div>
+      </div>`;
+}
 function renderShamanTargetButtons(m){
   if(!m || !m.shamanRitual || !m.shamanTargets)return '';
   return `<div class="ritual-target-actions">${Object.entries(m.shamanTargets).map(([key,t])=>{
@@ -1968,7 +1991,7 @@ function enemyBehaviorChip(m){
     if(m.alphaMoonPrepared) return '<span class="arena-enemy-chip warning">LUA DA CAÇADA PREPARADA</span>';
     if(m.alphaCounterStance) return '<span class="arena-enemy-chip warning">O ALFA OBSERVA SEU ATAQUE</span>';
     if(m.alphaChargePrepared) return '<span class="arena-enemy-chip warning">INVESTIDA DO ALFA PREPARADA</span>';
-    if(m.packWolfActive) return `<span class="arena-enemy-chip danger">MATILHA ATIVA · Lobo ${m.packWolfHp}/${m.packWolfHpMax} HP</span>`;
+    if(m.packWolfActive) return `<span class="arena-enemy-chip danger">MATILHA ATIVA · CAÇADA COORDENADA</span>`;
     return `<span class="arena-enemy-chip">${['COMANDANTE DA MATILHA','O PREDADOR','INSTINTO DO ALFA'][m.bossPhase]}</span>`;
   }
   return '';
@@ -2105,6 +2128,7 @@ function attackPackWolf(){
   }
   monsterCounterTurn(false);
   render();
+  floatNumber('packWolf','-'+hit.dmg,hit.isCrit?'crit':'dmg');
 }
 
 /* Executa uma rodada: dano do jogador no monstro, depois (se vivo) contra-ataque do monstro */
@@ -2979,6 +3003,7 @@ function renderBatalhaTab(){
           <div class="combatant-artwork portrait-ring ${m.portraitLayout==='natural'?'portrait-natural':''} ${map.fam} ${(m.isBoss||m.isMiniBoss)?'fam-boss':''}" id="portrait-enemy">${monsterAvatarHtml(m,'avatar-img-circle')}</div>
           <div class="combatant-effects" id="effects-enemy" aria-hidden="true"></div>
         </div>
+        ${renderPackWolfActor(m)}
         <div class="arena-global-effects" aria-hidden="true"></div>
       </div>
       <div class="arena-hud-grid">
@@ -3007,7 +3032,7 @@ function renderBatalhaTab(){
       <button class="action-btn" ${ui.locked?'disabled':''} onclick="playerAttack()">Atacar</button>
       ${isSwampLord() && m.submerged ? `<button class="action-btn" ${ui.locked?'disabled':''} onclick="waitForSwampLord()">AGUARDAR</button>` : ''}
       <button class="action-btn secondary" ${fleeDisabled?'disabled':''} ${fleeBlocked?'data-force-disabled="1"':''} onclick="fleeBattle()">Fugir</button>
-      ${ui.mapIndex===0 && m.id==='alfa_matilha' && m.bossPhase===0 && m.packWolfActive ? `<button class="action-btn secondary" ${ui.locked?'disabled':''} onclick="attackPackWolf()">🐺 Atacar Lobo da Matilha · ${m.packWolfHp}/${m.packWolfHpMax} HP</button>` : ''}
+      ${ui.mapIndex===0 && m.id==='alfa_matilha' && m.bossPhase===0 && m.packWolfActive ? `<button class="action-btn secondary" ${ui.locked?'disabled':''} onclick="attackPackWolf()">🐺 Atacar Lobo da Matilha</button>` : ''}
     </div>
     ${player.classKey==='mago' && hasMagMilestone(100) && getMagDomain()==='destruidor' ? `<button class="action-btn secondary" style="width:100%;margin:0 0 8px;" onclick="player.overchargeNext=!player.overchargeNext;render()">🔥 Sobrecarga: ${player.overchargeNext?'ATIVA':'DESATIVADA'}</button>` : ''}
     <div class="skills-row">${skills}</div>

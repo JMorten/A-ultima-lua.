@@ -723,6 +723,28 @@
 .ritual-target-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0;}
 .ritual-target-actions .action-btn{font-size:12px;line-height:1.25;white-space:normal;min-height:48px;}
 .ritual-target-actions .action-btn.selected{border-color:var(--gold);box-shadow:0 0 0 1px rgba(200,168,92,.38);}
+/* Lobo da Matilha: segundo ator do Alfa, com nome e barra proprios.
+   A altura vem da largura (aspect-ratio) para a etiqueta encostar no topo da arte
+   em qualquer tela, sem depender da altura do palco. */
+.arena-actor.actor-pack-wolf{z-index:4;pointer-events:none;height:auto;aspect-ratio:1000/758;}
+.arena-actor.actor-pack-wolf > .combatant-artwork{overflow:visible;}
+.pack-wolf-tag{
+  position:absolute;left:50%;bottom:100%;transform:translateX(-50%);
+  display:grid;gap:2px;justify-items:center;width:max-content;max-width:46vw;margin-bottom:2px;
+  padding:3px 6px;text-align:center;line-height:1.15;
+  background:rgba(12,9,7,.62);border:1px solid rgba(126,100,62,.55);border-radius:9px;
+  box-shadow:0 2px 6px rgba(0,0,0,.45);
+}
+.pack-wolf-name{font-size:8px;letter-spacing:.1em;color:#d8c7a6;text-shadow:0 1px 3px #000;white-space:nowrap;}
+.pack-wolf-bar{display:block;width:100%;min-width:58px;height:4px;border:1px solid #6b5638;border-radius:999px;background:#150f0b;overflow:hidden;}
+.pack-wolf-bar i{display:block;height:100%;background:linear-gradient(#d08a4a,#8d3f22);transition:width .25s ease-out;}
+.pack-wolf-hp{font-size:7.5px;letter-spacing:.05em;color:#b0a18c;text-shadow:0 1px 2px #000;}
+.actor-pack-wolf.pack-wolf-enter{animation:packWolfEnter .42s cubic-bezier(.2,.7,.35,1);}
+@keyframes packWolfEnter{
+  from{opacity:0;transform:translate(var(--actor-anchor-x),calc(var(--actor-anchor-y) + 10px)) scale(.94);}
+  to{opacity:1;transform:translate(var(--actor-anchor-x),var(--actor-anchor-y)) scale(1);}
+}
+@media (prefers-reduced-motion:reduce){.actor-pack-wolf.pack-wolf-enter{animation:none;}}
 .arena-hud-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 12px;margin-top:8px;}
 .arena-hud-grid .combatant-ui{text-align:center;min-width:0;}
 .arena-battlefield .combatant-heading h4{font-size:14px;line-height:1.25;margin:0;overflow-wrap:anywhere;}
