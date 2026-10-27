@@ -23,7 +23,7 @@
 2. **Validação física do Romar V2 — concluída:** aberto no Safari/iPhone (`?v=a92987ce`), botões **ROMAR · ESTÁGIO 1/2/3**. Transições e reação de impacto confirmadas. Promovido à produção em `30df194c`.
 3. **Reconciliação de linhas Git:** decidir como unir `081fce4` (`qa-preview`) com `origin/qa-preview` (`11bff6c`).
 4. **Promoção à produção — concluída:** deploy direto do `_qa-dist` (build `9544043`) em `a-ultima-lua-qa` → `30df194c-a4be-4299-876d-1841d0c3eea0`. URL: https://a-ultima-lua-qa.pages.dev/. Paridade verificada; smoke em WebKit OK.
-5. **Sincronizar `main` com a produção:** a promoção foi por deploy direto; o `main` segue em `f7e25ef` e não contém os 23 commits da feature. Decidir merge ou cherry-pick antes de trabalhar no Alfa.
+5. **Sincronização do `main` — concluída:** merge `--no-ff` da feature em `main` (`76ed84f`), 195/195 Node, push `4833b5f..76ed84f`. O deploy automático do Pages (branch `main`) deve reproduzir o build `9544043`.
 6. **Trabalho no Alfa:** próximo escopo combinado, a ser detalhado.
 7. **Cobertura documental:** manter bestiário e manifesto sincronizados quando arte ou entidade mudar.
 
