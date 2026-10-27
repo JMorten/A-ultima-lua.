@@ -260,7 +260,9 @@ for (const width of [320, 375, 390]) {
     // Caminho real: o primeiro contra-ataque do Alfa convoca a matilha.
     await page.getByRole('button', {name:'Atacar', exact:true}).click();
     await expect(page.locator('.actor-pack-wolf')).toBeVisible();
-    await expect(page.locator('.pack-wolf-name')).toHaveText('LOBO DA MATILHA');
+    // Nome não fica sobre a arte; identidade segue no rótulo acessível e no botão.
+    await expect(page.locator('.pack-wolf-name')).toHaveCount(0);
+    await expect(page.locator('.actor-pack-wolf')).toHaveAttribute('aria-label', /Lobo da Matilha, \d+ de \d+ pontos de vida/);
     await expect(page.locator('#portrait-pack-wolf img')).toHaveAttribute('src', 'assets/images/enemies/forest/lobo_matilha_combat_v2.png');
     await page.waitForFunction(() => {
       const image = document.querySelector('#portrait-pack-wolf img');

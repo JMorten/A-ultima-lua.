@@ -121,7 +121,7 @@ test('Lobo da Matilha ganha ator próprio na arena sem mudar a mecânica do Alfa
   assert.match(game, /m\.alphaNextActionTurn=Math\.max\(m\.alphaNextActionTurn,m\.aiTurns\+3\)/);
 });
 
-test('ator do Lobo da Matilha aparece só na fase 0 e mostra nome e barra', () => {
+test('ator do Lobo da Matilha aparece só na fase 0 e mostra barra sem nome sobreposto', () => {
   const el = {style:{},dataset:{},classList:{add(){},remove(){}},addEventListener(){},appendChild(){},remove(){}};
   const c = require('node:vm').createContext({
     console, Date, Math:Object.create(Math), setTimeout(){}, clearTimeout(){}, setInterval(){}, clearInterval(){},
@@ -139,7 +139,8 @@ test('ator do Lobo da Matilha aparece só na fase 0 e mostra nome e barra', () =
     ui.monster=monster;
     return renderPackWolfActor(monster);
   })()`);
-  assert.match(active, /LOBO DA MATILHA/);
+  // O nome vive no rótulo acessível e no botão, não sobre a arte.
+  assert.doesNotMatch(active, /pack-wolf-name|LOBO DA MATILHA/);
   assert.match(active, /30\/60 HP/);
   assert.match(active, /width:50\.0%/);
   assert.match(active, /lobo_matilha_combat_v2\.png/);

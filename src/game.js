@@ -1830,7 +1830,8 @@ function renderShamanRitualActors(m){
     </div>`;
   }).join('');
 }
-/* Lobo da Matilha: segundo ator do Alfa, com arte, nome e barra proprios.
+/* Lobo da Matilha: segundo ator do Alfa, com arte e barra proprios.
+   O nome fica no rotulo acessivel e no botao de ataque, nao sobre a arte.
    Somente apresentacao: HP, dano, esquiva e a Cacada Coordenada continuam no Alfa. */
 let packWolfPaint = { monster:null, active:false };
 function renderPackWolfActor(m){
@@ -1840,7 +1841,7 @@ function renderPackWolfActor(m){
   if(!shown) return '';
   const pct = Math.max(0, Math.min(100, (m.packWolfHp/m.packWolfHpMax)*100)).toFixed(1);
   return `<div class="arena-actor actor-pack-wolf${entering?' pack-wolf-enter':''}" ${packWolfPresentationStyle()} role="group" aria-label="Lobo da Matilha, ${m.packWolfHp} de ${m.packWolfHpMax} pontos de vida">
-        <div class="pack-wolf-tag"><span class="pack-wolf-name">LOBO DA MATILHA</span><span class="pack-wolf-bar"><i style="width:${pct}%"></i></span><span class="pack-wolf-hp">${m.packWolfHp}/${m.packWolfHpMax} HP</span></div>
+        <div class="pack-wolf-tag"><span class="pack-wolf-bar"><i style="width:${pct}%"></i></span><span class="pack-wolf-hp">${m.packWolfHp}/${m.packWolfHpMax} HP</span></div>
         <div class="combatant-artwork portrait-ring portrait-natural" id="portrait-pack-wolf"><img src="assets/images/enemies/forest/lobo_matilha_combat_v2.png" class="avatar-img-circle" alt="Lobo da Matilha"></div>
         <div class="combatant-effects" id="effects-pack-wolf" aria-hidden="true"></div>
       </div>`;
