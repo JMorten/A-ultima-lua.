@@ -1,476 +1,159 @@
 # A ÚLTIMA LUA — PROJECT CHECKPOINT
 
-Última atualização: 13/10/2026
+**Última atualização:** 27/10/2026
+**Papel deste arquivo:** ponto de entrada para qualquer agente (Codex, OpenCode, ChatGPT).
+O estado canônico fica em `docs/memoria/`. Este arquivo resume e aponta; não duplica.
 
-## FINALIDADE
-
-Este documento registra o ponto atual de continuidade do projeto.
-
-Ele deve permitir reconstruir o estado do desenvolvimento mesmo se o
-histórico do ChatGPT ou Codex for perdido ou dessincronizado.
-
-Nunca alterar código apenas para fazê-lo coincidir com este documento.
-
-Quando houver divergência, comparar o checkpoint com Git, código e testes
-e apresentar a divergência antes de qualquer modificação.
+> Regra: nunca alterar código só para fazê-lo coincidir com este documento.
+> Se houver divergência entre documento, Git e testes, **relate antes de editar**.
 
 ---
 
-## ESTADO GIT
+## 1. Onde está a verdade
 
-Branch:
-main
+| Arquivo | O que contém |
+|---|---|
+| `AGENTS.md` | Regras obrigatórias de desenvolvimento |
+| `docs/memoria/ESTADO_ATUAL.md` | Estado verificado, com data e nível de evidência |
+| `docs/memoria/PROXIMOS_PASSOS.md` | Pendências que exigem decisão humana |
+| `docs/memoria/DECISOES_APROVADAS.md` | Aprovações registradas (não inferir as que não estão lá) |
+| `docs/memoria/BESTIARIO_FLORESTA_UIVANTE.md` | Entidades da Floresta, assets e status |
+| `docs/memoria/MANIFESTO_ARTES.json` | Artes, hashes e estado de aprovação |
+| `docs/memoria/HISTORICO_DESENVOLVIMENTO.md` | Histórico do desenvolvimento |
+| `docs/memoria/ARQUITETURA.md` | Como o Palácio funciona |
 
-Último commit versionado confirmado antes da atualização documental:
-
-7582299fc91af188683f4f80e862102d6e867af5
-Add Playwright Gorthak boss QA V3
-
-Histórico recente (ordem cronológica):
-
-- 4833b5f69fd14fe72c68919b84ed500704677898 — Build Gorthak boss encounter
-- 6619bc72bbe947f63da8487dbeea449bbf30ec8c — Add project recovery checkpoint
-- 7c8784ab0ad3139b2d5a0620d1711314e695b8de — Build deterministic Trenches progression
-- 3e1b884031f9d94641ba866e2e63bd86d4206992 — Fix Shaman ritual retaliation persistence
-- 1079f50985cdaed59cb20c5d730e281231f8addb — Add isolated Playwright browser QA V1
-- 84bad8626fd81a4990da6ba3a005943964ccced4 — Add Playwright Shaman ritual QA V2
-- 7582299fc91af188683f4f80e862102d6e867af5 — Add Playwright Gorthak boss QA V3
-
-Working tree conhecido:
-
-Após o commit da Playwright QA V3, os demais arquivos rastreados estavam limpos.
-Esta atualização documental é o único arquivo staged para consolidação.
-
-Não rastreados:
-- .wrangler/
-- _qa-dist.zip
-
-Antes deste commit documental, somente PROJECT-CHECKPOINT.md estava staged; não havia alterações rastreadas unstaged.
-
-A referência remota foi consultada diretamente: origin/main = 4833b5f69fd14fe72c68919b84ed500704677898. A branch main local contém seis commits posteriores a essa referência (listados acima), além deste commit do checkpoint. Nenhum push ou deploy foi realizado.
+`PROJECT-CHECKPOINT.md` (este arquivo) existe para o primeiro comando de uma sessão.
+Ele **não substitui** o Palácio.
 
 ---
 
-## ESTADO ATUAL
+## 2. Snapshot Git — 27/10/2026
 
-Implementados:
-
-- Arena V2.4
-- Orc Batedor / Alerta de Guerra
-- Orc Xamã como miniboss
-- ritual do Xamã com dois Totens
-- Warlord Gorthak V1 com três fases
-- progressão determinística das Trincheiras implementada e commitada
-- Playwright QA V1, V2 e V3 versionadas em tests/browser/
-- sistemas anteriores da Floresta Uivante
-- Pântano Podre
-- Romar
-- Lucas
-- Forja
-
-Territórios existentes:
-
-T1 — Floresta Uivante
-T2 — Pântano Podre
-T3 — Trincheiras Orc
-T4 — Cripta Sangrenta
-
-Não existe T5 implementado neste checkpoint.
+- **Worktree documental:** `D:\Projetos\A-ultima-lua`
+- **Branch:** `docs/palacio-memoria-v1`
+- **HEAD:** `01cf700` — *Record hit reactions for Romar and the pack wolf*
+- **Remote:** `origin` = `https://github.com/JMorten/A-ultima-lua..git`
+  (a branch atual não tem upstream configurado; nada foi enviado nesta atualização)
+- **Outras linhas de desenvolvimento:** ver `ESTADO_ATUAL.md` §"Linhas de desenvolvimento".
+  Existem worktrees em `laboratorios/` — não sincronizar, não fazer merge e não
+  apagar sem autorização.
+- **Versão:** VS 1.18 é a baseline funcional oficial (`README.md`).
 
 ---
 
-## TRINCHEIRAS ORC
+## 3. Estado em 30 segundos
 
-Inimigos comuns:
-
-- Orc Batedor
-- Orc Guerreiro
-- Orc Capitão
-- Açougueiro da Trincheira
-
-Miniboss:
-
-- Orc Xamã
-
-Boss:
-
-- Warlord Gorthak
-
-A organização antiga em que Xamã era comum e Açougueiro era miniboss
-não representa mais o estado atual.
+- **T1 — Floresta Uivante:** reformulação visual V2 aprovada para Lobo Comum, Lobo
+  Cinzento, Lobisomem Jovem, Uivante das Sombras, Romar e Lobo da Matilha.
+  Commits na branch `feature/floresta-uivante-v2-etapa1`, com QA isolado publicado.
+  Safari físico confirmado para os quatro primeiros; **Romar e Lobo da Matilha
+  aguardam teste no iPhone**.
+- **T2 — Pântano Podre:** implementado (Senhor do Pântano, materiais, vitória pendente).
+- **T3 — Trincheiras Orc:** progressão determinística, Xamã ritualístico, Gorthak e
+  Arena V2.4 implementados na linha QA/release.
+- **T4 — Cripta Sangrenta:** definida no código; sem revisão visual V2 equivalente.
+- **T5:** não existe.
+- **Produção:** inalterada. Nenhuma promoção autorizada.
+- **Persistência:** `localStorage`, chave `a-ultima-lua.checkpoint`, schema 5.
 
 ---
 
-## PROGRESSÃO T3 — IMPLEMENTADA E COMMITADA
+## 4. Testes — o que foi realmente executado
 
-A implementação versionada contém:
+Executado em 27/10/2026 neste worktree:
 
-7 vitórias contra os quatro Orcs comuns válidos
-→ desafio direto ao Orc Xamã
-→ vitória contra Xamã
-→ Gorthak desbloqueado permanentemente.
+```powershell
+cd "D:\Projetos\A-ultima-lua"
+node --test tests/*.test.cjs
+```
 
-Após cada vitória contra Xamã:
+Resultado: **171/171 Node** (0 falhas).
 
-7 novas vitórias comuns
-→ Xamã disponível novamente.
+Referências registradas no Palácio para o worktree da branch feature:
+**195/195 Node**, **80/80 Chromium** e **19/19 WebKit** na suíte `forest-v2`.
+Contagens de datas e escopos diferentes **não devem ser somadas**.
 
-Também está implementado:
-
-- botão de desafio direto ao Xamã;
-- verificação do requisito;
-- Xamã excluído do sorteio aleatório de exploração;
-- UI "Patrulhas rompidas: X/7";
-- Gorthak anteriormente derrotado permanece liberado;
-- compatibilidade não inventa vitória contra Xamã.
-
-Na criação deste checkpoint, essas alterações eram locais e não pertenciam
-ao commit 4833b5f. Após revisão aprovada, foram versionadas em:
-
-7c8784ab0ad3139b2d5a0620d1711314e695b8de
-Build deterministic Trenches progression
-
-A implementação técnica está confirmada.
-
-Devido à perda parcial do histórico de conversa, não presumir uma
-aprovação final de game design além do que estiver documentado.
+Teste em Chromium/WebKit não substitui iPhone físico.
 
 ---
 
-## ORC XAMÃ
+## 5. Pendências que exigem decisão humana
 
-Base:
-
-HP 360
-ATQ 48
-DEF 20
-XP 240
-Moedas 75–105
-
-Começa em transe e não pode ser atacado diretamente.
-
-Totem de Sangue:
-150 HP
-10 DEF
-
-Totem da Essência:
-150 HP
-10 DEF
-
-Ritual:
-
-Atacar o Totem da Essência enquanto o Totem de Sangue existe:
-→ Retaliação do Sangue
-→ 20% do dano efetivamente removido retorna ao jogador.
-
-Atacar o Totem de Sangue enquanto o Totem da Essência existe:
-→ 20% do dano efetivamente removido é armazenado como energia no Xamã.
-
-Overkill não aumenta esses efeitos.
-
-Quando ambos são destruídos:
-
-- ritual termina;
-- energia armazenada é aplicada;
-- Xamã desperta;
-- arte muda;
-- combate direto começa.
-
-O despertar não concede ataque gratuito.
-
-Totens não fornecem XP, moedas ou drops próprios.
+1. **Validação física no Safari/iPhone** do Lobo da Matilha e do Romar
+   (URL e roteiro em `docs/memoria/PROXIMOS_PASSOS.md`).
+2. **Reconciliação de `qa-preview`:** local `081fce4` × `origin/qa-preview` `11bff6c`.
+3. **Promoção à produção** da Floresta V2 — não autorizada.
+4. **Backup dos arquivos não versionados** (seção 6). Eles existem só neste disco.
 
 ---
 
-## GORTHAK V1
+## 6. Arquivos não versionados (preservados no disco)
 
-Implementado e versionado no HEAD atual.
+Arte aprovada e pacotes de referência, mantidos fora do Git por tamanho:
 
-Base:
+| Arquivo | Tamanho |
+|---|---|
+| `lobo-comum-v2-aprovado.png` | 2,6 MB |
+| `lobo-cinzento-v2-aprovado.png` | 2,9 MB |
+| `lobisomem-jovem-v2-aprovado.png` | 2,3 MB |
+| `uivante-sombras-v2-aprovado.png` | 2,2 MB |
+| `romar-v2-aprovado-1.png` / `-2` / `-3` | 2,5 / 2,8 / 2,8 MB |
+| `pack_wolf_subordinate_cutout.png` | 1,7 MB |
+| `comparacao-lobisomem-jovem-v2.png` | 0,8 MB |
+| `pacote-floresta-v2.zip` | 5,1 MB |
+| `Imagem do ChatGPT 18 de out. de 2026, 12_30_18.jpg` | 0,03 MB |
 
-HP 740
-ATQ 72
-DEF 30
-XP 300
-Moedas 150–220
-
-Fase 1 — Comandante:
-
-2 ataques normais
-→ preparação
-→ Golpe Demolidor ×1,8
-
-Fase 2 — Fúria de Guerra em HP <= 65%:
-
-normal
-→ Golpe Pesado ×1,25
-→ preparação
-→ Golpe Demolidor ×1,8
-
-Fase 3 — Último Avanço em HP <= 30%:
-
-ATQ efetivo +25%
-DEF efetiva -30%
-
-A entrada na fase final cancela Demolidor pendente e abandona os
-ciclos anteriores.
-
-Primeira tentativa de fuga na fase final:
-
-SEM ESCAPATÓRIA
-
-Não consome ação, HP ou MP.
-Depois disso, fuga fica desabilitada.
-
-Não considerar Golpe Demolidor interruptível sem implementação
-específica.
+Total: ~26 MB. Eles estão listados em `.gitignore` para o `git status` ficar limpo.
+**Não estão no Git:** se este computador falhar, eles se perdem. Copie para um backup
+ou publique em um Release quando houver autorização.
 
 ---
 
-## ARENA V2.4
+## 7. Regra para futuras sessões
 
-A arquitetura atual suporta:
-
-- background compartilhado;
-- atores independentes;
-- artwork separado;
-- efeitos separados;
-- HUD separado;
-- atores adicionais;
-- Totens;
-- fases;
-- preparações;
-- apresentação responsiva/mobile-first.
-
-Trincheiras possuem background territorial próprio.
-
-A migração visual dos demais territórios e combatentes ainda é parcial.
+1. Ler este arquivo, `AGENTS.md` e `docs/memoria/ESTADO_ATUAL.md`.
+2. Rodar `git status` e `git log -5`.
+3. Comparar com o snapshot da seção 2.
+4. **Relatar divergências antes de modificar qualquer arquivo.**
+5. Não inferir aprovação de arte ou de design que não esteja em `DECISOES_APROVADAS.md`.
+6. Não apagar trabalho local para "limpar" o repositório.
+7. Não sincronizar branches, não fazer merge e não publicar sem autorização.
 
 ---
 
-## PERSISTÊNCIA
+## 8. Como continuar em outro chat
 
-Schema:
-5
+O estado **não fica na conversa**: fica nesta pasta (Git + Palácio da Memória).
 
-localStorage:
-a-ultima-lua.checkpoint
+1. **Melhor opção:** abrir o agente **dentro de `D:\Projetos\A-ultima-lua`**
+   (OpenCode, Codex CLI, Claude Code). Ele lê o Git e o Palácio de verdade.
+2. **ChatGPT web:** anexar `PROJECT-CHECKPOINT.md` e
+   `docs/memoria/ESTADO_ATUAL.md`, e colar a frase abaixo. Ele orienta; quem edita
+   os arquivos é você.
+3. Se este chat acabar, o próximo começa por este arquivo.
 
-O save é local por navegador/origem.
+Frase pronta para colar:
 
-Não existe sincronização automática de save entre dispositivos.
-
-Vitória pendente possui persistência para impedir reroll e duplicação de
-recompensas.
-
-Combate ativo não é retomado após reload.
-
----
-
-## BUG CORRIGIDO — RETALIAÇÃO DO SANGUE
-
-STATUS:
-CORRIGIDO / COMMITADO / VALIDADO AUTOMATICAMENTE
-Validação humana da correção no iPhone/Safari ainda pendente.
-
-Reprodução histórica antes da correção:
-
-HP inicial:
-100
-
-Ataque básico causa:
-40 de dano efetivo ao Totem da Essência
-
-Retaliação:
-8 HP
-
-HP em memória:
-92
-
-HP no checkpoint:
-100
-
-Após reload simulado:
-100
-
-Causa identificada:
-
-playerAttack()
-→ resolveShamanRitualHit()
-
-Esse caminho contornava o hook combatResourceAction utilizado pelo fluxo
-normal de resolvePlayerHit().
-
-A perda de HP acontecia em memória, mas não era imediatamente persistida.
-
-usarSkill() possui hook próprio.
-
-Portanto, não generalizar esse bug para skills sem evidência adicional.
-
-Correção versionada em:
-3e1b884031f9d94641ba866e2e63bd86d4206992
-Fix Shaman ritual retaliation persistence
-
-Wrapper condicional de playerAttack() na camada de persistência, aplicando
-combatResourceAction somente ao ataque básico válido durante o ritual.
-A condição é capturada antes do ataque, preservando inclusive a persistência
-quando o segundo Totem é destruído nessa ação.
-
-A correção:
-- não altera src/game.js;
-- não altera Schema 5;
-- não altera regras de combate;
-- não adiciona persistência aos Totens, Retaliação ou timers;
-- não duplica persistência de skills;
-- não adiciona hook redundante ao ataque básico normal.
-
-Regressão automatizada confirmada: HP em memória e checkpoint ficam em 92
-após a ação; reload mantém 92 e não retoma o combate ou ritual.
+> Estou continuando o projeto A Última Lua em `D:\Projetos\A-ultima-lua`.
+> Leia `PROJECT-CHECKPOINT.md`, `AGENTS.md` e `docs/memoria/ESTADO_ATUAL.md`.
+> Não sou programador: explique simples, diga onde clicar e rode os comandos você
+> mesmo quando possível. O HEAD é `01cf700`, a suíte Node passou 171/171 e nada
+> foi publicado nesta atualização.
 
 ---
 
-## TESTES
+## 9. Histórico
 
-Última execução registrada:
+O texto anterior deste checkpoint (13/10/2026, base `7582299`) foi substituído em
+27/10/2026 por estar desatualizado — o Palácio já registrava essa divergência.
+Ele continua preservado no Git:
 
-150/150 testes aprovados.
+```powershell
+git show 01cf700:PROJECT-CHECKPOINT.md
+```
 
-Essa é a referência verde mais recente conhecida.
+O conteúdo histórico completo (Trincheiras, Xamã, Gorthak, Arena V2.4, correção da
+Retaliação do Sangue) continua em `docs/memoria/HISTORICO_DESENVOLVIMENTO.md` e nos
+commits listados em `ESTADO_ATUAL.md`.
 
-Referência anterior: 145/145 testes passando antes da correção.
-
-A reprodução histórica foi inicialmente feita separadamente da suíte.
-Com a correção, foram adicionados cinco testes cobrindo:
-
-- Retaliação e persistência imediata;
-- ataque bloqueado;
-- isolamento de skill e ataque normal;
-- destruição do segundo Totem;
-- Retaliação letal e vitória pendente/idempotência.
-
-A suíte completa passou após a correção. A revisão final e esta atualização
-documental não executaram novamente a suíte.
-
----
-
-## FORJA
-
-Implementados:
-
-- Lucas
-- oficina
-- materiais
-- desmontagem
-- conhecimento permanente de receitas
-
-Ainda não implementados:
-
-- crafting efetivo
-- fabricação do Anel da Grande Mãe Lua
-- propriedades finais do Anel
-- sistema final de raridade de crafting
-
-Não transformar referências futuras de crafting em decisões finais sem
-aprovação.
-
----
-
-## QA DE NAVEGADOR E PUBLICAÇÃO (13/10/2026)
-
-QA Debug é acrescentado somente pelo gerador _qa/build.cjs ao artefato _qa-dist. O HTML de produção não referencia o painel. O _config.yml do Jekyll exclui _qa, _qa-dist e os testes QA; não adicionar .nojekyll nem publicar a raiz bruta.
-
-A configuração Cloudflare Pages consultada em modo somente leitura identifica o projeto a-ultima-lua-qa, conectado ao repositório JMorten/A-ultima-lua., branch de produção main, previews habilitados para todas as branches, raiz vazia, comando node _qa/build.cjs e saída _qa-dist. O projeto Cloudflare é separado do destino GitHub Pages do jogo, embora a implantação de main seja o ambiente production dentro desse projeto QA. O deployment mais recente consultado é de 04/10/2026, commit 4833b5f, e não há deployments preview registrados. A URL do projeto é https://a-ultima-lua-qa.pages.dev.
-
-Nesta auditoria, node --test tests/*.test.cjs passou 150/150. O runner Playwright não foi validado: a primeira execução encontrou bloqueio de permissão ao escrever em artifacts existente; cópias temporárias isoladas encontraram a porta 4179 ocupada, e a tentativa com porta alternativa permaneceu sem resultado e foi interrompida. WebKit não está instalado. O runner existente compila as entradas em diretório temporário, mas grava os resultados no diretório de artefatos do checkout que o executa; a próxima tentativa deve ocorrer numa cópia descartável e com porta livre.
-
-O próximo deploy seguro requer uma branch Git não-prod separada: main é a branch de produção do projeto Cloudflare QA. Não existe branch QA local ou remota nesta auditoria. O _config.yml exclui os artefatos QA do build Jekyll; as configurações remotas atuais do GitHub Pages não foram confirmadas nesta auditoria. Criar/enviar a branch depende de autorização separada; nenhum push, deploy ou alteração de configuração foi feito.
-
----
-
-## PONTOS DE ATENÇÃO
-
-- Preservar os commits da progressão T3 e da correção da Retaliação.
-- Não usar _qa-dist.zip como build atual sem nova validação.
-- Testes automatizados não substituem playtest real no iPhone/Safari.
-- Save localStorage não sincroniza automaticamente entre dispositivos.
-- Parte do histórico recente do ChatGPT foi perdida/dessincronizada.
-- Decisões existentes somente na conversa perdida não devem ser
-  reconstruídas por suposição.
-
----
-
-## PONTO DE RETOMADA
-
-Estado técnico antes da consolidação documental:
-
-7582299
-+ seis commits locais posteriores a origin/main (4833b5f)
-+ QA Playwright V1–V3 versionada
-+ suíte Node: 150/150 nesta auditoria
-+ execução Playwright pendente por restrições de artefatos/porta; WebKit ausente
-+ configuração Cloudflare QA identificada, sem deploy preview atual.
-
-Etapas concluídas desde o checkpoint original:
-
-- Working tree preservado e checkpoint criado/versionado.
-- Progressão T3 revisada, aprovada e commitada.
-- Persistência da Retaliação corrigida, revisada e commitada.
-- Testes de regressão adicionados e suíte completa aprovada.
-
-Próximo passo: após autorização expressa, criar e enviar uma branch não-prod para preview QA no Cloudflare. Manter pendente a validação real das Trincheiras no iPhone/Safari.
-
-Objetivos do playtest:
-- progressão 0/7 → Xamã;
-- botão de desafio;
-- ritual e Totens;
-- Retaliação;
-- despertar do Xamã;
-- desbloqueio de Gorthak;
-- fases de Gorthak;
-- recorrência do Xamã;
-- comportamento de reload/checkpoint;
-- Arena V2.4 e layout mobile.
-
-As Trincheiras ainda NÃO estão completamente encerradas: falta validação
-humana em dispositivo real. Após essa validação, fechar tecnicamente o
-ciclo e somente depois escolher a próxima etapa de game design.
-
----
-
-## REGRA PARA FUTURAS SESSÕES
-
-Ao retomar o projeto:
-
-1. Ler PROJECT-CHECKPOINT.md.
-2. Executar git status.
-3. Identificar HEAD.
-4. Comparar alterações posteriores ao checkpoint.
-5. Ler commits posteriores.
-6. Executar testes quando apropriado.
-7. Relatar divergências antes de modificar qualquer arquivo.
-
-Nunca apagar trabalho local para fazer o repositório coincidir com este
-checkpoint.
-
----
-
-## MANUTENÇÃO DO CHECKPOINT
-
-Atualizar este documento após etapas relevantes quando houver:
-
-- novo commit;
-- feature concluída;
-- decisão de design aprovada;
-- playtest;
-- bug encontrado ou corrigido;
-
-
-- alteração importante ainda não commitada;
-- mudança na referência de testes;
-- mudança no próximo passo.
-
-Não registrar brainstorming como decisão aprovada.
-Não reescrever silenciosamente decisões antigas.
-Quando uma decisão mudar, preservar a mudança de direção de forma clara.
-
-FIM DO CHECKPOINT.
+**FIM DO CHECKPOINT.**

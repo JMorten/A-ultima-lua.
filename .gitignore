@@ -16,3 +16,15 @@
 # destruiria o trabalho das branches. Os arquivos sao rastreados pela branch
 # correspondente, nao por este checkout.
 /laboratorios/
+
+# Arte aprovada e pacotes de referencia: evidencia local, fora do Git por tamanho.
+# Ver PROJECT-CHECKPOINT.md, secao 6 (backup recomendado).
+/lobo-comum-v2-aprovado.png
+/lobo-cinzento-v2-aprovado.png
+/lobisomem-jovem-v2-aprovado.png
+/uivante-sombras-v2-aprovado.png
+/romar-v2-aprovado-*.png
+/pack_wolf_subordinate_cutout.png
+/comparacao-lobisomem-jovem-v2.png
+/pacote-floresta-v2.zip
+/Imagem do ChatGPT*.jpg
