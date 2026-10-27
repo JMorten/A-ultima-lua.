@@ -215,6 +215,7 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Limite:** não houve teste em Safari/iPhone. A regra de baseline do combate passou a neutralizar apenas as linhas de retrato do Romar; o restante do bloco permanece idêntico ao baseline `bff8a72`.
 - **Arquivos conhecidos:** `src/game.js`, `styles/game.css`, três assets novos, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`, `tests/romar-playtest-quest.test.cjs`.
 - **Relação:** resolve o escopo do Romar em `DEC-2026-10-25-FLO-013`, que passa a cobrir somente o Lobo da Matilha; preserva as três artes JPEG antigas; não autoriza promoção à produção.
+- **Nota posterior (2026-10-26):** após revisão no QA público, a altura do Romar foi reduzida de `h:0.92` para `h:0.78` (commit `7a23369`, deployment `49331648`), deixando folga no topo do palco sem deixá-lo menor que o Mago. Artes, atributos e comportamento não mudaram.
 
 ## Rejeitado ou não autorizado
 

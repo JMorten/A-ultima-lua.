@@ -1,8 +1,8 @@
 # Estado atual
 
-**Snapshot documental:** 2026-10-26 (Romar V2 — três estágios).
+**Snapshot documental:** 2026-10-26 (Romar V2 — escala final e QA).
 **Checkout documental:** `D:\Projetos\A-ultima-lua`.
-**Branch:** `docs/palacio-memoria-v1`, base `4b60b7dd3c376b476a2716dc87fdcb969057ef6d`. Este documento descreve o estado do worktree; o commit documental desta atualização será o seguinte a essa base.
+**Branch:** `docs/palacio-memoria-v1`, base `0c3acc41295a5f3f26c096b4d5fe8a1156f52e5a`. Este documento descreve o estado do worktree; o commit documental desta atualização será o seguinte a essa base.
 **Natureza:** este arquivo descreve estado. Decisões e aprovações ficam em [DECISOES_APROVADAS.md](DECISOES_APROVADAS.md).
 
 ## Como ler
@@ -15,9 +15,9 @@
 
 | Branch | HEAD | Worktree | Situação no snapshot |
 |---|---|---|---|
-| `docs/palacio-memoria-v1` | `4b60b7d` | raiz `D:\Projetos\A-ultima-lua` | Linha documental canônica. `origin/docs/palacio-memoria-v1` está no mesmo commit; o registro desta etapa será o commit seguinte. |
+| `docs/palacio-memoria-v1` | `0c3acc4` | raiz `D:\Projetos\A-ultima-lua` | Linha documental canônica. `origin/docs/palacio-memoria-v1` está no mesmo commit; o registro desta etapa será o commit seguinte. |
 | `qa-preview` | `081fce4` | — | 1 commit à frente e 1 atrás de `origin/qa-preview` (`11bff6c`). |
-| `feature/floresta-uivante-v2-etapa1` | `cbc50b6` | `laboratorios/floresta-uivante-v2-etapa1/checkout` | Lobo Comum (`4236b84`, `16f4c9c`), Lobo Cinzento (`83eb677`), Lobisomem Jovem (`25ae3fb`), Uivante das Sombras (`bb7197a`, escala `385bdf5`) e Romar (`cbc50b6`) commitados e publicados em `origin`. |
+| `feature/floresta-uivante-v2-etapa1` | `7a23369` | `laboratorios/floresta-uivante-v2-etapa1/checkout` | Lobo Comum (`4236b84`, `16f4c9c`), Lobo Cinzento (`83eb677`), Lobisomem Jovem (`25ae3fb`), Uivante das Sombras (`bb7197a`, escala `385bdf5`) e Romar (`cbc50b6`, escala final `7a23369`) commitados e publicados em `origin`. |
 | `fix/pos-playtest-v1` | `11bff6c` | `laboratorios/pos-playtest-v1/candidate` | Candidata pós-playtest. |
 | `main` | `f7e25ef` | `laboratorios/protocolo-autonomo-v1/main-integracao` | 8 commits à frente de `origin/main` (`4833b5f`). |
 | `release/trincheiras-rc1` | `e6a965e` | — | 15 commits à frente de `origin/main`. |
@@ -45,8 +45,8 @@ Não confundir os seis níveis abaixo; cada registro deve dizer a qual pertence.
 - **Lobo Cinzento V2** (`lobo_cinzento`): arte, recorte e integração aprovados (`DEC-2026-10-25-FLO-014`); commit `83eb677` publicado na branch feature. QA isolado publicado em `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` e funcionamento confirmado no Safari/iPhone (`DEC-2026-10-25-QLT-015`). Atributos, Bote, recompensas e progressão inalterados; arte antiga preservada.
 - **Lobisomem Jovem V2** (`lobisomem_jovem`): arte, recorte e integração aprovados (`DEC-2026-10-26-FLO-016`); commit `25ae3fb` publicado na branch feature. QA isolado `860aa1d1-a3cf-4715-a89e-2a07d7e0126b` e Safari/iPhone confirmados. Atributos, Instinto de Caça, recompensas e progressão inalterados; arte antiga preservada.
 - **Uivante das Sombras V2** (`uivante_sombras`): arte, recorte e integração aprovados (`DEC-2026-10-26-FLO-017`); escala final `w:0.58`/`h:0.95` aprovada em 2026-10-26. Commits `bb7197a` e `385bdf5` publicados na branch feature. QA isolado `f6b00e93-2405-4cd7-b617-c1efcf5723ca` publicado, conferido por SHA-256 contra `_qa-dist` e **validado no Safari/iPhone** (`DEC-2026-10-26-QLT-018`). Atributos (190/25/12), Presságio Sombrio, Golpe Brutal, Fúria Desesperada, drops e progressão inalterados; arte JPEG antiga preservada. Produção pendente.
-- **Romar V2** (`romar`): três artes, recorte e integração aprovados (`DEC-2026-10-26-FLO-018`); arte em PNG RGBA com transparência real e apresentação natural (`x:0.70`, `w:0.46`, `h:0.92`). Commit `cbc50b6` publicado na branch feature; QA isolado `c5618de6-77a3-42d0-9227-af87129c3eb1` com transições reais por ataque verificadas em 320/375/390. Mecânica, escolha final e recompensa inalteradas; três JPEGs antigos preservados. Safari/iPhone e produção pendentes.
-- **QA isolado**: deployments no projeto `a-ultima-lua-floresta-v2-qa`, publicados na branch de produção `floresta-v2-qa` desse projeto: `3e8e9679-2441-46a6-a907-928166b5194e` (Lobo Comum), `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` (Lobo Cinzento), `860aa1d1-a3cf-4715-a89e-2a07d7e0126b` (Lobisomem Jovem), `7e466fdf-248b-4dd2-b8e7-0230ea425e06` e `f6b00e93-2405-4cd7-b617-c1efcf5723ca` (Uivante das Sombras) e `c5618de6-77a3-42d0-9227-af87129c3eb1` (Romar). Todos são QA isolado; não são produção do jogo e não alteraram `a-ultima-lua-qa`, GitHub Pages, `main` ou `qa-preview`.
+- **Romar V2** (`romar`): três artes, recorte e integração aprovados (`DEC-2026-10-26-FLO-018`); arte em PNG RGBA com transparência real e apresentação natural (`x:0.70`, `w:0.46`, `h:0.78`, escala ajustada após revisão no QA). Commits `cbc50b6` e `7a23369` publicados na branch feature; QA isolado `49331648` com transições reais por ataque verificadas em 320/375/390. Mecânica, escolha final e recompensa inalteradas; três JPEGs antigos preservados. Safari/iPhone e produção pendentes.
+- **QA isolado**: deployments no projeto `a-ultima-lua-floresta-v2-qa`, publicados na branch de produção `floresta-v2-qa` desse projeto: `3e8e9679-2441-46a6-a907-928166b5194e` (Lobo Comum), `45362c1d-ca92-4c0b-b6d4-6b51c258fc9d` (Lobo Cinzento), `860aa1d1-a3cf-4715-a89e-2a07d7e0126b` (Lobisomem Jovem), `7e466fdf-248b-4dd2-b8e7-0230ea425e06` e `f6b00e93-2405-4cd7-b617-c1efcf5723ca` (Uivante das Sombras) e `c5618de6-77a3-42d0-9227-af87129c3eb1` e `49331648` (Romar, escala final). Todos são QA isolado; não são produção do jogo e não alteraram `a-ultima-lua-qa`, GitHub Pages, `main` ou `qa-preview`.
 - **Produção**: inalterada. Nenhuma promoção autorizada.
 - **Lobisomem Feroz e Alfa da Matilha**: artes atuais preservadas por `DEC-ND-FLO-007`; sem autorização para substituição.
 - **Romar e Lobo da Matilha**: Romar resolvido por `DEC-2026-10-26-FLO-018`; o Lobo da Matilha segue sem arte própria, no escopo histórico de `DEC-2026-10-25-FLO-013` (proposto). Lobo Cinzento, Lobisomem Jovem e Uivante das Sombras foram resolvidos por `FLO-014`, `FLO-016` e `FLO-017`.
