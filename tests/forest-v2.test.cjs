@@ -154,3 +154,36 @@ test('ator do Lobo da Matilha aparece só na fase 0 e mostra barra sem nome sobr
   assert.equal(laterPhase, '');
 });
 
+test('golpe no Lobo da Matilha e no Romar sacode o retrato mesmo com re-render', () => {
+  const vm = require('node:vm');
+  const portraitBlock = game.slice(game.indexOf('function combatPortraitId('), game.indexOf('\nfunction floatNumber('));
+  const shakeBlock = game.slice(game.indexOf('function shakeSide('), game.indexOf('\nfunction updateArenaBarsOnly'));
+  const makeNode = id => ({
+    id,
+    classList: { list: new Set(), add(c){ this.list.add(c); }, remove(c){ this.list.delete(c); } },
+    offsetWidth: 1
+  });
+  const hit = side => {
+    let current = makeNode(side === 'packWolf' ? 'portrait-pack-wolf' : 'portrait-enemy');
+    const fresh = makeNode(current.id);
+    const ctx = vm.createContext({
+      ui: { mapIndex: 0, monster: { id: 'romar' } },
+      isGorthak: () => false,
+      document: { getElementById: () => current },
+      requestAnimationFrame: cb => { current = fresh; cb(); }
+    });
+    vm.runInContext(portraitBlock + shakeBlock, ctx);
+    vm.runInContext(`shakeSide('${side}')`, ctx);
+    return fresh;
+  };
+
+  const wolf = hit('packWolf');
+  assert.equal(wolf.id, 'portrait-pack-wolf');
+  assert.equal(wolf.classList.list.has('shake'), true, 'lobo recebe shake no ator próprio');
+  // Romar: o golpe re-renderiza a arena na mesma ação; o retrato novo precisa animar.
+  assert.equal(hit('enemy').classList.list.has('shake'), true, 'Romar mantém o shake após o re-render');
+
+  assert.match(game, /if\(side==='packWolf'\)return 'portrait-pack-wolf';/);
+  assert.match(game, /shakeSide\('packWolf', hit\.isCrit\)/);
+});
+

@@ -1617,6 +1617,7 @@ function combatEffectId(side){
 }
 function combatPortraitId(side){
   if(side==='player')return 'portrait-player';
+  if(side==='packWolf')return 'portrait-pack-wolf';
   if(side==='target-blood')return 'portrait-target-blood';
   if(side==='target-siphon')return 'portrait-target-siphon';
   return 'portrait-enemy';
@@ -1633,9 +1634,16 @@ function floatNumber(side, text, cls){
 
 function shakeSide(side, isCrit=false){
   if(side==='enemy' && (isGorthak() || (ui.mapIndex===2 && ['orc_batedor','orc_guerreiro','orc_capitao','acougueiro_trincheira'].includes(ui.monster?.id)) || (ui.mapIndex===2 && ui.monster?.id==='orc_xama' && ui.monster.shamanAwake)) && typeof EnemyCombatVisual!=='undefined' && EnemyCombatVisual.hit(ui.monster,isCrit))return;
-  const el = document.getElementById(combatPortraitId(side));
+  const id = combatPortraitId(side);
+  const el = document.getElementById(id);
   if(!el) return;
   el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake');
+  /* Romar redesenha a arena na mesma acao do golpe; o retrato antigo some antes de animar.
+     Reaplica no no novo para o impacto continuar visivel. */
+  if(typeof requestAnimationFrame==='function') requestAnimationFrame(()=>{
+    const fresh = document.getElementById(id);
+    if(fresh && fresh!==el) fresh.classList.add('shake');
+  });
 }
 
 function updateArenaBarsOnly(){
@@ -2130,6 +2138,7 @@ function attackPackWolf(){
   monsterCounterTurn(false);
   render();
   floatNumber('packWolf','-'+hit.dmg,hit.isCrit?'crit':'dmg');
+  shakeSide('packWolf', hit.isCrit);
 }
 
 /* Executa uma rodada: dano do jogador no monstro, depois (se vivo) contra-ataque do monstro */

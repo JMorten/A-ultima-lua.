@@ -236,6 +236,11 @@ for (const width of [320, 375, 390]) {
       await page.waitForTimeout(700);
       await page.locator('.battle-arena').screenshot({path:`${process.env.AUL_PW_ARTIFACTS}/romar-v2-s${stage}-${width}.png`});
     }
+    // Romar também reage ao golpe: o re-render da ação não pode engolir o shake.
+    await page.evaluate(() => { ui.monster.hp = ui.monster.hpMax; ui.locked = false; render(); });
+    await page.getByRole('button', {name:'Atacar', exact:true}).click();
+    await expect(page.locator('#portrait-enemy.shake')).toHaveCount(1);
+    await page.waitForTimeout(420);
     expect(diagnostics.errors).toEqual([]);
     expect(diagnostics.failedAssets).toEqual([]);
   });
@@ -298,8 +303,9 @@ for (const width of [320, 375, 390]) {
     await page.waitForTimeout(350);
     await shotArena(`${process.env.AUL_PW_ARTIFACTS}/matilha-${width}-invocada.png`);
 
-    // Ferir o lobo: barra e texto andam juntos.
+    // Ferir o lobo: barra e texto andam juntos, e o ator reage ao golpe.
     await page.getByRole('button', {name:'🐺 Atacar Lobo da Matilha'}).click();
+    await expect(page.locator('#portrait-pack-wolf.shake')).toHaveCount(1);
     await expect(page.locator('.pack-wolf-hp')).not.toHaveText(metrics.hp);
     const afterHit = await page.evaluate(() => ({
       bar: document.querySelector('.pack-wolf-bar i').style.width,
