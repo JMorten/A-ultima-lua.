@@ -231,9 +231,23 @@ Um commit ou teste comprova implementação e comportamento, mas não comprova s
 - **Ajustes de apresentação aprovados junto:** o chip do Alfa passa a dizer `MATILHA ATIVA · CAÇADA COORDENADA` (o HP agora vive na barra do lobo) e o botão fica `🐺 Atacar Lobo da Matilha`, sem repetir o HP.
 - **Evidência:** autorização do responsável; fonte `pack_wolf_subordinate_cutout.png` (1920×1280 RGBA); asset `lobo_matilha_combat_v2.png` 1000×758 RGBA, SHA-256 `A767B072A0ABC72BF3068F693EFDBF59F74B3A9A85C628C21E73A3C956502F8B`, cantos alpha 0, sem franja magenta após despill; commits `a841181` (ator e placa) e `49f8ed2` (placa sem nome); deployment `a92987ce`; 195/195 Node e 80/80 Chromium; QA público com invocação real em 320/375/390 sem erro nem 404; - **Limite:** produção autorizada e promovida em `30df194c` (build `9544043`).
 - **Nota posterior (2026-10-27):** o responsável revisou o ator no Safari e pediu para tirar o nome de cima da arte; a placa ficou só com barra e HP (`49f8ed2`, QA `a92987ce`). `LOBO DA MATILHA` continua no rótulo acessível e no botão de ataque.
-- **Nota posterior (2026-10-27):** validado no Safari/iPhone (`a92987ce`): ator, placa sem nome, chip e reação de impacto confirmados. Produção pendente.
+- **Nota posterior (2026-10-27):** validado no Safari/iPhone (`a92987ce`): ator, placa sem nome, chip e reação de impacto confirmados. Produção promovida em `30df194c`.
 - **Arquivos conhecidos:** `src/game.js`, `styles/game.css`, `assets/images/enemies/forest/lobo_matilha_combat_v2.png`, `_qa/debug.js`, `tests/forest-v2.test.cjs`, `tests/browser/forest-v2.spec.cjs`, manifesto.
 - **Relação:** resolve o último item de `DEC-2026-10-25-FLO-013`; complementa `DEC-2026-10-26-FLO-018`; não altera `DEC-ND-FLO-007`.
+
+## DEC-2026-10-27-FLO-020 — Aprovação do Alfa da Matilha V2
+
+- **Área:** Galeria / Oficina
+- **Estado:** aprovado
+- **Data:** 2026-10-27
+- **Descrição:** aprovar a arte `alfa_matilha_combat_v2.png` e dar ao Alfa da Matilha **identidade visual V2**: retrato natural em PNG RGBA com transparência real, caixa própria (`w:0.50`, `h:0.86`, `x:0.68`), além de reações de impacto (shake + flash `alfa-hit-flash`) ao ser atacado. O Alfa continua **sem entrada em `MAPS`** como entidade separada (é o chefe do mapa 0) e preserva ID, atributos (300/30/14), XP, moedas, três fases, Caçada Coordenada, Investida, postura de observação e Lua da Caçada. Apenas imagem, enquadramento e apresentação mudam.
+- **Justificativa:** o Alfa aparecia como JPEG com fundo embutido e sem reações de impacto, apesar de ser o chefe do território. A arte V2 dá presença de chefe e o flash de impacto dá feedback de golpe, sem alterar combate.
+- **Escopo preservado:** HP 300, ATQ 30, DEF 14, XP 130, moedas 40–60, multiplicadores de perigo, buff da Onda Sombria, três fases (Comandante 100–60%, Fúria ≤60% com Investida ×1.65, Instinto ≤30% com DEF 82%, postura de observação e Lua da Caçada ×2.0), intervalo de invocação do lobo (4 ações), drop por tabela de chefe. JPEG legado preservado.
+- **Ajustes de apresentação aprovados junto:** reações de impacto (shake + flash) adicionadas ao retrato do Alfa, reaplicadas após re-render para não serem engolidas pelo redesenho da arena.
+- **Evidência:** autorização do responsável; fonte `IMG_4592.jpeg` / `0E840775-...png` (1024×1536); asset `alfa_matilha_combat_v2.png` 1024×1536 RGBA, SHA-256 `D3A727DF25AC2DE1DDEEA22315BF32B282BFEF894918AE4F92C421D2FD150868`, cantos alpha 0 (exceto silhueta que toca a borda inferior direita); commit `c66f6e1`; deployment `29dfc35c`; 196/196 Node e 22/22 Chromium (forest-v2, WebKit); QA público com enquadramento real em 320/375/390; reação de impacto verificada; capturas em `evidencias/alfa-v2/`.
+- **Limite:** produção autorizada e promovida em `30df194c` (build `9544043`); item único de chefe (`generateBossUnique`) continua não integrado.
+- **Arquivos conhecidos:** `src/game.js`, `styles/game.css`, `assets/images/enemies/forest/alfa_matilha_combat_v2.png`, `tests/forest-v2.test.cjs`, `tests/persistence.test.cjs`, `tests/browser/forest-v2.spec.cjs`, manifesto.
+- **Relação:** substitui a preservação do Alfa em `DEC-ND-FLO-007` (Mago e Lobisomem Feroz permanecem preservados); complementa `DEC-2026-10-27-FLO-019`.
 
 ## Rejeitado ou não autorizado
 
@@ -247,7 +261,7 @@ Este índice é navegação; não altera o texto nem o estado original dos regis
 - `DEC-2026-10-25-FLO-008` (pendente) — superada por `DEC-2026-10-25-FLO-009` (recorte aprovado) e `DEC-2026-10-25-FLO-010` (validação física).
 - `DEC-2026-10-25-FLO-009` — o item “Safari/iPhone pendente” foi complementado por `DEC-2026-10-25-FLO-010`; o item “não autoriza deploy” permanece válido e é delimitado por `DEC-2026-10-25-QLT-011`; commit, push e produção continuam não autorizados.
 - `DEC-2026-10-20-FIX-006` — promoção à produção segue pendente.
-- `DEC-ND-FLO-007` — preservação mantida para Mago, Lobisomem Feroz e Alfa; o Lobisomem Jovem foi substituído por `DEC-2026-10-26-FLO-016`; o Lobo Comum foi executado em `FLO-009`/`FLO-010`.
+- `DEC-ND-FLO-007` — preservação mantida para Mago e Lobisomem Feroz; o Lobisomem Jovem foi substituído por `DEC-2026-10-26-FLO-016`; o Lobo Comum foi executado em `FLO-009`/`FLO-010`; o Alfa foi substituído por `DEC-2026-10-27-FLO-020`.
 - `DEC-2026-10-25-FLO-013` — encerrada como histórico: Lobo Cinzento, Lobisomem Jovem, Uivante das Sombras, Romar e Lobo da Matilha foram resolvidos por `DEC-2026-10-25-FLO-014`, `DEC-2026-10-26-FLO-016`, `DEC-2026-10-26-FLO-017`, `DEC-2026-10-26-FLO-018` e `DEC-2026-10-27-FLO-019`; nenhum item permanece pendente.
 - `DEC-2026-10-25-FLO-014` — `aprovado` em 2026-10-25; integração commitada e publicada na branch feature; QA isolado e Safari complementados por `QLT-015`; produção não autorizada.
 - `DEC-2026-10-25-QLT-015` — `aprovado`; complementa `FLO-014` com o QA isolado publicado e a confirmação Safari; produção não autorizada.
@@ -256,4 +270,5 @@ Este índice é navegação; não altera o texto nem o estado original dos regis
 - `DEC-2026-10-26-QLT-018` — `aprovado`; validação física do Uivante no Safari/iPhone sobre o deployment `f6b00e93`; produção não autorizada.
 - `DEC-2026-10-26-FLO-018` - `aprovado`; três artes e integração do Romar, com QA isolado e transições reais verificadas; Safari validado; produção promovida em `30df194c`.
 - `DEC-2026-10-27-FLO-019` - `aprovado`; arte, ator e barra próprios do Lobo da Matilha, sem nome sobre a arte, com QA isolado e invocação real verificada em 320/375/390; Safari validado; produção promovida em `30df194c`.
+- `DEC-2026-10-27-FLO-020` - `aprovado`; arte, retrato natural e reações de impacto (shake + flash) do Alfa da Matilha, com QA isolado e enquadramento real verificado em 320/375/390; Safari validado; produção promovida em `30df194c`.
 - `DEC-2026-10-25-DOC-012` — `aprovado` em 2026-10-25; a aprovação cobre a reconciliação documental, não push ou deploy.

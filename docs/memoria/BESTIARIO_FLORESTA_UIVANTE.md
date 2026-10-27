@@ -115,15 +115,16 @@ Consequência: **o Lobo Comum não aparece após 10 abates comuns** e não retor
 
 - **Papel:** chefe do território. XP 130; moedas 40–60. Vitória registra `defeatedBosses[0]` e desbloqueia o Pântano (nível 5). Drop garantido de item pela regra de chefe, com raridade mínima épica.
 - **Stats base:** 300 HP · 30 ATQ · 14 DEF. **Efetivos:** 366/36/15; com Onda Sombria 476/47/20.
-- **Arte:** `assets/images/enemies/forest/alfa_matilha.jpg` — 480×719, JPEG, SHA-256 `787FFCC285777A98A97EF93E948D502FAC8B101736B6B19E5F8D30DA1AAA7794`.
+- **Arte V2 (branch feature, commit `c66f6e1`):** `assets/images/enemies/forest/alfa_matilha_combat_v2.png` — 1024×1536, PNG RGBA, transparência real (cantos alpha 0, exceto a silhueta que toca a borda inferior direita). SHA-256 `D3A727DF25AC2DE1DDEEA22315BF32B282BFEF894918AE4F92C421D2FD150868`. JPEG legado (`alfa_matilha.jpg`) preservado.
 - **Encontro:** botão **Desafiar** liberado após a **primeira vitória sobre o Uivante das Sombras**. Antes disso, o domínio permanece selado na interface e na função de desafio.
 - **Comportamento em três fases:**
-  - **Fase 0 — Comandante (100–60%):** convoca o **Lobo da Matilha** na primeira ação e a cada 4 ações enquanto o lobo estiver ativo; o lobo causa **Caçada Coordenada**. Desde a V2 o lobo aparece como ator próprio, com nome e barra acima da arte.
+  - **Fase 0 — Comandante (100–60%):** convoca o **Lobo da Matilha** na primeira ação e a cada 4 ações enquanto o lobo estiver ativo; o lobo causa **Caçada Coordenada**. O lobo aparece como ator próprio, com barra acima da arte.
   - **Fase 1 — Fúria da Matilha (≤60%):** prepara **Investida** (×1.65) a cada 3 ações.
   - **Fase 2 — Instinto do Alfa (≤30%):** DEF cai para 82%; ganha **postura de observação** que retalia um ataque precipitado, e uma única **Lua da Caçada** (×2.0).
-- **Estado:** **preservar** (`DEC-ND-FLO-007`). Sem V2 e sem reações de impacto.
+- **Apresentação:** caixa `w:0.50` com `h:0.86`, `x:0.68`, `contain` ancorado na base, `z-index` padrão (frente do palco). Retrato natural com layout `portrait-natural`. Reage ao golpe com `shake` e flash de impacto (`alfa-hit-flash`), reaplicados após o re-render.
+- **Estado:** **aprovado V2** (`DEC-2026-10-27-FLO-020`), integrado e publicado no QA isolado `29dfc35c`, validado em WebKit (22/22 Chromium, enquadramento real em 320/375/390) e no Safari/iPhone. Stats e fases preservados.
 - **Observação de recompensa:** `generateBossUnique()` existe no código, mas não é chamada em nenhum fluxo de vitória; o drop do Alfa usa a tabela normal de chefe. Item único de chefe **não integrado**.
-- **Evidência:** `src/game.js:179`, `:855-868`, `:1606-1631`, `:1960-1977`, `:2077-2083`, `:2451-2466`, `:595`; manifesto.
+- **Evidência:** `src/game.js` (`COMBAT_PRESENTATION.enemies.alfa_matilha`, `flashAlfaHit`, `shakeSide`), `styles/game.css` (`.alfa-hit-flash`); commit `c66f6e1`; deployment `29dfc35c`; 196/196 Node e 22/22 Chromium; `evidencias/alfa-v2/`; manifesto.
 
 ## 7. Romar — `romar`
 

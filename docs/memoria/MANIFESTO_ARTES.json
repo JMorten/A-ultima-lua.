@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "snapshot": "2026-10-27 (Lobo da Matilha V2)",
+  "snapshot": "2026-10-27 (Alfa da Matilha V2)",
   "escopo": "Artes de combate e cenários diretamente relevantes às Trincheiras aprovadas e à Floresta Uivante V2 em andamento. Não é inventário de todas as imagens do jogo.",
   "regras": [
     "A presença de um arquivo não implica aprovação.",
@@ -56,7 +56,8 @@
       "ART-FLORESTA-ROMAR-V2-2",
       "ART-FLORESTA-ROMAR-V2-3",
       "ART-FLORESTA-MATILHA-V2-FONTE",
-      "ART-FLORESTA-MATILHA-V2"
+      "ART-FLORESTA-MATILHA-V2",
+      "ART-FLORESTA-ALFA-MATILHA-V2"
     ]
   },
   "classificacao_aprovacao": {
@@ -88,7 +89,8 @@
       "ART-T3-XAMA-DESPERTO",
       "ART-T3-GORTHAK",
       "ART-FLORESTA-MATILHA-V2-FONTE",
-      "ART-FLORESTA-MATILHA-V2"
+      "ART-FLORESTA-MATILHA-V2",
+      "ART-FLORESTA-ALFA-MATILHA-V2"
     ],
     "preservacao_explicita_sem_nova_aprovacao_artistica": [
       "ART-MAGO-COMBATE-ORIGINAL",
@@ -510,6 +512,21 @@
       "origem": "recorte RGBA derivado da fonte aprovada; franja magenta removida por despill, pixels transparentes zerados e recorte com margem de 6 px",
       "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit 49f8ed2; deployment a92987ce-ea10-4e19-a092-96d8949f324a (nao presente na branch documental)",
       "evidencia": "DEC-2026-10-27-FLO-019; commit 49f8ed2 (placa sem nome sobre a arte) e 9544043 (reacao de impacto); deployment a92987ce; 195/195 Node e 80/80 Chromium; QA publico com invocacao real em 320/375/390; validado no Safari/iPhone; producao 30df194c; evidencias/matilha-v2/"
+    },
+    {
+      "id": "ART-FLORESTA-ALFA-MATILHA-V2",
+      "area": "Galeria/Floresta Uivante",
+      "caminho": "assets/images/enemies/forest/alfa_matilha_combat_v2.png",
+      "sha256": "D3A727DF25AC2DE1DDEEA22315BF32B282BFEF894918AE4F92C421D2FD150868",
+      "dimensoes": { "largura": 1024, "altura": 1536 },
+      "formato": "PNG",
+      "modo": "RGBA",
+      "transparencia": { "presente": true, "min": 0, "max": 255 },
+      "versao": "V2_integracao_commitada",
+      "estado_aprovacao": "aprovado_visual_e_funcional_no_safari_commitado_na_branch_feature",
+      "origem": "recorte RGBA derivado da imagem fornecida; espelhamento horizontal para o Alfa olhar para o Mago, fundo branco removido por mascara suavizada e despill, pixels transparentes zerados e recorte com margem de 6 px",
+      "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit c66f6e1; deployment 29dfc35c-85e3-4d35-baed-2a1f81d14b84 (nao presente na branch documental)",
+      "evidencia": "DEC-2026-10-27-FLO-020; commit c66f6e1; deployment 29dfc35c; 196/196 Node e 22/22 Chromium (forest-v2, WebKit); QA publico com enquadramento real em 320/375/390; reacao de impacto (shake + flash) verificada; evidencias/alfa-v2/"
     },
     {
       "id": "ART-FLORESTA-ROMAR-ESTAGIO-1",

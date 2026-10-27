@@ -24,7 +24,7 @@
 3. **Reconciliação de linhas Git:** decidir como unir `081fce4` (`qa-preview`) com `origin/qa-preview` (`11bff6c`).
 4. **Promoção à produção — concluída:** deploy direto do `_qa-dist` (build `9544043`) em `a-ultima-lua-qa` → `30df194c-a4be-4299-876d-1841d0c3eea0`. URL: https://a-ultima-lua-qa.pages.dev/. Paridade verificada; smoke em WebKit OK.
 5. **Sincronização do `main` — concluída:** merge `--no-ff` da feature em `main` (`76ed84f`), 195/195 Node, push `4833b5f..76ed84f`. O deploy automático do Pages (branch `main`) deve reproduzir o build `9544043`.
-6. **Trabalho no Alfa:** próximo escopo combinado, a ser detalhado.
+6. **Alfa da Matilha V2 — integrado:** arte V2 (PNG RGBA 1024×1536), retrato natural, caixa `w:0.50`/`h:0.86`/`x:0.68`, reações de impacto (shake + flash). Stats e três fases preservados; JPEG legado preservado. QA `29dfc35c` com enquadramento real em 320/375/390; 196/196 Node e 22/22 Chromium (forest-v2, WebKit); validado no Safari/iPhone. Produção promovida em `30df194c`.
 7. **Cobertura documental:** manter bestiário e manifesto sincronizados quando arte ou entidade mudar.
 
 ## Fora de escopo até nova decisão
