@@ -19,8 +19,8 @@
 
 ## Pendente — exige decisão humana
 
-1. **Validação física do Lobo da Matilha V2 (prioridade atual):** abrir `https://a-ultima-lua-floresta-v2-qa.pages.dev/?v=a92987ce` no Safari do iPhone, usar QA → Debug → novo personagem → CONTINUAR → reabrir QA → **ALFA · COM LOBO DA MATILHA** e conferir ator, barra de HP sem nome sobre a arte, chip `MATILHA ATIVA · CAÇADA COORDENADA`, reação ao golpe e ataque ao lobo. WebKit (motor do Safari) já validado em 320/375/390; falta o aparelho físico.
-2. **Validação física do Romar V2:** abrir `https://a-ultima-lua-floresta-v2-qa.pages.dev/?v=a92987ce` no Safari do iPhone, jogar até os estágios 2 e 3 (ou usar os botões **ROMAR · ESTÁGIO 1/2/3** no painel de QA) e registrar aprovação ou defeitos. WebKit já validado nos três estágios em 320/375/390, incluindo a reação de impacto (`9544043`).
+1. **Validação física do Lobo da Matilha V2 — concluída:** aberto no Safari/iPhone (`?v=a92987ce`), fluxo QA → Debug → CONTINUAR → **ALFA · COM LOBO DA MATILHA**. Ator, barra sem nome, chip `MATILHA ATIVA · CAÇADA COORDENADA` e reação de impacto confirmados. Produção pendente.
+2. **Validação física do Romar V2 — concluída:** aberto no Safari/iPhone (`?v=a92987ce`), botões **ROMAR · ESTÁGIO 1/2/3**. Transições e reação de impacto confirmadas. Produção pendente.
 3. **Reconciliação de linhas Git:** decidir como unir `081fce4` (`qa-preview`) com `origin/qa-preview` (`11bff6c`).
 4. **Promoção à produção:** não autorizada para a Floresta V2.
 5. **Cobertura documental:** manter bestiário e manifesto sincronizados quando arte ou entidade mudar.

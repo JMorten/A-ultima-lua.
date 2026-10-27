@@ -447,10 +447,10 @@
       "modo": "RGBA",
       "transparencia": { "presente": true, "min": 0, "max": 255 },
       "versao": "V2_integracao_commitada",
-      "estado_aprovacao": "aprovado_qa_publicado",
+      "estado_aprovacao": "aprovado_visual_e_funcional_no_safari_commitado_na_branch_feature",
       "origem": "recorte RGBA derivado da fonte aprovada; somente o canal alfa foi normalizado",
       "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit cbc50b62f4530d11bfb8c1f4877c6c5b8fadf121; deployment c5618de6-77a3-42d0-9227-af87129c3eb1 (não presente na branch documental)",
-      "evidencia": "DEC-2026-10-26-FLO-018; commit cbc50b6; deployment c5618de6; 192/192 Node e 77/77 Chromium; evidencias/romar-v2/"
+      "evidencia": "DEC-2026-10-26-FLO-018; commit cbc50b6; deployment c5618de6; 192/192 Node e 77/77 Chromium; validado no Safari/iPhone; evidencias/romar-v2/"
     },
     {
       "id": "ART-FLORESTA-ROMAR-V2-2",
@@ -462,10 +462,10 @@
       "modo": "RGBA",
       "transparencia": { "presente": true, "min": 0, "max": 255 },
       "versao": "V2_integracao_commitada",
-      "estado_aprovacao": "aprovado_qa_publicado",
+      "estado_aprovacao": "aprovado_visual_e_funcional_no_safari_commitado_na_branch_feature",
       "origem": "recorte RGBA derivado da fonte aprovada; somente o canal alfa foi normalizado",
       "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit cbc50b62f4530d11bfb8c1f4877c6c5b8fadf121; deployment c5618de6-77a3-42d0-9227-af87129c3eb1 (não presente na branch documental)",
-      "evidencia": "DEC-2026-10-26-FLO-018; commit cbc50b6; deployment c5618de6; 192/192 Node e 77/77 Chromium; evidencias/romar-v2/"
+      "evidencia": "DEC-2026-10-26-FLO-018; commit cbc50b6; deployment c5618de6; 192/192 Node e 77/77 Chromium; validado no Safari/iPhone; evidencias/romar-v2/"
     },
     {
       "id": "ART-FLORESTA-ROMAR-V2-3",
@@ -477,10 +477,10 @@
       "modo": "RGBA",
       "transparencia": { "presente": true, "min": 0, "max": 255 },
       "versao": "V2_integracao_commitada",
-      "estado_aprovacao": "aprovado_qa_publicado",
+      "estado_aprovacao": "aprovado_visual_e_funcional_no_safari_commitado_na_branch_feature",
       "origem": "recorte RGBA derivado da fonte aprovada; somente o canal alfa foi normalizado",
       "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit cbc50b62f4530d11bfb8c1f4877c6c5b8fadf121; deployment c5618de6-77a3-42d0-9227-af87129c3eb1 (não presente na branch documental)",
-      "evidencia": "DEC-2026-10-26-FLO-018; commit cbc50b6; deployment c5618de6; 192/192 Node e 77/77 Chromium; evidencias/romar-v2/"
+      "evidencia": "DEC-2026-10-26-FLO-018; commit cbc50b6; deployment c5618de6; 192/192 Node e 77/77 Chromium; validado no Safari/iPhone; evidencias/romar-v2/"
     },
     {
       "id": "ART-FLORESTA-MATILHA-V2-FONTE",
@@ -506,10 +506,10 @@
       "modo": "RGBA",
       "transparencia": { "presente": true, "min": 0, "max": 255 },
       "versao": "V2_integracao_commitada",
-      "estado_aprovacao": "aprovado_qa_publicado",
+      "estado_aprovacao": "aprovado_visual_e_funcional_no_safari_commitado_na_branch_feature",
       "origem": "recorte RGBA derivado da fonte aprovada; franja magenta removida por despill, pixels transparentes zerados e recorte com margem de 6 px",
       "localizacao_no_snapshot": "branch feature/floresta-uivante-v2-etapa1, commit 49f8ed2; deployment a92987ce-ea10-4e19-a092-96d8949f324a (nao presente na branch documental)",
-      "evidencia": "DEC-2026-10-27-FLO-019; commit 49f8ed2 (placa sem nome sobre a arte) e 9544043 (reacao de impacto); deployment a92987ce; 195/195 Node e 80/80 Chromium; QA publico com invocacao real em 320/375/390; evidencias/matilha-v2/"
+      "evidencia": "DEC-2026-10-27-FLO-019; commit 49f8ed2 (placa sem nome sobre a arte) e 9544043 (reacao de impacto); deployment a92987ce; 195/195 Node e 80/80 Chromium; QA publico com invocacao real em 320/375/390; validado no Safari/iPhone; evidencias/matilha-v2/"
     },
     {
       "id": "ART-FLORESTA-ROMAR-ESTAGIO-1",
