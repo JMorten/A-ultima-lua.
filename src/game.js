@@ -1634,7 +1634,7 @@ function floatNumber(side, text, cls){
 }
 
 function shakeSide(side, isCrit=false){
-  if(side==='enemy' && (isGorthak() || (ui.mapIndex===2 && ['orc_batedor','orc_guerreiro','orc_capitao','acougueiro_trincheira'].includes(ui.monster?.id)) || (ui.mapIndex===2 && ui.monster?.id==='orc_xama' && ui.monster.shamanAwake)) && typeof EnemyCombatVisual!=='undefined' && EnemyCombatVisual.hit(ui.monster,isCrit))return;
+  if(side==='enemy' && (ui.monster?.id!=='orc_xama' || ui.monster.shamanAwake) && typeof EnemyCombatVisual!=='undefined' && EnemyCombatVisual.hit(ui.monster,isCrit))return true;
   const id = combatPortraitId(side);
   const el = document.getElementById(id);
   if(!el) return;
@@ -2170,8 +2170,8 @@ function resolvePlayerHit(dmg, isCrit, impacts=[dmg]){
     if(player.hp>before) logPush(`<span class="log-good">🩸 Equipamento drena ${player.hp-before} HP.</span>`);
   }
   floatNumber('enemy', (isCrit?'CRÍTICO -':'-')+dmg, isCrit?'crit':'dmg');
-  shakeSide('enemy', isCrit);
-  if(m.id==='alfa_matilha') flashAlfaHit();
+  const animatedEnemy=shakeSide('enemy', isCrit);
+  if(m.id==='alfa_matilha' && !animatedEnemy) flashAlfaHit();
   updateArenaBarsOnly();
 
   // A retaliação substitui o contra-ataque desta rodada; golpe letal não a dispara.
@@ -3359,7 +3359,7 @@ function render(){
   else if(ui.tab==='loja') content.innerHTML = renderLojaTab();
   else if(ui.tab==='status') content.innerHTML = renderStatusTab();
   if(ui.inBattle && ui.locked) setActionsLocked(true);
-  if(typeof EnemyCombatVisual!=='undefined' && ui.inBattle && ui.tab==='batalha' && (isGorthak() || (ui.mapIndex===2 && ['orc_batedor','orc_guerreiro','orc_capitao','acougueiro_trincheira'].includes(ui.monster?.id)) || (ui.mapIndex===2 && ui.monster?.id==='orc_xama' && ui.monster.shamanAwake)))EnemyCombatVisual.mount(ui.monster);
+  if(typeof EnemyCombatVisual!=='undefined' && ui.inBattle && ui.tab==='batalha' && ui.monster && (ui.monster.id!=='orc_xama' || ui.monster.shamanAwake))EnemyCombatVisual.mount(ui.monster);
 }
 
 document.querySelectorAll('.tab-btn').forEach(b=>{
