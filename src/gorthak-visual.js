@@ -72,7 +72,7 @@
     // Latest hit wins; never queue stale reactions or delay the combat timers.
     const sequence=(view.sequence||0)+1;view.sequence=sequence;
     void view.animator.play(isCrit?'critical':'damage').then(result=>{
-      if(!isCrit&&view.followRetreat&&!result.interrupted&&current===view&&view.sequence===sequence&&!view.animator.media.matches)
+      if(!isCrit&&view.followRetreat&&!result.interrupted&&current===view&&view.sequence===sequence&&!view.animator.prefersReducedMotion())
         void view.animator.play('retreat');
     });
     return true;

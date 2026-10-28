@@ -2170,12 +2170,19 @@ function resolvePlayerHit(dmg, isCrit, impacts=[dmg]){
     if(player.hp>before) logPush(`<span class="log-good">🩸 Equipamento drena ${player.hp-before} HP.</span>`);
   }
   floatNumber('enemy', (isCrit?'CRÍTICO -':'-')+dmg, isCrit?'crit':'dmg');
-  const animatedEnemy=shakeSide('enemy', isCrit);
+  // Romar redesenha a arena ao resolver sua resposta. Adie a reação para o
+  // retrato novo, senão o render destrói o animador antes do primeiro frame.
+  const deferEnemyReaction=m.id==='romar';
+  const animatedEnemy=deferEnemyReaction ? false : shakeSide('enemy', isCrit);
   if(m.id==='alfa_matilha' && !animatedEnemy) flashAlfaHit();
   updateArenaBarsOnly();
 
   // A retaliação substitui o contra-ataque desta rodada; golpe letal não a dispara.
-  if(m.id==='romar'){ resolveRomarAction('attack',dmg); return; }
+  if(m.id==='romar'){
+    resolveRomarAction('attack',dmg);
+    if(ui.inBattle && ui.monster===m)shakeSide('enemy',isCrit);
+    return;
+  }
   const retaliated=ui.mapIndex===0 && m.id==='alfa_matilha' && m.hp>0 && m.alphaCounterStance;
   if(retaliated){
     m.alphaCounterStance=false; m.aiTurns++;
@@ -2760,6 +2767,9 @@ function chooseClass(key){
   document.getElementById('game-screen').classList.remove('hidden');
   ui.tab = 'mapa';
   render();
+  // WebKit preserves the title-screen scroll offset after the focused class
+  // button disappears, which can place the new arena above the viewport.
+  if(typeof window!=='undefined' && window.innerWidth>700 && typeof window.scrollTo==='function')window.scrollTo(0,0);
 }
 
 function switchTab(tab){

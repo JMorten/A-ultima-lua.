@@ -235,11 +235,35 @@ for (const width of [320, 375, 390]) {
       await page.waitForTimeout(700);
       await page.locator('.battle-arena').screenshot({path:`${process.env.AUL_PW_ARTIFACTS}/romar-v2-s${stage}-${width}.png`});
     }
-    // Romar também reage ao golpe: o re-render da ação não pode engolir o shake.
+    // Romar também reage ao golpe: o re-render da ação não pode engolir a API genérica.
     await page.evaluate(() => { ui.monster.hp = ui.monster.hpMax; ui.locked = false; render(); });
+    await page.evaluate(() => {
+      window.__romarReactions=[];
+      window.__romarReactionObserver=new MutationObserver(records=>{
+        for(const record of records){
+          const surface=record.target;
+          if(surface.id==='portrait-enemy' && record.attributeName==='data-reaction' && surface.dataset.reaction){
+            window.__romarReactions.push({action:surface.dataset.reaction,animations:surface.getAnimations().length});
+          }
+        }
+      });
+      window.__romarReactionObserver.observe(document.body,{subtree:true,attributes:true,attributeFilter:['data-reaction']});
+    });
     await page.getByRole('button', {name:'Atacar', exact:true}).click();
-    await expect(page.locator('#portrait-enemy.shake')).toHaveCount(1);
-    await page.waitForTimeout(420);
+    await page.waitForFunction(()=>window.__romarReactions?.length===1);
+    const firstReaction=await page.evaluate(()=>window.__romarReactions[0]);
+    expect(['damage','critical']).toContain(firstReaction.action);
+    expect(firstReaction.animations).toBe(1);
+    await expect(page.locator('#portrait-enemy')).toHaveClass(/romar-reaction-surface/);
+    await expect(page.locator('#portrait-enemy.shake')).toHaveCount(0);
+    await page.waitForFunction(()=>!document.getElementById('portrait-enemy').dataset.reaction);
+    await page.evaluate(first=>EnemyCombatVisual.hit(ui.monster,first!=='critical'),firstReaction.action);
+    await page.waitForFunction(()=>window.__romarReactions?.length===2);
+    const reactions=await page.evaluate(()=>window.__romarReactions);
+    expect(reactions.map(entry=>entry.action).sort()).toEqual(['critical','damage']);
+    expect(reactions.map(entry=>entry.animations)).toEqual([1,1]);
+    await expect(page.locator('#portrait-enemy.shake')).toHaveCount(0);
+    await page.evaluate(()=>window.__romarReactionObserver.disconnect());
     expect(diagnostics.errors).toEqual([]);
     expect(diagnostics.failedAssets).toEqual([]);
   });
