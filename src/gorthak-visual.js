@@ -28,6 +28,14 @@
     orc_xama:{prefix:"shaman",motion:{
       damage:{duration:270,x:8,y:-2,rotation:1,glow:.25,directional:true,followRetreat:false},
       critical:{duration:410,x:16,y:-7,rotation:2.2,glow:.58,directional:true}
+    }},
+    lobo_selvagem:{prefix:"wolf",motion:{damage:{duration:240,x:6,y:-2,rotation:.6,glow:.20,directional:true,followRetreat:false},critical:{duration:340,x:12,y:-5,rotation:1.6,glow:.46,directional:true}}},
+    lobo_cinzento:{prefix:"wolfgray",motion:{damage:{duration:240,x:6,y:-2,rotation:.6,glow:.20,directional:true,followRetreat:false},critical:{duration:340,x:12,y:-5,rotation:1.6,glow:.46,directional:true}}},
+    lobisomem_jovem:{prefix:"youngwolf",motion:{damage:{duration:260,x:7,y:-2,rotation:.7,glow:.22,directional:true,followRetreat:false},critical:{duration:360,x:14,y:-6,rotation:1.8,glow:.50,directional:true}}},
+    lobisomem_feroz:{prefix:"feralwolf",motion:{damage:{duration:270,x:8,y:-2,rotation:.8,glow:.24,directional:true,followRetreat:false},critical:{duration:380,x:16,y:-7,rotation:2,glow:.54,directional:true}}},
+    uivante_sombras:{prefix:"shadow",motion:{damage:{duration:280,x:9,y:-3,rotation:.9,glow:.26,directional:true,followRetreat:false},critical:{duration:400,x:18,y:-8,rotation:2.2,glow:.58,directional:true}}},
+    alfa_matilha:{prefix:"alfa",motion:{damage:{duration:300,x:10,y:-3,rotation:1,glow:.30,directional:true,followRetreat:false},critical:{duration:420,x:20,y:-9,rotation:2.4,glow:.62,directional:true}}},
+    romar:{prefix:"romar",motion:{damage:{duration:260,x:8,y:-2,rotation:.8,glow:.24,directional:true,followRetreat:false},critical:{duration:380,x:16,y:-7,rotation:2,glow:.54,directional:true}
     }}
   };
   function destroy(){
@@ -64,7 +72,7 @@
     // Latest hit wins; never queue stale reactions or delay the combat timers.
     const sequence=(view.sequence||0)+1;view.sequence=sequence;
     void view.animator.play(isCrit?'critical':'damage').then(result=>{
-      if(!isCrit&&view.followRetreat&&!result.interrupted&&current===view&&view.sequence===sequence&&!view.animator.media.matches)
+      if(!isCrit&&view.followRetreat&&!result.interrupted&&current===view&&view.sequence===sequence&&!view.animator.prefersReducedMotion())
         void view.animator.play('retreat');
     });
     return true;

@@ -120,8 +120,7 @@ for (const [wolfName, slug, expectedAsset] of [
 test('Floresta V2 não altera os assets dos outros encontros', async ({page}) => {
   await openForestBattle(page, 390);
   for (const [name, expectedPath] of [
-    ['Lobisomem Feroz', 'assets/images/enemies/forest/lobisomem_feroz.jpg'],
-    ['Alfa da Matilha', 'assets/images/enemies/forest/alfa_matilha.jpg']
+    ['Lobisomem Feroz', 'assets/images/enemies/forest/lobisomem_feroz.jpg']
   ]) {
     await page.reload();
     await page.locator('#class-select button', {hasText:'CONTINUAR'}).click();
@@ -236,11 +235,35 @@ for (const width of [320, 375, 390]) {
       await page.waitForTimeout(700);
       await page.locator('.battle-arena').screenshot({path:`${process.env.AUL_PW_ARTIFACTS}/romar-v2-s${stage}-${width}.png`});
     }
-    // Romar também reage ao golpe: o re-render da ação não pode engolir o shake.
+    // Romar também reage ao golpe: o re-render da ação não pode engolir a API genérica.
     await page.evaluate(() => { ui.monster.hp = ui.monster.hpMax; ui.locked = false; render(); });
+    await page.evaluate(() => {
+      window.__romarReactions=[];
+      window.__romarReactionObserver=new MutationObserver(records=>{
+        for(const record of records){
+          const surface=record.target;
+          if(surface.id==='portrait-enemy' && record.attributeName==='data-reaction' && surface.dataset.reaction){
+            window.__romarReactions.push({action:surface.dataset.reaction,animations:surface.getAnimations().length});
+          }
+        }
+      });
+      window.__romarReactionObserver.observe(document.body,{subtree:true,attributes:true,attributeFilter:['data-reaction']});
+    });
     await page.getByRole('button', {name:'Atacar', exact:true}).click();
-    await expect(page.locator('#portrait-enemy.shake')).toHaveCount(1);
-    await page.waitForTimeout(420);
+    await page.waitForFunction(()=>window.__romarReactions?.length===1);
+    const firstReaction=await page.evaluate(()=>window.__romarReactions[0]);
+    expect(['damage','critical']).toContain(firstReaction.action);
+    expect(firstReaction.animations).toBe(1);
+    await expect(page.locator('#portrait-enemy')).toHaveClass(/romar-reaction-surface/);
+    await expect(page.locator('#portrait-enemy.shake')).toHaveCount(0);
+    await page.waitForFunction(()=>!document.getElementById('portrait-enemy').dataset.reaction);
+    await page.evaluate(first=>EnemyCombatVisual.hit(ui.monster,first!=='critical'),firstReaction.action);
+    await page.waitForFunction(()=>window.__romarReactions?.length===2);
+    const reactions=await page.evaluate(()=>window.__romarReactions);
+    expect(reactions.map(entry=>entry.action).sort()).toEqual(['critical','damage']);
+    expect(reactions.map(entry=>entry.animations)).toEqual([1,1]);
+    await expect(page.locator('#portrait-enemy.shake')).toHaveCount(0);
+    await page.evaluate(()=>window.__romarReactionObserver.disconnect());
     expect(diagnostics.errors).toEqual([]);
     expect(diagnostics.failedAssets).toEqual([]);
   });
@@ -324,6 +347,37 @@ for (const width of [320, 375, 390]) {
     await expect(page.locator('.actor-pack-wolf')).toHaveCount(0);
     await expect(page.getByRole('button', {name:'🐺 Atacar Lobo da Matilha'})).toHaveCount(0);
     await expect(page.locator('.actor-enemy')).toBeVisible();
+    expect(diagnostics.errors).toEqual([]);
+    expect(diagnostics.failedAssets).toEqual([]);
+  });
+}
+
+for (const width of [320, 375, 390]) {
+  test(`Alfa da Matilha V2: enquadramento real em ${width}px`, async ({page}) => {
+    const diagnostics = await openForestBattle(page, width, 'Alfa da Matilha');
+    await page.waitForFunction(() => [...document.querySelectorAll('.arena-actor img')].every(image => image.complete && image.naturalWidth > 0));
+    const result = await page.evaluate(() => {
+      const stage = document.querySelector('.arena-stage').getBoundingClientRect();
+      const enemy = document.querySelector('.arena-actor.actor-enemy').getBoundingClientRect();
+      const img = document.querySelector('#portrait-enemy img');
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+      const context = canvas.getContext('2d', {willReadFrequently:true});
+      context.drawImage(img, 0, 0);
+      const data = context.getImageData(0, 0, canvas.width, canvas.height).data;
+      const cornerAlpha = [[0,0],[canvas.width-1,0],[0,canvas.height-1],[canvas.width-1,canvas.height-1]].map(([x,y]) => data[(y*canvas.width+x)*4+3]);
+      return {
+        src: img.getAttribute('src'),
+        naturalClass: document.querySelector('#portrait-enemy').classList.contains('portrait-natural'),
+        cornerAlpha,
+        insideStage: enemy.left >= stage.left - 1 && enemy.right <= stage.right + 1 && enemy.top >= stage.top - 1 && enemy.bottom <= stage.bottom + 1,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth
+      };
+    });
+    expect(result.src).toBe('assets/images/enemies/forest/alfa_matilha_combat_v2.png');
+    expect(result.naturalClass).toBe(true);
+    expect(result.insideStage).toBe(true);
+    expect(result.overflow).toBeLessThanOrEqual(0);
     expect(diagnostics.errors).toEqual([]);
     expect(diagnostics.failedAssets).toEqual([]);
   });

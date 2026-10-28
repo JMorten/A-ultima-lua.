@@ -326,6 +326,12 @@
     80%{transform:translateX(3px);}
   }
   .flash-hit{filter:brightness(2) saturate(0);}
+.alfa-hit-flash{animation:alfaHitFlash .38s ease;will-change:filter;}
+@keyframes alfaHitFlash{
+  0%{filter:brightness(2.4) saturate(0) drop-shadow(0 0 12px rgba(230,167,105,.55));}
+  35%{filter:brightness(1.7) saturate(.35) drop-shadow(0 0 8px rgba(230,167,105,.35));}
+  100%{filter:none;drop-shadow(0 0 0 transparent);}
+}
   .float-num{
     position:absolute;left:50%;top:6px;transform:translateX(-50%);
     font-family:'Cinzel',serif;font-size:20px;font-weight:700;
@@ -759,6 +765,13 @@
 @media(min-width:701px){.battle-arena.arena-battlefield{max-width:640px;margin-left:auto;margin-right:auto;}}
 
 /* Approved reaction actors only: no idle animation and no transforms on the positioning layer. */
+:is(.wolf-reaction-surface,.wolfgray-reaction-surface,.youngwolf-reaction-surface,.feralwolf-reaction-surface,.shadow-reaction-surface,.alfa-reaction-surface,.romar-reaction-surface){transform-origin:50% 97%;}
+:is(.wolf-reaction-surface,.wolfgray-reaction-surface,.youngwolf-reaction-surface,.feralwolf-reaction-surface,.shadow-reaction-surface,.alfa-reaction-surface,.romar-reaction-surface)[data-reaction]{will-change:transform;}
+:is(.wolf-impact-glow,.wolfgray-impact-glow,.youngwolf-impact-glow,.feralwolf-impact-glow,.shadow-impact-glow,.alfa-impact-glow,.romar-impact-glow,.wolf-impact-flash,.wolfgray-impact-flash,.youngwolf-impact-flash,.feralwolf-impact-flash,.shadow-impact-flash,.alfa-impact-flash,.romar-impact-flash){position:absolute;inset:0;opacity:0;pointer-events:none;}
+:is(.wolf-impact-glow,.wolfgray-impact-glow,.youngwolf-impact-glow,.feralwolf-impact-glow,.shadow-impact-glow,.alfa-impact-glow,.romar-impact-glow){background:radial-gradient(ellipse,rgba(255,194,132,.5),rgba(165,48,30,.18) 44%,transparent 72%);}
+:is(.wolf-impact-flash,.wolfgray-impact-flash,.youngwolf-impact-flash,.feralwolf-impact-flash,.shadow-impact-flash,.alfa-impact-flash,.romar-impact-flash){background:rgba(230,167,105,.16);}
+:is(.wolf-reaction-surface,.wolfgray-reaction-surface,.youngwolf-reaction-surface,.feralwolf-reaction-surface,.shadow-reaction-surface,.alfa-reaction-surface,.romar-reaction-surface)[data-reaction-static]{will-change:auto;outline:2px solid var(--gold);outline-offset:-2px;}
+@media(prefers-reduced-motion:reduce){:is(.wolf-reaction-surface,.wolfgray-reaction-surface,.youngwolf-reaction-surface,.feralwolf-reaction-surface,.shadow-reaction-surface,.alfa-reaction-surface,.romar-reaction-surface)[data-reaction]{will-change:auto;outline:2px solid var(--gold);outline-offset:-2px;}}
 .gorthak-reaction-surface,.scout-reaction-surface,.warrior-reaction-surface,.captain-reaction-surface,.butcher-reaction-surface,.shaman-reaction-surface{transform-origin:50% 97%;}
 .gorthak-reaction-surface[data-reaction],.scout-reaction-surface[data-reaction],.warrior-reaction-surface[data-reaction],.captain-reaction-surface[data-reaction],.butcher-reaction-surface[data-reaction],.shaman-reaction-surface[data-reaction]{will-change:transform;}
 .gorthak-impact-glow,.scout-impact-glow,.warrior-impact-glow,.captain-impact-glow,.gorthak-impact-flash,.scout-impact-flash,.warrior-impact-flash,.captain-impact-flash,.butcher-impact-glow,.butcher-impact-flash,.shaman-impact-glow,.shaman-impact-flash{position:absolute;inset:0;opacity:0;pointer-events:none;}
@@ -790,7 +803,8 @@
   transform:scaleX(-1);
 }
 
-/* Post-playtest: keep the stage and essential controls together; details scroll. */
+/* Alfa V3: contain the full silhouette in the arena actor. */
+.arena-actor[data-actor="alfa_matilha"] > .combatant-artwork > .avatar-img-circle{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;object-position:center bottom;}
 .combat-secondary summary{min-height:44px;padding:12px;cursor:pointer;color:var(--bone-dim);}
 .death-budget-note{font-size:14px;line-height:1.45;}
 @media(max-width:700px){

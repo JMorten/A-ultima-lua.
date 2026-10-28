@@ -14,6 +14,15 @@
 - Fazer mudanças pequenas, rastreáveis e manter a branch `main` jogável.
 - Não alterar mecânicas, balanceamento, atributos, itens ou progressão sem aprovação do responsável pelo projeto.
 
+## Continuidade — Palácio da Memória
+
+- Antes de trabalhar, ler `docs/memoria/README.md` e `docs/memoria/ESTADO_ATUAL.md` quando disponíveis na branch de trabalho.
+- Consultar `docs/memoria/DECISOES_APROVADAS.md` e a documentação da área afetada antes de propor mudanças.
+- Respeitar artes e mecânicas aprovadas; presença de arquivo ou relatório não prova aprovação.
+- Registrar alterações relevantes, evidências e testes no checkpoint da tarefa.
+- Ao encerrar tarefa importante, atualizar o estado, decisões, histórico, próximos passos e manifesto que forem realmente afetados, quando presentes na branch.
+- Nunca marcar como concluído, aprovado, publicado ou validado algo que não foi comprovado no ambiente correspondente.
+
 ## Protocolo de desenvolvimento autônomo V1
 
 Este protocolo orienta um único agente. Não configurar nem delegar tarefas a múltiplos agentes nesta versão. As regras anteriores permanecem obrigatórias; a autonomia técnica abaixo não autoriza decisões de game design nem publicação.

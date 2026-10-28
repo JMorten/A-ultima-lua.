@@ -11,6 +11,13 @@
       if(this.media.addEventListener)this.media.addEventListener('change',this.change);
       else this.media.addListener(this.change);
     }
+    prefersReducedMotion(){
+      // WebKit can briefly retain the value of a MediaQueryList created before
+      // an emulated or runtime preference change. A fresh query is authoritative.
+      return typeof scope.matchMedia==='function'
+        ? scope.matchMedia('(prefers-reduced-motion: reduce)').matches
+        : !!this.media.matches;
+    }
     interrupt(){
       this.epoch++;
       if(this.timer!==null)clearTimeout(this.timer);this.timer=null;
@@ -31,7 +38,7 @@
         this.timer=null;delete this.root.dataset.reaction;delete this.root.dataset.reactionStatic;
         const resolve=this.pending;this.pending=null;if(resolve)resolve({interrupted:false});
       };
-      if(this.media.matches||typeof this.surface.animate!=='function'){
+      if(this.prefersReducedMotion()||typeof this.surface.animate!=='function'){
         this.root.dataset.reactionStatic='true';
         this.timer=setTimeout(finish,180);
       }else{

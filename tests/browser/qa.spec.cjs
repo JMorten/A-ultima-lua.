@@ -516,9 +516,18 @@ test('Xamã V2: orientação, corpo inteiro e pé ancorado antes/depois do despe
     await page.locator('#game-screen').screenshot({path:process.env.AUL_PW_ARTIFACTS+'/orc-xama-v2-desperto-'+width+'.png'});
   }
   await page.emulateMedia({reducedMotion:'reduce'});
-  await page.evaluate(()=>EnemyCombatVisual.hit(ui.monster,true));
-  expect(await page.locator('#portrait-enemy').getAttribute('data-reaction-static')).toBe('true');
-  expect(await page.locator('#portrait-enemy').evaluate(e=>e.getAnimations().length)).toBe(0);
+  await page.waitForFunction(()=>matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const reduced=await page.locator('#portrait-enemy').evaluate(surface=>{
+    const before={animations:surface.getAnimations().length,transform:getComputedStyle(surface).transform};
+    const accepted=EnemyCombatVisual.hit(ui.monster,true);
+    const animations=surface.getAnimations().map(animation=>animation.effect?.getKeyframes?.()||[]);
+    const movingAnimations=animations.filter(frames=>frames.some(frame=>Object.prototype.hasOwnProperty.call(frame,'transform'))).length;
+    return {accepted,marker:surface.dataset.reactionStatic||null,before,after:{transform:getComputedStyle(surface).transform,movingAnimations}};
+  });
+  expect(reduced.accepted).toBe(true);
+  expect(reduced.marker).toBe('true');
+  expect(reduced.after.transform).toBe(reduced.before.transform);
+  expect(reduced.after.movingAnimations).toBe(0);
   expect(errors).toEqual([]);
 });
 

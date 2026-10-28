@@ -35,7 +35,7 @@ test('gancho real encaminha golpes apenas após o Xamã despertar',()=>{
  const start=source.indexOf('function shakeSide('),end=source.indexOf('\nfunction updateArenaBarsOnly',start);
  const run=awake=>{const events=[];const ctx=vm.createContext({ui:{monster:{id:'orc_xama',shamanAwake:awake},mapIndex:2},combatPortraitId:()=> 'portrait-enemy',isGorthak:()=>false,EnemyCombatVisual:{hit:(m,crit)=>{events.push([m.id,crit]);return true;}},document:{getElementById:()=>({classList:{remove(){},add(){}},offsetWidth:1})}});vm.runInContext(source.slice(start,end),ctx);vm.runInContext("shakeSide('enemy',true);shakeSide('enemy',false)",ctx);return events;};
  assert.deepEqual(run(false),[]);assert.deepEqual(run(true),[['orc_xama',true],['orc_xama',false]]);
- assert.match(source,/ui\.monster\?\.id==='orc_xama' && ui\.monster\.shamanAwake/);
+ assert.match(source,/ui\.monster\?\.id!=='orc_xama' \|\| ui\.monster\.shamanAwake/);
 });
 test('dano normal → recuo → retorno antes dos 480 ms existentes',async()=>{
   const f=boot();f.api.mount(f.monster);assert.equal(f.api.hit(f.monster,false),true);
