@@ -1,6 +1,6 @@
 # Próximos passos
 
-**Snapshot:** 2026-10-28 — Missão 28.
+**Snapshot:** 2026-10-28 — Missão 37.
 
 ## Concluído localmente
 
@@ -10,21 +10,21 @@
 - Commit operacional da memória e da configuração do OpenCode concluído em `6e1fd80`.
 - Remoto substituído pela URL GitHub `https://github.com/JMorten/A-ultima-lua..git`.
 - Branch `integration/floresta-uivante-v2` publicada no GitHub, com upstream configurado para `origin/integration/floresta-uivante-v2`.
-- Auditoria remota e auditoria final da integração concluídas nas Missões 25 e 27.
-- Regressão da Missão 22 aprovada: 196/196 Node, 83/83 Chromium e 83/83 WebKit.
+- PR #1 concluído por Merge Commit tradicional em `01b2369`.
+- Floresta Uivante V2 publicada no GitHub Pages: `https://jmorten.github.io/A-ultima-lua./`.
+- Validações concluídas: 196/196 Node, 83/83 Chromium, 83/83 WebKit e 9/9 no Safari físico.
+- Persistência localStorage preservada: chave `a-ultima-lua.checkpoint`, schema versão 5, sem migração.
 - Backup integral e restauração verificável do piloto realizados na Missão 22.
 - Documentação operacional incorporada seletivamente, sem merge da branch documental.
 
 ## Próxima etapa — exige autorização
 
-1. Criar PR de `integration/floresta-uivante-v2` para `main`.
-2. Revisar o PR antes de qualquer merge.
-3. Validar Safari físico no iPhone.
-4. Autorizar merge em `main` separadamente.
-5. Avaliar deploy separadamente.
-6. Preservar backups e worktrees antigos.
+1. Definir o próximo ciclo de desenvolvimento em uma branch nova.
+2. Decidir as próximas prioridades antes de iniciar alterações.
+3. Monitorar a produção e os saves dos jogadores.
+4. Preservar backups e worktrees antigos.
 
-A `main` permanece em `76ed84f74125ab6f578055226b17041c923c6e6f`. Publicação Git e deploy Cloudflare são autorizações distintas.
+A `main` está em `01b23697a876c7bbe0395e7dee4e65e364b1b72f`. A branch `integration/floresta-uivante-v2` permanece preservada como histórico.
 
 ## Preservar
 
@@ -36,7 +36,7 @@ A `main` permanece em `76ed84f74125ab6f578055226b17041c923c6e6f`. Publicação G
 
 ## Fora de escopo nesta preparação
 
-- PR, merge em `main` ou deploy (push da branch de integração concluído na Missão 26).
+- Novo desenvolvimento sem planejamento e branch dedicada.
 - Alterações em Cloudflare, Wrangler ou produção.
 - Transferência automática de laboratórios, caches, builds antigos ou dados locais.
 - Remoção ou desregistro de qualquer worktree antigo.

@@ -1,10 +1,11 @@
 # Estado atual
 
-**Snapshot operacional:** 2026-10-28 — Missão 28.
+**Snapshot operacional:** 2026-10-28 — Missão 37.
 **Checkout principal em preparação:** `D:\Projetos\01_JOGOS\A_Ultima_Lua`.
 **Branch:** `integration/floresta-uivante-v2`.
 **HEAD protegido antes das alterações operacionais:** `9622f8e667356634337d23cca90922c3c3c9c156`.
 **Base de integração:** `76ed84f74125ab6f578055226b17041c923c6e6f` (`origin/main` no clone piloto), com sete commits adicionais no piloto.
+**Commit de produção:** `01b23697a876c7bbe0395e7dee4e65e364b1b72f` (merge do PR #1 na `main`).
 
 Este arquivo descreve o checkout piloto atual. Os demais documentos deste diretório foram incorporados seletivamente da linha `docs/palacio-memoria-v1` como memória histórica e técnica. Quando houver conflito, este snapshot e o código no HEAD indicado prevalecem para o estado operacional; decisões históricas não devem ser reescritas.
 
@@ -13,8 +14,8 @@ Este arquivo descreve o checkout piloto atual. Os demais documentos deste diret�
 - O piloto é um repositório independente; não compartilha metadados Git com os oito worktrees antigos.
 - O remoto `origin` aponta para `https://github.com/JMorten/A-ultima-lua..git` desde a Missão 24.
 - A branch `integration/floresta-uivante-v2` foi publicada no GitHub na Missão 26, com upstream configurado para `origin/integration/floresta-uivante-v2`.
-- A `main` permanece em `76ed84f74125ab6f578055226b17041c923c6e6f`; nenhum merge em `main` foi realizado.
-- O commit operacional `6e1fd80` foi concluído na Missão 23B; as Missões 23, 24, 25, 26 e 27 foram concluídas.
+- A `main` está em `01b23697a876c7bbe0395e7dee4e65e364b1b72f` após o merge do PR #1; a Floresta Uivante V2 está publicada no GitHub Pages.
+- O commit operacional `6e1fd80` foi concluído na Missão 23B; as Missões 23 a 35 foram concluídas, incluindo publicação e validação em produção.
 - Push, pull, merge, rebase e deploy em `main` continuam sujeitos a autorização explícita.
 
 ## Conteúdo integrado
@@ -24,6 +25,8 @@ Este arquivo descreve o checkout piloto atual. Os demais documentos deste diret�
 - `ae350c5` integra o sistema genérico de reações de combate com a proteção ritual do Orc Xamã.
 - `9622f8e` corrige os três casos de QA reproduzíveis em Chromium e WebKit.
 - `6e1fd80` registra a memória operacional e a configuração do OpenCode; a branch foi publicada no GitHub com upstream configurado.
+- `01b2369` mescla o PR #1 na `main` e publica a Floresta Uivante V2 no GitHub Pages.
+- Validações concluídas: 196/196 Node, 83/83 Chromium, 83/83 WebKit e 9/9 no Safari físico em produção.
 - Os assets ativos da Floresta, Alfa da Matilha, Romar e Lobo da Matilha estão versionados no piloto.
 - Os 56 arquivos não rastreados do laboratório original não foram transferidos. Continuam preservados no worktree original e no backup da Missão 13.
 
@@ -53,9 +56,7 @@ Chromium e WebKit haviam sido aprovados imediatamente antes do commit `9622f8e` 
 
 ## Pendências
 
-1. Criar PR de `integration/floresta-uivante-v2` para `main` em etapa separada.
-2. Revisar o PR antes de qualquer merge.
-3. Validar Safari físico no iPhone.
-4. Autorizar merge em `main` separadamente.
-5. Avaliar deploy separadamente.
-6. Preservar projeto original, backups e worktrees antigos.
+1. Definir o próximo ciclo de desenvolvimento em uma branch nova, sem reutilizar a branch de integração.
+2. Monitorar a produção e os saves dos jogadores após a publicação.
+3. Preservar projeto original, backups e worktrees antigos.
+4. Decidir as próximas prioridades de desenvolvimento antes de iniciar alterações.
