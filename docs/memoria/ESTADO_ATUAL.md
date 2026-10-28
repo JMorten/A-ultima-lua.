@@ -1,6 +1,6 @@
 # Estado atual
 
-**Snapshot operacional:** 2026-10-28 — Missão 22.
+**Snapshot operacional:** 2026-10-28 — Missão 28.
 **Checkout principal em preparação:** `D:\Projetos\01_JOGOS\A_Ultima_Lua`.
 **Branch:** `integration/floresta-uivante-v2`.
 **HEAD protegido antes das alterações operacionais:** `9622f8e667356634337d23cca90922c3c3c9c156`.
@@ -11,10 +11,11 @@ Este arquivo descreve o checkout piloto atual. Os demais documentos deste diret�
 ## Segurança e Git
 
 - O piloto é um repositório independente; não compartilha metadados Git com os oito worktrees antigos.
-- O remoto `origin` ainda aponta para `D:\Projetos\A-ultima-lua` e não deve ser usado para publicação.
-- A URL GitHub verificada é `https://github.com/JMorten/A-ultima-lua..git`; ela ainda não foi configurada no piloto.
-- A branch `integration/floresta-uivante-v2` ainda não existe no GitHub e não possui upstream.
-- Nenhum push, pull, merge, rebase, deploy ou alteração de remoto foi realizado durante a preparação operacional.
+- O remoto `origin` aponta para `https://github.com/JMorten/A-ultima-lua..git` desde a Missão 24.
+- A branch `integration/floresta-uivante-v2` foi publicada no GitHub na Missão 26, com upstream configurado para `origin/integration/floresta-uivante-v2`.
+- A `main` permanece em `76ed84f74125ab6f578055226b17041c923c6e6f`; nenhum merge em `main` foi realizado.
+- O commit operacional `6e1fd80` foi concluído na Missão 23B; as Missões 23, 24, 25, 26 e 27 foram concluídas.
+- Push, pull, merge, rebase e deploy em `main` continuam sujeitos a autorização explícita.
 
 ## Conteúdo integrado
 
@@ -22,6 +23,7 @@ Este arquivo descreve o checkout piloto atual. Os demais documentos deste diret�
 - Os quatro commits da Floresta Uivante V2 até `25a3325` foram preservados por merge em `8f9d91c`.
 - `ae350c5` integra o sistema genérico de reações de combate com a proteção ritual do Orc Xamã.
 - `9622f8e` corrige os três casos de QA reproduzíveis em Chromium e WebKit.
+- `6e1fd80` registra a memória operacional e a configuração do OpenCode; a branch foi publicada no GitHub com upstream configurado.
 - Os assets ativos da Floresta, Alfa da Matilha, Romar e Lobo da Matilha estão versionados no piloto.
 - Os 56 arquivos não rastreados do laboratório original não foram transferidos. Continuam preservados no worktree original e no backup da Missão 13.
 
@@ -51,8 +53,9 @@ Chromium e WebKit haviam sido aprovados imediatamente antes do commit `9622f8e` 
 
 ## Pendências
 
-1. Revisar e registrar as alterações operacionais desta missão em commit local separado, se autorizado.
-2. Alterar o remoto somente em missão posterior autorizada.
-3. Publicar a branch de integração somente após nova autorização e verificação remota.
-4. Abrir PR e avaliar integração em `main` em etapa separada.
-5. Não remover o projeto original nem os worktrees enquanto a recuperação remota não estiver confirmada.
+1. Criar PR de `integration/floresta-uivante-v2` para `main` em etapa separada.
+2. Revisar o PR antes de qualquer merge.
+3. Validar Safari físico no iPhone.
+4. Autorizar merge em `main` separadamente.
+5. Avaliar deploy separadamente.
+6. Preservar projeto original, backups e worktrees antigos.
