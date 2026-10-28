@@ -29,6 +29,7 @@ for (const [wolfName, slug, expectedAsset] of [
   ['Lobo Comum', 'comum', 'assets/images/enemies/forest/lobo_comum_combat_v2.png'],
   ['Lobo Cinzento', 'cinzento', 'assets/images/enemies/forest/lobo_cinzento_combat_v2.png'],
   ['Lobisomem Jovem', 'jovem', 'assets/images/enemies/forest/lobisomem_jovem_combat_v2.png'],
+  ['Lobisomem Feroz', 'feroz', 'assets/images/enemies/forest/lobisomem_feroz_combat_v2.png'],
   ['Uivante das Sombras', 'uivante', 'assets/images/enemies/forest/uivante_sombras_combat_v2.png'],
 ]) {
   for (const width of [320, 375, 390]) {
@@ -117,20 +118,48 @@ for (const [wolfName, slug, expectedAsset] of [
   }
 }
 
-test('Floresta V2 não altera os assets dos outros encontros', async ({page}) => {
-  await openForestBattle(page, 390);
-  for (const [name, expectedPath] of [
-    ['Lobisomem Feroz', 'assets/images/enemies/forest/lobisomem_feroz.jpg']
-  ]) {
-    await page.reload();
-    await page.locator('#class-select button', {hasText:'CONTINUAR'}).click();
-    await page.locator('#qa-panel summary').click();
-    await page.locator('#qa-map').selectOption('0');
-    const option = page.locator('#qa-enemy option').filter({hasText:name});
-    await page.locator('#qa-enemy').selectOption(await option.getAttribute('value'));
-    await page.locator('#qa-battle').click();
-    await expect(page.locator('#portrait-enemy img')).toHaveAttribute('src', expectedPath);
-  }
+test('Lobisomem Feroz V2: ator, superfície e reações feralwolf em 390px', async ({page}) => {
+  const diagnostics = await openForestBattle(page, 390, 'Lobisomem Feroz');
+
+  expect(diagnostics.errors).toEqual([]);
+  expect(diagnostics.failedAssets).toEqual([]);
+
+  const mounted = await page.evaluate(() => {
+    const surface = document.querySelector('#portrait-enemy');
+    const box = surface.getBoundingClientRect();
+    const origin = getComputedStyle(surface).transformOrigin.split(' ').map(v => parseFloat(v));
+    return {
+      naturalClass: surface.classList.contains('portrait-natural'),
+      reactionSurface: surface.classList.contains('feralwolf-reaction-surface'),
+      originRatio: [origin[0] / box.width, origin[1] / box.height],
+      glowMounted: !!document.querySelector('.feralwolf-impact-glow'),
+      flashMounted: !!document.querySelector('.feralwolf-impact-flash')
+    };
+  });
+  expect(mounted.naturalClass).toBe(true);
+  expect(mounted.reactionSurface).toBe(true);
+  expect(mounted.originRatio[0]).toBeGreaterThan(0.45);
+  expect(mounted.originRatio[1]).toBeGreaterThan(0.9);
+  expect(mounted.glowMounted).toBe(true);
+  expect(mounted.flashMounted).toBe(true);
+
+  // Golpe normal: dano não_critical → data-reaction="damage", sem fila de recuo.
+  await page.getByRole('button', {name:'Atacar', exact:true}).click();
+  const damageReaction = await page.waitForFunction(() => document.querySelector('#portrait-enemy')?.dataset.reaction || null, null, {timeout:1500}).catch(() => null);
+  expect(damageReaction?.jsonValue ? await damageReaction.jsonValue() : damageReaction).toBe('damage');
+
+  // Crítico garantido: força chance crítica determinística em 100%.
+  await page.waitForTimeout(900);
+  await page.evaluate(() => {
+    ui.locked = false;
+    // CRIT_BASE_CHANCE é const, mas o sorteio usa Math.random; intercepta para crítico garantido.
+    window.__origRandom = Math.random;
+    Math.random = () => 0.001;
+  });
+  await page.getByRole('button', {name:'Atacar', exact:true}).click();
+  const criticalReaction = await page.waitForFunction(() => document.querySelector('#portrait-enemy')?.dataset.reaction || null, null, {timeout:1500}).catch(() => null);
+  expect(criticalReaction?.jsonValue ? await criticalReaction.jsonValue() : criticalReaction).toBe('critical');
+  await page.evaluate(() => { Math.random = window.__origRandom; });
 });
 
 async function openRomarBattle(page, width) {

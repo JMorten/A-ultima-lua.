@@ -18,8 +18,18 @@ test('Floresta V2 usa somente os novos assets visuais aprovados', () => {
   assert.equal(sha256('assets/images/enemies/forest/lobo_comum_combat_v2.png'), 'B39E5D1ABC1DFB9A1297F624B7697AC96D5662446950CF7375F709F5DED6090D');
 });
 
-test('Lobisomem Feroz continua apontando para a arte original', () => {
-  assert.match(game, /id:'lobisomem_feroz'.*portrait:'assets\/images\/enemies\/forest\/lobisomem_feroz\.jpg'/);
+test('Lobisomem Feroz V2 usa arte recortada e preserva atributos e Mordida Profunda', () => {
+  assert.match(game, /id:'lobisomem_feroz', name:'Lobisomem Feroz'.*portrait:'assets\/images\/enemies\/forest\/lobisomem_feroz_combat_v2\.png'.*portraitLayout:'natural'/);
+  assert.match(game, /id:'lobisomem_feroz'.*hp:75, atk:14, def:6, xp:35, coinMin:10, coinMax:18, tier:3/);
+  assert.match(game, /m\.id==='lobisomem_feroz' && m\.aiTurns%3===0/);
+  assert.match(game, /mult=1\.35;/);
+
+  const asset = 'assets/images/enemies/forest/lobisomem_feroz_combat_v2.png';
+  assert.equal(sha256(asset), 'FDA040DBB3D66D6349202417070A9F79295A2E3AC71E7F8636ACDC229B61D8D9');
+  const png = fs.readFileSync(path.join(root, asset));
+  assert.equal(png.subarray(0, 8).toString('hex'), '89504e470d0a1a0a');
+  assert.equal(png.readUInt32BE(16), 980);
+  assert.equal(png.readUInt32BE(20), 1512);
 });
 
 test('Alfa da Matilha V2 usa arte recortada e preserva atributos', () => {
