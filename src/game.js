@@ -190,7 +190,7 @@ const MAPS = [
     miniBoss:{ id:'uivante_sombras', name:'Uivante das Sombras', emoji:'🐺', portrait:'assets/images/enemies/forest/uivante_sombras_combat_v2.png', portraitLayout:'natural', hp:190, atk:25, def:12, xp:85, coinMin:20, coinMax:30, isMiniBoss:true },
   },
   {
-    name:'Pântano Podre', sub:'Domínio dos trolls e ogros', theme:'🧌', fam:'fam-troll',
+    name:'Pântano Podre', sub:'Domínio dos trolls e ogros', theme:'🧌', fam:'fam-troll', arenaBackground:'assets/images/backgrounds/pantano_podre_arena_v2.jpeg',
     unlockLevel:5,
     monsters:[
       { id:'troll_lodo',     name:'Troll do Lodo', emoji:'🧌', portrait:'assets/images/enemies/swamp/troll_lodo.jpg', hp:95,  atk:16, def:7,  xp:45, coinMin:14, coinMax:22, tier:0 },
