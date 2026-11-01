@@ -792,6 +792,7 @@
 .arena-actor[data-actor="uivante_sombras"] > .combatant-artwork > .avatar-img-circle,
 .arena-actor[data-actor="orc_capitao"] > .combatant-artwork > .avatar-img-circle,
 .arena-actor[data-actor="acougueiro_trincheira"] > .combatant-artwork > .avatar-img-circle,.arena-actor[data-actor="orc_xama"] > .combatant-artwork > .avatar-img-circle,.arena-actor[data-actor="mago"] > .combatant-artwork > .avatar-img-circle,
+.arena-actor[data-actor="troll_lodo"] > .combatant-artwork > .avatar-img-circle{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;object-position:center bottom;}
 .arena-actor[data-actor="warlord_gorthak"] > .combatant-artwork > .avatar-img-circle{
   width:100%;height:100%;max-width:100%;max-height:100%;
   object-fit:contain;object-position:center bottom;

@@ -21,7 +21,7 @@ const COMBAT_PRESENTATION = {
   classes:{
     mago:{ x:0.25, ground:0, w:0.44, h:0.72, ax:-0.5, ay:0 },
   },
-  enemies:{
+  enemies:{ troll_lodo:{ x:0.72, ground:0, w:0.55, h:0.74, ax:-0.5, ay:0 },
     lobo_selvagem:{ x:0.73, ground:0, w:0.50, h:0.60, ax:-0.5, ay:0 },
     lobo_cinzento:{ x:0.73, ground:0, w:0.50, h:0.60, ax:-0.5, ay:0 },
     lobisomem_jovem:{ x:0.73, ground:0, w:0.50, h:0.70, ax:-0.5, ay:0 },
@@ -193,7 +193,7 @@ const MAPS = [
     name:'Pântano Podre', sub:'Domínio dos trolls e ogros', theme:'🧌', fam:'fam-troll', arenaBackground:'assets/images/backgrounds/pantano_podre_arena_v2.jpeg',
     unlockLevel:5,
     monsters:[
-      { id:'troll_lodo',     name:'Troll do Lodo', emoji:'🧌', portrait:'assets/images/enemies/swamp/troll_lodo.jpg', hp:95,  atk:16, def:7,  xp:45, coinMin:14, coinMax:22, tier:0 },
+      { id:'troll_lodo',     name:'Troll do Lodo', emoji:'🧌', portrait:'assets/images/enemies/swamp/troll_lodo_combat_v2.png', portraitLayout:'natural', hp:95,  atk:16, def:7,  xp:45, coinMin:14, coinMax:22, tier:0 },
       { id:'troll_apodrecido',name:'Troll Apodrecido', emoji:'🧌', portrait:'assets/images/enemies/swamp/troll_apodrecido.jpg', hp:115, atk:19, def:9,  xp:55, coinMin:16, coinMax:26, tier:1 },
       { id:'ogro_menor',     name:'Ogro Menor', emoji:'👹', portrait:'assets/images/enemies/swamp/ogro_menor.jpg', hp:135, atk:22, def:10, xp:65, coinMin:20, coinMax:30, tier:2 },
       { id:'ogro_guerra',    name:'Ogro de Guerra', emoji:'👹', portrait:'assets/images/enemies/swamp/ogro_guerra.jpg', hp:160, atk:26, def:12, xp:78, coinMin:24, coinMax:36, tier:3 },

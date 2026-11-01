@@ -78,3 +78,13 @@ Este protocolo orienta um único agente. Não configurar nem delegar tarefas a m
 - Entregar relatório final curto com alterações e arquivos, testes executados ou reaproveitados, resultados, pendências e riscos. Separar validação automática de aprovação visual humana.
 - Informar o estado final do Git e, quando aplicável, branch/commit, destino autorizado e evidências. Declarar publicação somente após confirmar deployment concluído e conteúdo correto por HTTPS; sucesso de push isoladamente não comprova publicação.
 - Ao concluir o escopo, parar. Integração, nova missão ou promoção à produção dependem das autorizações correspondentes; não ampliar o trabalho por iniciativa própria.
+
+
+## 7. Orientação visual no combate
+
+- Jogador (Mago) posiciona-se à esquerda do palco (x:0.28); inimigos à direita (x:0.72).
+- Inimigos devem estar visualmente voltados para o jogador (olhando para a esquerda).
+- Se a arte original do inimigo já estiver voltada para a esquerda, não aplicar espelhamento.
+- Se a arte original estiver voltada para a direita, aplicar `transform:scaleX(-1)` apenas naquele inimigo, via seletor `data-actor`.
+- Não aplicar espelhamento indiscriminado a todos os inimigos; verificar a orientação original de cada sprite.
+- Sempre que um novo inimigo for integrado, verificar sua orientação visual antes de declarar a tarefa concluída.
